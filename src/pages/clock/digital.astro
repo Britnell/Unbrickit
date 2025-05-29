@@ -137,7 +137,7 @@ todo :
 
       <!-- Settings Menu -->
       <div
-        class="absolute w-[16rem] top-0 right-0 bg-[#fff8] rounded-lg p-4 shadow-lg z-20 flex flex-col gap-4"
+        class="absolute w-[16rem] top-0 right-0 bg-[#fff8] rounded-lg p-4 shadow-lg z-20 flex flex-col gap-4 max-h-[calc(100vh-4rem)] overflow-y-auto"
         x-show="showMenu"
         @click.away="showMenu = false"
       >
@@ -232,7 +232,7 @@ todo :
         </template>
 
         <div>
-          <button @click="toggleFullscreen()">Switch Fullscreen</button>
+          <button class="px-2 py-1 border border-black rounded" @click="toggleFullscreen()">Switch Fullscreen</button>
         </div>
       </div>
     </div>
