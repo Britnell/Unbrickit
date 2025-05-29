@@ -1,8 +1,33 @@
 ---
-import Page from "../components/Page.astro";
+import Page from '../components/Page.astro';
 ---
 
 <Page>
+  <script is:inline>
+    document.addEventListener('alpine:init', () => {
+      Alpine.directive('comp', (el) => {
+        console.log(el);
+        const compName = el.getAttribute('x-comp');
+        const template = document.getElementById(compName);
+        const compProps = template.getAttribute('x-props');
+        const inputProps = el.getAttribute('x-props');
+        const content = template.content.firstElementChild;
+
+        content.setAttribute('x-data', inputProps);
+        el.replaceWith(content);
+        console.log({ compName, compProps, inputProps }, content);
+      });
+    });
+  </script>
   <h1>Clock</h1>
-  <div class="x">12:38</div>
+  <div class="relative h-screen" x-data="digital">
+    <template id="counter" x-props="count,debug">
+      <div>
+        Count is :
+        <span x-text="count"></span>
+      </div>
+    </template>
+
+    <div x-comp="counter" x-props="{count: 123}"></div>
+  </div>
 </Page>
