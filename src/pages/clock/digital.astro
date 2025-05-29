@@ -34,10 +34,9 @@ todo :
       hue: 60,
       weight: 800,
       fontSize: 26,
-      shufflePeriod: 1,
     };
 
-    const shufflePeriodOptions = [1, 5, 10, 15, 20, 60];
+    const shufflePeriodOptions = ['off', 1, 5, 10, 15, 20, 60];
 
     const colorModes = ['pastel', 'colourful', 'B&W'];
 
@@ -63,8 +62,7 @@ todo :
         darkMode: false,
         colorMode: colorModes[0],
         fontSize: defaults.fontSize,
-        shuffleEnabled: false,
-        shufflePeriod: defaults.shufflePeriod,
+        shufflePeriod: shufflePeriodOptions[0],
         shuffleLast: null,
         isWakeLocked: false,
         wakeLock: null,
@@ -88,8 +86,10 @@ todo :
           this.hue = localStorage.getItem('hue') || defaults.hue;
           this.colorMode = localStorage.getItem('colorMode') || defaults.colorMode;
           this.fontSize = localStorage.getItem('fontSize') || defaults.fontSize;
-          this.shuffleEnabled = localStorage.getItem('shuffleEnabled') === 'true' || false;
-          this.shufflePeriod = parseInt(localStorage.getItem('shufflePeriod') || defaults.shufflePeriod);
+          this.shufflePeriod =
+            localStorage.getItem('shufflePeriod') === 'off'
+              ? 'off'
+              : parseInt(localStorage.getItem('shufflePeriod') || shufflePeriodOptions[0]);
           this.darkMode = localStorage.getItem('darkMode') === 'true' || false;
 
           // sync storage
@@ -99,7 +99,6 @@ todo :
             localStorage.setItem('hue', this.hue);
             localStorage.setItem('colorMode', this.colorMode);
             localStorage.setItem('fontSize', this.fontSize);
-            localStorage.setItem('shuffleEnabled', this.shuffleEnabled);
             localStorage.setItem('shufflePeriod', this.shufflePeriod);
             localStorage.setItem('darkMode', this.darkMode);
           });
@@ -116,11 +115,11 @@ todo :
           const [h, m, s] = getTime();
           this.time = display(h, m);
           const rem = 60 - s;
-          if (this.shuffleEnabled) {
+          if (this.shufflePeriod !== 'off') {
             const t = Math.floor(m / this.shufflePeriod);
             if (t !== this.shuffleLast) {
               this.shuffleLast = t;
-              this.shuffle();
+              this.hue = Math.floor(Math.random() * 360);
             }
           }
 
@@ -191,15 +190,23 @@ todo :
         x-show="showMenu"
         @click.away="showMenu = false"
       >
-        <!-- Random Mode Toggle -->
-        <div class="flex gap-2 items-center">
-          <input type="checkbox" id="random-mode" x-model="shuffleEnabled" class="" />
-          <label for="random-mode" class="">Shuffle</label>
+        <!-- Shuffle Period Selector -->
+        <div class="flex flex-col gap-1">
+          <label for="shuffle-select" class=""> Change every: </label>
+          <select
+            id="shuffle-select"
+            x-model="shufflePeriod"
+            class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent"
+            x-init="$nextTick(() => { $el.value = shufflePeriod })"
+          >
+            <template x-for="period in shufflePeriodOptions" :key="period">
+              <option :value="period" x-text="`${period} min`"></option>
+            </template>
+          </select>
         </div>
-
         <!-- custom -->
 
-        <template x-if="!shuffleEnabled">
+        <template x-if="shufflePeriod === 'off'">
           <div class="contents">
             <h3 class="font-bold">Font</h3>
             <!-- Font Selector -->
@@ -208,7 +215,7 @@ todo :
               <select
                 id="font-select"
                 x-model="font"
-                class="w-full p-2 border border-gray-600 rounded-md bg-transparent"
+                class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent"
                 x-init="$nextTick(() => { $el.value = font })"
               >
                 <template x-for="f in fonts" :key="f">
@@ -246,7 +253,7 @@ todo :
                 <label for="color-mode" class="block text-sm font-medium mb-1">Color Mode</label>
                 <select
                   id="color-mode"
-                  class="w-full p-2 border border-gray-600 rounded-md bg-transparent"
+                  class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent"
                   x-model="colorMode"
                   x-init="$nextTick(() => { $el.value = colorMode })"
                 >
@@ -267,25 +274,6 @@ todo :
           </div>
 
           <!--  -->
-        </template>
-
-        <template x-if="shuffleEnabled">
-          <div>
-            <!-- Shuffle Period Selector -->
-            <div class="flex flex-col gap-1" x-show="shuffleEnabled">
-              <label for="shuffle-select" class=""> Change every: </label>
-              <select
-                id="shuffle-select"
-                x-model="shufflePeriod"
-                class="w-full p-2 border border-gray-600 rounded-md bg-transparent"
-                x-init="$nextTick(() => { $el.value = shufflePeriod })"
-              >
-                <template x-for="period in shufflePeriodOptions" :key="period">
-                  <option :value="period" x-text="`${period} min`"></option>
-                </template>
-              </select>
-            </div>
-          </div>
         </template>
 
         <button class="px-2 py-1 border border-gray-600 rounded-md" @click="toggleFullscreen()"
