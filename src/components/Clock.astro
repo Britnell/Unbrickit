@@ -15,12 +15,9 @@ todo :
       ',',
     );
   const shufflePeriodOptions = ['off', 1, 5, 10, 15, 20, 60];
+  const intervalOptions = ['off', 'hourly', 'quarterly'];
   const colorModes = ['pastel', 'colourful', 'B&W'];
-  const defaults = {
-    hue: 60,
-    weight: 800,
-    fontSize: 26,
-  };
+  const chimeOptions = ['speak'];
 
   const pastelColors = (h) => {
     const a = `hsl(${h}, 100%, 85%)`;
@@ -33,16 +30,29 @@ todo :
     const b = `hsl(${(h + 360 - 55) % 360}, 60%, 35%)`;
     return [a, b];
   };
+
+  const defaults = {
+    font: fonts[0],
+    fontSize: 26,
+    weight: 800,
+    hue: 60,
+    colorMode: colorModes[0],
+    chime: chimeOptions[0],
+    darkMode: false,
+    shufflePeriod: shufflePeriodOptions[0],
+    interval: intervalOptions[0],
+  };
+
   document.addEventListener('alpine:init', () => {
     Alpine.data('digital', () => ({
-      font: fonts[0],
+      font: defaults.font,
       weight: defaults.weight,
       hue: defaults.hue,
-      darkMode: false,
-      colorMode: colorModes[0],
+      darkMode: defaults.darkMode,
+      interval: defaults.interval,
+      colorMode: defaults.colorMode,
       fontSize: defaults.fontSize,
-      shufflePeriod: shufflePeriodOptions[0],
-      shuffleLast: null,
+      shufflePeriod: defaults.shufflePeriod,
       get colors() {
         const h = parseInt(this.hue);
         let a, b;
@@ -57,15 +67,16 @@ todo :
         return { bg: bg, text: fg };
       },
       init() {
-        this.font = localStorage.getItem('font') || fonts[0];
+        this.font = localStorage.getItem('font') || defaults.font;
         this.weight = localStorage.getItem('weight') || defaults.weight;
         this.hue = localStorage.getItem('hue') || defaults.hue;
         this.colorMode = localStorage.getItem('colorMode') || defaults.colorMode;
         this.fontSize = localStorage.getItem('fontSize') || defaults.fontSize;
+        this.interval = localStorage.getItem('interval') || defaults.interval;
         this.shufflePeriod =
           localStorage.getItem('shufflePeriod') === 'off'
             ? 'off'
-            : parseInt(localStorage.getItem('shufflePeriod') || shufflePeriodOptions[0]);
+            : parseInt(localStorage.getItem('shufflePeriod') || defaults.shufflePeriod);
         this.darkMode = localStorage.getItem('darkMode') === 'true' || false;
 
         // sync storage
@@ -73,6 +84,7 @@ todo :
           localStorage.setItem('font', this.font);
           localStorage.setItem('weight', this.weight);
           localStorage.setItem('hue', this.hue);
+          localStorage.setItem('interval', this.interval);
           localStorage.setItem('colorMode', this.colorMode);
           localStorage.setItem('fontSize', this.fontSize);
           localStorage.setItem('shufflePeriod', this.shufflePeriod);

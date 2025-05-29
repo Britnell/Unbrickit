@@ -21,6 +21,7 @@
     Alpine.data('time', () => ({
       time: ':',
       timer: null,
+      shuffleLast: null,
       init() {
         this.loop();
 
@@ -35,18 +36,25 @@
         if (this.timer) clearTimeout(this.timer);
         const [h, m, s] = getTime();
         this.time = display(h, m);
+        this.shuffleLoop(m);
+
         const rem = 60 - s;
+        this.timer = setTimeout(() => {
+          this.loop();
+        }, rem * 1000);
+      },
+      shuffleLoop(m) {
         if (this.shufflePeriod !== 'off') {
           const t = Math.floor(m / this.shufflePeriod);
+          if (this.shuffleLast === null) {
+            this.shuffleLast = t;
+            return;
+          }
           if (t !== this.shuffleLast) {
             this.shuffleLast = t;
             this.hue = Math.floor(Math.random() * 360);
           }
         }
-
-        this.timer = setTimeout(() => {
-          this.loop();
-        }, rem * 1000);
       },
     }));
   });
