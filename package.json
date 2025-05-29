@@ -10,13 +10,13 @@
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.5.3",
-    "@tailwindcss/vite": "^4.1.7",
     "astro": "^5.8.0",
-    "lightningcss": "^1.28.1",
-    "tailwindcss": "^4.1.7"
+    "tailwindcss": "3"
   },
   "devDependencies": {
     "@vite-pwa/astro": "^1.1.0",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.4",
     "vite-plugin-pwa": "^1.0.0"
   }
 }
