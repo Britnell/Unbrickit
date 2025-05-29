@@ -159,7 +159,7 @@ todo :
               <select
                 id="font-select"
                 x-model="font"
-                class="w-full p-2 text-sm border border-gray-200 rounded"
+                class="w-full p-2 text-sm border border-gray-200 rounded-md"
                 x-init="$nextTick(() => { $el.value = font })"
               >
                 <template x-for="f in fonts" :key="f">
@@ -191,7 +191,7 @@ todo :
                 <input
                   type="color"
                   x-model="bgColor"
-                  class="w-8 h-8 p-0 border border-gray-200 rounded cursor-pointer [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded"
+                  class="w-8 h-8 p-0 border border-gray-200 rounded-md cursor-pointer [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded"
                 />
                 <span x-text="bgColor" class="text-xs text-gray-500 font-mono"></span>
               </div>
@@ -204,7 +204,7 @@ todo :
                 <input
                   type="color"
                   x-model="textColor"
-                  class="size-8 p-0 border border-gray-200 rounded cursor-pointer [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded"
+                  class="size-8 p-0 border border-gray-200 rounded-md cursor-pointer [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded"
                 />
                 <span x-text="textColor" class="text-xs text-gray-500 font-mono"></span>
               </div>
@@ -220,7 +220,7 @@ todo :
               <select
                 id="shuffle-select"
                 x-model="shufflePeriod"
-                class="w-full p-2 text-sm border border-gray-200 rounded"
+                class="w-full p-2 text-sm border border-gray-200 rounded-md"
                 x-init="$nextTick(() => { $el.value = shufflePeriod })"
               >
                 <template x-for="period in shufflePeriodOptions" :key="period">
@@ -232,7 +232,9 @@ todo :
         </template>
 
         <div>
-          <button class="px-2 py-1 border border-black rounded" @click="toggleFullscreen()">Switch Fullscreen</button>
+          <button class="px-2 py-1 border border-gray-400 rounded-md" @click="toggleFullscreen()"
+            >Switch Fullscreen</button
+          >
         </div>
       </div>
     </div>
