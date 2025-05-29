@@ -14,16 +14,13 @@ todo :
     'system,humanist,industrial,serif,geometric,rounded,mono-serif,mono-code,didone,antique,old-style,transitional'.split(
       ',',
     );
-
+  const shufflePeriodOptions = ['off', 1, 5, 10, 15, 20, 60];
+  const colorModes = ['pastel', 'colourful', 'B&W'];
   const defaults = {
     hue: 60,
     weight: 800,
     fontSize: 26,
   };
-
-  const shufflePeriodOptions = ['off', 1, 5, 10, 15, 20, 60];
-
-  const colorModes = ['pastel', 'colourful', 'B&W'];
 
   const pastelColors = (h) => {
     const a = `hsl(${h}, 100%, 85%)`;
@@ -38,7 +35,6 @@ todo :
   };
   document.addEventListener('alpine:init', () => {
     Alpine.data('digital', () => ({
-      showMenu: true,
       font: fonts[0],
       weight: defaults.weight,
       hue: defaults.hue,
@@ -97,22 +93,20 @@ todo :
   <!-- Clock Display -->
   <Digits />
 
-  <!-- Settings Button -->
-  <button
-    @click="showMenu = !showMenu"
-    class="absolute top-3 right-3 p-4 text-xl bg-transparent border-none transition-transform hover:scale-110"
-    aria-label="Settings"
-    :style="`color: ${colors.text};`"
-  >
-    ...
-  </button>
-
-  <!-- Settings Menu -->
-  <div
-    class="absolute w-[16rem] top-0 right-0 bg-[#fff8] rounded-lg p-4 shadow-lg z-20 flex flex-col gap-3 max-h-[calc(100vh-1.5rem)] overflow-y-auto text-xs text-gray-600"
-    x-show="showMenu"
-    @click.away="showMenu = false"
-  >
-    <Clockmenu />
+  <!-- Menu -->
+  <div x-data="{ showMenu: true }">
+    <div class="absolute w-[calc(100%-2rem)] max-w-[60ch] top-4 right-4 overflow-auto" x-show="showMenu">
+      <div @click.away="showMenu = false" class="bg-[#fff8] rounded-lg shadow-lg p-3">
+        <Clockmenu />
+      </div>
+    </div>
+    <button
+      @click="showMenu = !showMenu"
+      class="absolute top-3 right-3 p-4 text-xl bg-transparent border-none transition-transform hover:scale-110"
+      aria-label="Settings"
+      :style="`color: ${colors.text};`"
+    >
+      ...
+    </button>
   </div>
 </div>
