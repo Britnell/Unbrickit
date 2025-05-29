@@ -17,11 +17,77 @@
     return `${_h}:${_m}`;
   }
 
+  const noteMap = {
+    C: 0,
+    'C#': 1,
+    DB: 1,
+    D: 2,
+    'D#': 3,
+    EB: 3,
+    E: 4,
+    F: 5,
+    'F#': 6,
+    GB: 6,
+    G: 7,
+    'G#': 8,
+    AB: 8,
+    A: 9,
+    'A#': 10,
+    BB: 10,
+    B: 11,
+  };
+
+  function noteToFrequency(note) {
+    const match = note.toUpperCase().match(/^([A-G][#B]?)(\d+)$/);
+    if (!match) return console.error(`Invalid note format: ${note}`);
+    const [, noteName, octaveStr] = match;
+    const octave = parseInt(octaveStr);
+    const midiNumber = (octave + 1) * 12 + noteMap[noteName];
+    const frequency = 440 * Math.pow(2, (midiNumber - 69) / 12);
+    return frequency;
+  }
+
+  function playNotes(notes, staggerDelay = 0.1) {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    notes.forEach((note, index) => {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.frequency.value = noteToFrequency(note.note);
+      oscillator.type = 'sine';
+
+      const startTime = audioContext.currentTime + index * staggerDelay;
+      const duration = note.duration || 2.0;
+
+      gainNode.gain.setValueAtTime(0, startTime);
+      gainNode.gain.linearRampToValueAtTime(0.2, startTime + 0.1);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+
+      oscillator.start(startTime);
+      oscillator.stop(startTime + duration);
+    });
+  }
+  function playChime() {
+    playNotes(
+      [
+        { note: 'C4', duration: 0.5 },
+        { note: 'E4', duration: 0.5 },
+        { note: 'G4', duration: 0.5 },
+      ],
+      0.2,
+    );
+  }
+
   document.addEventListener('alpine:init', () => {
     Alpine.data('time', () => ({
       time: ':',
       timer: null,
       shuffleLast: null,
+      lastChime: null,
       init() {
         this.loop();
 
@@ -36,7 +102,9 @@
         if (this.timer) clearTimeout(this.timer);
         const [h, m, s] = getTime();
         this.time = display(h, m);
+
         this.shuffleLoop(m);
+        this.chimeLoop(m);
 
         const rem = 60 - s;
         this.timer = setTimeout(() => {
@@ -54,6 +122,23 @@
             this.shuffleLast = t;
             this.hue = Math.floor(Math.random() * 360);
           }
+        }
+      },
+      chimeLoop(m) {
+        if (this.interval === 'off') return;
+
+        if (this.lastChime === null) {
+          this.lastChime = m;
+          return;
+        }
+
+        if (this.interval === 'quarterly') {
+          if ([15, 30, 45].includes(m)) {
+            if (this.chime === 'chime') playChime();
+          }
+        }
+        if (m === 0) {
+          if (this.chime === 'chime') playChime();
         }
       },
     }));
