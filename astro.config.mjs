@@ -4,6 +4,8 @@ import AstroPWA from "@vite-pwa/astro";
 
 import tailwindcss from "@tailwindcss/vite";
 
+import cloudflare from "@astrojs/cloudflare";
+
 const pwaConfig = AstroPWA({
   injectRegister: "script",
   registerType: "autoUpdate",
@@ -44,4 +46,6 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
   },
+
+  adapter: cloudflare(),
 });
