@@ -113,6 +113,13 @@
     utterance.rate = 0.8;
     utterance.pitch = 1;
     utterance.volume = 1;
+    utterance.lang = 'en-GB';
+
+    const voices = speechSynthesis.getVoices();
+    const goodNews = voices.find((v) => v.name === 'Good News');
+    const daniel = voices.find((v) => v.name.includes('Daniel'));
+    if (goodNews) utterance.voice = goodNews;
+    else if (daniel) utterance.voice = daniel;
 
     speechSynthesis.speak(utterance);
     console.log(`Speaking: "${timeText}"`);
