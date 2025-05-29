@@ -1,0 +1,125 @@
+<script is:inline>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('menu', () => ({
+      toggleFullscreen() {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+        } else {
+          document.exitFullscreen();
+        }
+      },
+      wakeLock: null,
+      toggleUnlocked() {
+        if (this.wakeLock) {
+          this.wakeLock.release();
+          this.wakeLock = null;
+        } else {
+          navigator.wakeLock
+            .request()
+            .then((wakeLock) => {
+              this.wakeLock = wakeLock;
+              // this.wakeLock.addEventListener('release', () => {});
+            })
+            .catch(() => {
+              this.isWakeLock = null;
+            });
+        }
+      },
+    }));
+  });
+</script>
+<div x-data="menu" class="contents">
+  <!-- Shuffle Period Selector -->
+  <div class="flex flex-col gap-1">
+    <label for="shuffle-select" class=""> Change every: </label>
+    <select
+      id="shuffle-select"
+      x-model="shufflePeriod"
+      class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent"
+      x-init="$nextTick(() => { $el.value = shufflePeriod })"
+    >
+      <template x-for="period in shufflePeriodOptions" :key="period">
+        <option :value="period" x-text="`${period} min`"></option>
+      </template>
+    </select>
+  </div>
+
+  <template x-if="shufflePeriod === 'off'">
+    <div class="contents">
+      <h3 class="font-bold">Font</h3>
+      <!-- Font Selector -->
+      <div class="">
+        <label for="font-select" class="flex justify-between items-center mb-1"> Theme: </label>
+        <select
+          id="font-select"
+          x-model="font"
+          class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent"
+          x-init="$nextTick(() => { $el.value = font })"
+        >
+          <template x-for="f in fonts" :key="f">
+            <option :value="f" x-text="f.charAt(0).toUpperCase() + f.slice(1)"></option>
+          </template>
+        </select>
+      </div>
+
+      <!-- Weight Slider -->
+      <div class="">
+        <label for="weight-slider" class="flex justify-between items-center">
+          Weight: <span x-text="weight" class="font-mono"></span>
+        </label>
+        <input type="range" id="weight-slider" x-model="weight" min="100" max="900" step="100" />
+      </div>
+
+      <!-- Size Slider -->
+      <div class="">
+        <label for="size-slider" class="flex justify-between items-center">
+          Size: <span x-text="fontSize + 'vw'" class="font-mono"></span>
+        </label>
+        <input type="range" id="size-slider" x-model="fontSize" min="20" max="45" step="1" />
+      </div>
+
+      <h3 class="font-bold">Color</h3>
+
+      <!-- Hue Slider -->
+      <div class="">
+        <label for="hue-slider" class="flex justify-between items-center">
+          Hue: <span x-text="hue + '°'" class="font-mono"></span>
+        </label>
+        <input type="range" id="hue-slider" x-model="hue" min="0" max="360" step="1" />
+
+        <div class="mt-4">
+          <label for="color-mode" class="block text-sm font-medium mb-1">Color Mode</label>
+          <select
+            id="color-mode"
+            class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent"
+            x-model="colorMode"
+            x-init="$nextTick(() => { $el.value = colorMode })"
+          >
+            <template x-for="mode in  colorModes" :key="mode">
+              <option :value="mode" x-text="mode"></option>
+            </template>
+          </select>
+        </div>
+      </div>
+
+      <!-- Brightness  -->
+
+      <!-- Dark Mode Toggle -->
+      <div class="flex gap-2 items-center">
+        <input type="checkbox" id="dark-mode" x-model="darkMode" class="" />
+        <label for="dark-mode" class="">Dark Mode</label>
+      </div>
+    </div>
+
+    <!--  -->
+  </template>
+
+  <button class="px-2 py-1 border border-gray-600 rounded-md" @click="toggleFullscreen()">Switch Fullscreen</button>
+
+  <button
+    class="px-2 py-1 border border-gray-600 rounded-md"
+    @click="toggleUnlocked()"
+    x-text="wakeLock ? 'Release screen lock' : 'Keep screen unlocked' "
+  >
+  </button>
+</div>
