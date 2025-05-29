@@ -31,10 +31,9 @@ todo :
     }
 
     const defaults = {
-      bg: '#ffe2cc',
-      text: '#322',
+      hue: 60,
       weight: 800,
-      fontSize: 20,
+      fontSize: 26,
       shufflePeriod: 5,
     };
 
@@ -48,9 +47,16 @@ todo :
         shuffleLast: null,
         font: fonts[0],
         weight: defaults.weight,
-        showMenu: false,
-        bgColor: defaults.bg,
-        textColor: defaults.text,
+        showMenu: true,
+        hue: defaults.hue,
+        get colors() {
+          const h = parseInt(this.hue);
+          const a = `hsl(${h}, 100%, 80%)`;
+          const b = `hsl(${(h + 360 - 25) % 360}, 60%, 35%)`;
+          const bg = this.darkMode ? b : a;
+          const fg = this.darkMode ? a : b;
+          return { bg: bg, text: fg };
+        },
         fontSize: defaults.fontSize,
         timer: null,
         wakeLock: null,
@@ -59,22 +65,23 @@ todo :
           this.loop();
           this.font = localStorage.getItem('font') || fonts[0];
           this.weight = localStorage.getItem('weight') || defaults.weight;
-          this.bgColor = localStorage.getItem('bgColor') || defaults.bg;
-          this.textColor = localStorage.getItem('textColor') || defaults.text;
           this.fontSize = localStorage.getItem('fontSize') || defaults.fontSize;
           this.shuffleEnabled = localStorage.getItem('shuffleEnabled') === 'true' || false;
           this.shufflePeriod = parseInt(localStorage.getItem('shufflePeriod') || defaults.shufflePeriod);
+          this.darkMode = localStorage.getItem('darkMode') === 'true' || false;
 
+          // sync storage
           Alpine.effect(() => {
             localStorage.setItem('shuffleEnabled', this.shuffleEnabled);
             localStorage.setItem('font', this.font);
             localStorage.setItem('weight', this.weight);
-            localStorage.setItem('bgColor', this.bgColor);
-            localStorage.setItem('textColor', this.textColor);
+            localStorage.setItem('hue', this.hue);
             localStorage.setItem('fontSize', this.fontSize);
             localStorage.setItem('shufflePeriod', this.shufflePeriod);
+            localStorage.setItem('darkMode', this.darkMode);
           });
 
+          // restart on focus
           document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') {
               this.loop();
@@ -103,6 +110,7 @@ todo :
           const w = Math.floor(Math.random() * 9) * 100 + 100;
           this.font = fonts[f];
           this.weight = w;
+          this.hue = Math.floor(Math.random() * 360);
         },
         toggleFullscreen() {
           if (!document.fullscreenElement) {
@@ -133,12 +141,12 @@ todo :
   <div class="relative h-screen" x-data="digital">
     <!-- Clock Display -->
     <div
-      :class="`${font} h-screen w-full grid place-items-center duration-200 overflow-hidden leading-none`"
+      :class="`${font} h-screen w-full grid place-items-center overflow-hidden leading-none transition-colors duration-1000`"
       :style="`
         font-weight: ${weight};
         font-size: ${fontSize}vw;
-        background-color: ${bgColor};
-        color: ${textColor}; `"
+        background-color: ${colors.bg};
+        color: ${colors.text};`"
     >
       <span class="mb-[5vh]" x-text="time"></span>
     </div>
@@ -149,35 +157,35 @@ todo :
         @click="showMenu = !showMenu"
         class="p-4 text-xl bg-transparent border-none transition-transform hover:scale-110 z-10"
         aria-label="Settings"
+        :style="`color: ${colors.text};`"
       >
         ...
       </button>
 
       <!-- Settings Menu -->
       <div
-        class="absolute w-[16rem] top-0 right-0 bg-[#fff8] rounded-lg p-4 shadow-lg z-20 flex flex-col gap-4 max-h-[calc(100vh-4rem)] overflow-y-auto"
+        class="absolute w-[16rem] top-0 right-0 bg-[#fff8] rounded-lg p-4 shadow-lg z-20 flex flex-col gap-3 max-h-[calc(100vh-4rem)] overflow-y-auto text-xs text-gray-600"
         x-show="showMenu"
         @click.away="showMenu = false"
       >
         <!-- Random Mode Toggle -->
-        <div class="flex gap-2 items-center mb-2">
-          <input type="checkbox" id="random-mode" x-model="shuffleEnabled" class="bg-white border-4" />
-          <label for="random-mode" class="text-xs text-gray-600">Shuffle</label>
+        <div class="flex gap-2 items-center">
+          <input type="checkbox" id="random-mode" x-model="shuffleEnabled" class="" />
+          <label for="random-mode" class="">Shuffle</label>
         </div>
 
         <!-- custom -->
 
         <template x-if="!shuffleEnabled">
-          <div>
+          <div class="contents">
+            <h3 class="font-bold">Font</h3>
             <!-- Font Selector -->
-            <div class="flex flex-col gap-1">
-              <label for="font-select" class="flex justify-between items-center text-xs text-gray-600 mb-1">
-                Theme:
-              </label>
+            <div class="">
+              <label for="font-select" class="flex justify-between items-center mb-1"> Theme: </label>
               <select
                 id="font-select"
                 x-model="font"
-                class="w-full p-2 text-sm border border-gray-200 rounded-md"
+                class="w-full p-2 border border-gray-200 rounded-md bg-[#fff5]"
                 x-init="$nextTick(() => { $el.value = font })"
               >
                 <template x-for="f in fonts" :key="f">
@@ -187,54 +195,48 @@ todo :
             </div>
 
             <!-- Weight Slider -->
-            <div class="flex flex-col gap-1">
-              <label for="weight-slider" class="flex justify-between items-center text-xs text-gray-600">
+            <div class="">
+              <label for="weight-slider" class="flex justify-between items-center">
                 Weight: <span x-text="weight" class="font-mono"></span>
               </label>
               <input type="range" id="weight-slider" x-model="weight" min="100" max="900" step="100" />
             </div>
 
             <!-- Size Slider -->
-            <div class="flex flex-col gap-1">
-              <label for="size-slider" class="flex justify-between items-center text-xs text-gray-600">
+            <div class="">
+              <label for="size-slider" class="flex justify-between items-center">
                 Size: <span x-text="fontSize + 'vw'" class="font-mono"></span>
               </label>
               <input type="range" id="size-slider" x-model="fontSize" min="5" max="45" step="1" />
             </div>
 
-            <!-- Background Color Picker -->
-            <div class="flex flex-col gap-1">
-              <label class="text-xs text-gray-600">Background:</label>
-              <div class="flex items-center gap-2">
-                <input
-                  type="color"
-                  x-model="bgColor"
-                  class="w-8 h-8 p-0 border border-gray-200 rounded-md cursor-pointer [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded"
-                />
-                <span x-text="bgColor" class="text-xs text-gray-500 font-mono"></span>
-              </div>
+            <h3 class="font-bold">Color</h3>
+
+            <!-- Hue Slider -->
+            <div class="">
+              <label for="hue-slider" class="flex justify-between items-center">
+                Hue: <span x-text="hue + '°'" class="font-mono"></span>
+              </label>
+              <input type="range" id="hue-slider" x-model="hue" min="0" max="360" step="1" />
             </div>
 
-            <!-- Text Color Picker -->
-            <div class="flex flex-col gap-1">
-              <label class="text-xs text-gray-600">Text Color:</label>
-              <div class="flex items-center gap-2">
-                <input
-                  type="color"
-                  x-model="textColor"
-                  class="size-8 p-0 border border-gray-200 rounded-md cursor-pointer [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded"
-                />
-                <span x-text="textColor" class="text-xs text-gray-500 font-mono"></span>
-              </div>
+            <!-- Brightness  -->
+
+            <!-- Dark Mode Toggle -->
+            <div class="flex gap-2 items-center">
+              <input type="checkbox" id="dark-mode" x-model="darkMode" class="" />
+              <label for="dark-mode" class="">Dark Mode</label>
             </div>
           </div>
+
+          <!--  -->
         </template>
 
         <template x-if="shuffleEnabled">
           <div>
             <!-- Shuffle Period Selector -->
             <div class="flex flex-col gap-1" x-show="shuffleEnabled">
-              <label for="shuffle-select" class="text-xs text-gray-600"> Change every: </label>
+              <label for="shuffle-select" class=""> Change every: </label>
               <select
                 id="shuffle-select"
                 x-model="shufflePeriod"
