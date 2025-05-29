@@ -34,21 +34,28 @@ todo :
       hue: 60,
       weight: 800,
       fontSize: 26,
-      shufflePeriod: 5,
+      shufflePeriod: 1,
     };
 
     const shufflePeriodOptions = [1, 5, 10, 15, 20, 60];
 
+    const colorMode = ['pastel', 'strong', 'B&W'];
+
     document.addEventListener('alpine:init', () => {
       Alpine.data('digital', () => ({
         time: ':',
+        timer: null,
+        showMenu: true,
+        font: fonts[0],
+        weight: defaults.weight,
+        hue: defaults.hue,
+        darkMode: false,
+        fontSize: defaults.fontSize,
         shuffleEnabled: false,
         shufflePeriod: defaults.shufflePeriod,
         shuffleLast: null,
-        font: fonts[0],
-        weight: defaults.weight,
-        showMenu: true,
-        hue: defaults.hue,
+        isWakeLocked: false,
+        wakeLock: null,
         get colors() {
           const h = parseInt(this.hue);
           const a = `hsl(${h}, 100%, 80%)`;
@@ -57,14 +64,11 @@ todo :
           const fg = this.darkMode ? a : b;
           return { bg: bg, text: fg };
         },
-        fontSize: defaults.fontSize,
-        timer: null,
-        wakeLock: null,
-        isWakeLocked: false,
         init() {
           this.loop();
           this.font = localStorage.getItem('font') || fonts[0];
           this.weight = localStorage.getItem('weight') || defaults.weight;
+          this.hue = localStorage.getItem('hue') || defaults.hue;
           this.fontSize = localStorage.getItem('fontSize') || defaults.fontSize;
           this.shuffleEnabled = localStorage.getItem('shuffleEnabled') === 'true' || false;
           this.shufflePeriod = parseInt(localStorage.getItem('shufflePeriod') || defaults.shufflePeriod);
@@ -72,11 +76,11 @@ todo :
 
           // sync storage
           Alpine.effect(() => {
-            localStorage.setItem('shuffleEnabled', this.shuffleEnabled);
             localStorage.setItem('font', this.font);
             localStorage.setItem('weight', this.weight);
             localStorage.setItem('hue', this.hue);
             localStorage.setItem('fontSize', this.fontSize);
+            localStorage.setItem('shuffleEnabled', this.shuffleEnabled);
             localStorage.setItem('shufflePeriod', this.shufflePeriod);
             localStorage.setItem('darkMode', this.darkMode);
           });
@@ -164,7 +168,7 @@ todo :
 
       <!-- Settings Menu -->
       <div
-        class="absolute w-[16rem] top-0 right-0 bg-[#fff8] rounded-lg p-4 shadow-lg z-20 flex flex-col gap-3 max-h-[calc(100vh-4rem)] overflow-y-auto text-xs text-gray-600"
+        class="absolute w-[16rem] top-0 right-0 bg-[#fff8] rounded-lg p-4 shadow-lg z-20 flex flex-col gap-3 max-h-[calc(100vh-1.5rem)] overflow-y-auto text-xs text-gray-600"
         x-show="showMenu"
         @click.away="showMenu = false"
       >
@@ -185,7 +189,7 @@ todo :
               <select
                 id="font-select"
                 x-model="font"
-                class="w-full p-2 border border-gray-200 rounded-md bg-[#fff5]"
+                class="w-full p-2 border border-gray-600 rounded-md bg-transparent"
                 x-init="$nextTick(() => { $el.value = font })"
               >
                 <template x-for="f in fonts" :key="f">
@@ -207,7 +211,7 @@ todo :
               <label for="size-slider" class="flex justify-between items-center">
                 Size: <span x-text="fontSize + 'vw'" class="font-mono"></span>
               </label>
-              <input type="range" id="size-slider" x-model="fontSize" min="5" max="45" step="1" />
+              <input type="range" id="size-slider" x-model="fontSize" min="20" max="45" step="1" />
             </div>
 
             <h3 class="font-bold">Color</h3>
@@ -218,6 +222,19 @@ todo :
                 Hue: <span x-text="hue + '°'" class="font-mono"></span>
               </label>
               <input type="range" id="hue-slider" x-model="hue" min="0" max="360" step="1" />
+
+              <div class="mt-4">
+                <label for="color-mode" class="block text-sm font-medium mb-1">Color Mode</label>
+                <select
+                  id="color-mode"
+                  x-model="colorMode"
+                  class="w-full p-2 border border-gray-600 rounded-md bg-transparent"
+                >
+                  <template x-for="mode in ['pastel', 'strong', 'B&W']" :key="mode">
+                    <option :value="mode" x-text="mode"></option>
+                  </template>
+                </select>
+              </div>
             </div>
 
             <!-- Brightness  -->
@@ -240,7 +257,7 @@ todo :
               <select
                 id="shuffle-select"
                 x-model="shufflePeriod"
-                class="w-full p-2 text-sm border border-gray-200 rounded-md"
+                class="w-full p-2 border border-gray-600 rounded-md bg-transparent"
                 x-init="$nextTick(() => { $el.value = shufflePeriod })"
               >
                 <template x-for="period in shufflePeriodOptions" :key="period">
@@ -251,12 +268,12 @@ todo :
           </div>
         </template>
 
-        <button class="px-2 py-1 border border-gray-400 rounded-md" @click="toggleFullscreen()"
+        <button class="px-2 py-1 border border-gray-600 rounded-md" @click="toggleFullscreen()"
           >Switch Fullscreen</button
         >
 
         <button
-          class="px-2 py-1 border border-gray-400 rounded-md"
+          class="px-2 py-1 border border-gray-600 rounded-md"
           @click="toggleUnlocked()"
           x-text="wakeLock ? 'Release screen lock' : 'Keep screen unlocked' "></button>
       </div>
