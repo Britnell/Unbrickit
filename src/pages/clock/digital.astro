@@ -1,0 +1,328 @@
+---
+import Page from "../../components/Page.astro";
+
+/* 
+todo : 
+- chime
+- complementary / analogous colours
+- random theme
+*/
+---
+
+<Page alpine>
+  <script is:inline>
+    const fonts =
+      "system,humanist,industrial,serif,geometric,rounded,mono-serif,mono-code,didone,antique,old-style,transitional,handwritten".split(
+        ","
+      );
+
+    function getTime() {
+      const d = new Date();
+      const h = d.getHours();
+      const m = d.getMinutes();
+      const s = d.getSeconds();
+      return [h, m, s];
+    }
+
+    function display(h, m) {
+      const _h = String(h).padStart(2, "0");
+      const _m = String(m).padStart(2, "0");
+      return `${_h}:${_m}`;
+    }
+
+    const defaults = {
+      bg: "#ffe2cc",
+      text: "#322",
+      weight: 800,
+      fontSize: 20,
+      shufflePeriod: 5,
+    };
+
+    const shufflePeriodOptions = [1, 5, 10, 15, 20, 60];
+
+    document.addEventListener("alpine:init", () => {
+      Alpine.data("digital", () => ({
+        time: ":",
+        shuffleEnabled: false,
+        shufflePeriod: defaults.shufflePeriod,
+        shuffleLast: null,
+        font: fonts[0],
+        weight: defaults.weight,
+        showMenu: false,
+        bgColor: defaults.bg,
+        textColor: defaults.text,
+        fontSize: defaults.fontSize,
+        timer: null,
+        init() {
+          this.loop();
+          this.font = localStorage.getItem("font") || fonts[0];
+          this.weight = localStorage.getItem("weight") || defaults.weight;
+          this.bgColor = localStorage.getItem("bgColor") || defaults.bg;
+          this.textColor = localStorage.getItem("textColor") || defaults.text;
+          this.fontSize = localStorage.getItem("fontSize") || defaults.fontSize;
+          this.shuffleEnabled =
+            localStorage.getItem("shuffleEnabled") === "true" || false;
+          this.shufflePeriod = parseInt(
+            localStorage.getItem("shufflePeriod") || defaults.shufflePeriod
+          );
+
+          Alpine.effect(() => {
+            localStorage.setItem("shuffleEnabled", this.shuffleEnabled);
+            localStorage.setItem("font", this.font);
+            localStorage.setItem("weight", this.weight);
+            localStorage.setItem("bgColor", this.bgColor);
+            localStorage.setItem("textColor", this.textColor);
+            localStorage.setItem("fontSize", this.fontSize);
+            localStorage.setItem("shufflePeriod", this.shufflePeriod);
+          });
+
+          document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") {
+              this.loop();
+            }
+          });
+        },
+        loop() {
+          if (this.timer) clearTimeout(this.timer);
+          const [h, m, s] = getTime();
+          this.time = display(h, m);
+          const rem = 60 - s;
+          if (this.shuffleEnabled) {
+            const t = Math.floor(m / this.shufflePeriod);
+            if (t !== this.shuffleLast) {
+              this.shuffleLast = t;
+              this.shuffle();
+            }
+          }
+
+          this.timer = setTimeout(() => {
+            this.loop();
+          }, rem * 1000);
+        },
+        shuffle() {
+          const f = Math.floor(Math.random() * (fonts.length - 1));
+          const w = Math.floor(Math.random() * 9) * 100 + 100;
+          this.font = fonts[f];
+          this.weight = w;
+        },
+      }));
+    });
+  </script>
+  <div class="relative h-screen" x-data="digital">
+    <!-- Clock Display -->
+    <div
+      :class="`${font} h-screen w-full grid place-items-center duration-200 overflow-hidden leading-none`"
+      :style="`
+        font-weight: ${weight};
+        font-size: ${fontSize}vw;
+        background-color: ${bgColor};
+        color: ${textColor}; `"
+    >
+      <span class="mb-[5vh]" x-text="time"></span>
+    </div>
+
+    <!-- Settings Button -->
+    <div class="absolute top-3 right-3 z-10">
+      <button
+        @click="showMenu = !showMenu"
+        class="p-4 text-xl bg-transparent border-none transition-transform hover:scale-110 z-10"
+        aria-label="Settings"
+      >
+        ...
+      </button>
+
+      <!-- Settings Menu -->
+      <div
+        class="absolute w-[16rem] top-0 right-0 bg-[#fff8] rounded-lg p-4 shadow-lg z-20 flex flex-col gap-4"
+        x-show="showMenu"
+        @click.away="showMenu = false"
+      >
+        <!-- Random Mode Toggle -->
+        <div class="flex gap-2 items-center mb-2">
+          <input
+            type="checkbox"
+            id="random-mode"
+            x-model="shuffleEnabled"
+            class="bg-white border-4"
+          />
+          <label for="random-mode" class="text-xs text-gray-600">Shuffle</label>
+        </div>
+
+        <!-- custom -->
+
+        <template x-if="!shuffleEnabled">
+          <div>
+            <!-- Font Selector -->
+            <div class="flex flex-col gap-1">
+              <label
+                for="font-select"
+                class="flex justify-between items-center text-xs text-gray-600 mb-1"
+              >
+                Theme:
+              </label>
+              <select
+                id="font-select"
+                x-model="font"
+                class="w-full p-2 text-sm border border-gray-200 rounded"
+                x-init="$nextTick(() => { $el.value = font })"
+              >
+                <template x-for="f in fonts" :key="f">
+                  <option
+                    :value="f"
+                    x-text="f.charAt(0).toUpperCase() + f.slice(1)"></option>
+                </template>
+              </select>
+            </div>
+
+            <!-- Weight Slider -->
+            <div class="flex flex-col gap-1">
+              <label
+                for="weight-slider"
+                class="flex justify-between items-center text-xs text-gray-600"
+              >
+                Weight: <span x-text="weight" class="font-mono"></span>
+              </label>
+              <input
+                type="range"
+                id="weight-slider"
+                x-model="weight"
+                min="100"
+                max="900"
+                step="100"
+              />
+            </div>
+
+            <!-- Size Slider -->
+            <div class="flex flex-col gap-1">
+              <label
+                for="size-slider"
+                class="flex justify-between items-center text-xs text-gray-600"
+              >
+                Size: <span x-text="fontSize + 'vw'" class="font-mono"></span>
+              </label>
+              <input
+                type="range"
+                id="size-slider"
+                x-model="fontSize"
+                min="5"
+                max="45"
+                step="1"
+              />
+            </div>
+
+            <!-- Background Color Picker -->
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-gray-600">Background:</label>
+              <div class="flex items-center gap-2">
+                <input
+                  type="color"
+                  x-model="bgColor"
+                  class="w-8 h-8 p-0 border border-gray-200 rounded cursor-pointer [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded"
+                />
+                <span x-text="bgColor" class="text-xs text-gray-500 font-mono"
+                ></span>
+              </div>
+            </div>
+
+            <!-- Text Color Picker -->
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-gray-600">Text Color:</label>
+              <div class="flex items-center gap-2">
+                <input
+                  type="color"
+                  x-model="textColor"
+                  class="size-8 p-0 border border-gray-200 rounded cursor-pointer [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded"
+                />
+                <span x-text="textColor" class="text-xs text-gray-500 font-mono"
+                ></span>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <template x-if="shuffleEnabled">
+          <div>
+            <!-- Shuffle Period Selector -->
+            <div class="flex flex-col gap-1" x-show="shuffleEnabled">
+              <label for="shuffle-select" class="text-xs text-gray-600">
+                Change every:
+              </label>
+              <select
+                id="shuffle-select"
+                x-model="shufflePeriod"
+                class="w-full p-2 text-sm border border-gray-200 rounded"
+                x-init="$nextTick(() => { $el.value = shufflePeriod })"
+              >
+                <template x-for="period in shufflePeriodOptions" :key="period">
+                  <option :value="period" x-text="`${period} min`"></option>
+                </template>
+              </select>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    /* Fonts  */
+
+    .system {
+      font-family: system-ui, sans-serif;
+    }
+    .transitional {
+      font-family: Charter, "Bitstream Charter", "Sitka Text", Cambria, serif;
+    }
+    .old-style {
+      font-family: "Iowan Old Style", "Palatino Linotype", "URW Palladio L",
+        P052, serif;
+    }
+    .humanist {
+      font-family: Seravek, "Gill Sans Nova", Ubuntu, Calibri, "DejaVu Sans",
+        source-sans-pro, sans-serif;
+    }
+    .geometric {
+      font-family: Avenir, Montserrat, Corbel, "URW Gothic", source-sans-pro,
+        sans-serif;
+    }
+    .classical {
+      font-family: Optima, Candara, "Noto Sans", source-sans-pro, sans-serif;
+    }
+    .neo-grotesque {
+      font-family: Inter, Roboto, "Helvetica Neue", "Arial Nova", "Nimbus Sans",
+        Arial, sans-serif;
+    }
+    .mono-serif {
+      font-family: "Nimbus Mono PS", "Courier New", monospace;
+    }
+    .mono-code {
+      font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo,
+        Consolas, "DejaVu Sans Mono", monospace;
+    }
+    .industrial {
+      font-family: Bahnschrift, "DIN Alternate", "Franklin Gothic Medium",
+        "Nimbus Sans Narrow", sans-serif-condensed, sans-serif;
+    }
+    .rounded {
+      font-family: ui-rounded, "Hiragino Maru Gothic ProN", Quicksand, Comfortaa,
+        Manjari, "Arial Rounded MT", "Arial Rounded MT Bold", Calibri,
+        source-sans-pro, sans-serif;
+    }
+    .serif {
+      font-family: Rockwell, "Rockwell Nova", "Roboto Slab", "DejaVu Serif",
+        "Sitka Small", serif;
+    }
+    .antique {
+      font-family: Superclarendon, "Bookman Old Style", "URW Bookman",
+        "URW Bookman L", "Georgia Pro", Georgia, serif;
+    }
+    .didone {
+      font-family: Didot, "Bodoni MT", "Noto Serif Display", "URW Palladio L",
+        P052, Sylfaen, serif;
+    }
+    .handwritten {
+      font-family: "Segoe Print", "Bradley Hand", Chilanka, TSCu_Comic, casual,
+        cursive;
+    }
+  </style>
+</Page>
