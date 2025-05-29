@@ -1,8 +1,8 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import AstroPWA from '@vite-pwa/astro';
-
 import cloudflare from '@astrojs/cloudflare';
+import tailwind from '@astrojs/tailwind';
 
 const pwaConfig = AstroPWA({
   injectRegister: 'script',
@@ -36,14 +36,6 @@ const pwaConfig = AstroPWA({
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [
-    pwaConfig,
-    // other integrations...
-  ],
-
-  vite: {
-    plugins: [],
-  },
-
+  integrations: [pwaConfig, tailwind()],
   adapter: cloudflare(),
 });
