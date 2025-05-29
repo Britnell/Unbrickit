@@ -52,7 +52,7 @@ todo :
         get colors() {
           const h = parseInt(this.hue);
           const a = `hsl(${h}, 100%, 80%)`;
-          const b = `hsl(${(h + 360 - 25) % 360}, 60%, 35%)`;
+          const b = `hsl(${(h + 360 - 35) % 360}, 60%, 35%)`;
           const bg = this.darkMode ? b : a;
           const fg = this.darkMode ? a : b;
           return { bg: bg, text: fg };
