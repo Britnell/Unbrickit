@@ -39,8 +39,19 @@ todo :
 
     const shufflePeriodOptions = [1, 5, 10, 15, 20, 60];
 
-    const colorMode = ['pastel', 'strong', 'B&W'];
+    const colorModes = ['pastel', 'colourful', 'B&W'];
 
+    const pastelColors = (h) => {
+      const a = `hsl(${h}, 100%, 85%)`;
+      const b = `hsl(${(h + 360 - 25) % 360}, 60%, 35%)`;
+      return [a, b];
+    };
+
+    const colourful = (h) => {
+      const a = `hsl(${h}, 100%, 70%)`;
+      const b = `hsl(${(h + 360 - 55) % 360}, 60%, 35%)`;
+      return [a, b];
+    };
     document.addEventListener('alpine:init', () => {
       Alpine.data('digital', () => ({
         time: ':',
@@ -50,6 +61,7 @@ todo :
         weight: defaults.weight,
         hue: defaults.hue,
         darkMode: false,
+        colorMode: colorModes[0],
         fontSize: defaults.fontSize,
         shuffleEnabled: false,
         shufflePeriod: defaults.shufflePeriod,
@@ -58,8 +70,13 @@ todo :
         wakeLock: null,
         get colors() {
           const h = parseInt(this.hue);
-          const a = `hsl(${h}, 100%, 80%)`;
-          const b = `hsl(${(h + 360 - 35) % 360}, 60%, 35%)`;
+          let a, b;
+          if (this.colorMode === 'pastel') [a, b] = pastelColors(h);
+          if (this.colorMode === 'colourful') [a, b] = colourful(h);
+          if (this.colorMode === 'B&W') {
+            a = `hsl(${h}, 100%, 100%)`;
+            b = `hsl(${h}, 100%, 0%)`;
+          }
           const bg = this.darkMode ? b : a;
           const fg = this.darkMode ? a : b;
           return { bg: bg, text: fg };
@@ -69,6 +86,7 @@ todo :
           this.font = localStorage.getItem('font') || fonts[0];
           this.weight = localStorage.getItem('weight') || defaults.weight;
           this.hue = localStorage.getItem('hue') || defaults.hue;
+          this.colorMode = localStorage.getItem('colorMode') || defaults.colorMode;
           this.fontSize = localStorage.getItem('fontSize') || defaults.fontSize;
           this.shuffleEnabled = localStorage.getItem('shuffleEnabled') === 'true' || false;
           this.shufflePeriod = parseInt(localStorage.getItem('shufflePeriod') || defaults.shufflePeriod);
@@ -79,6 +97,7 @@ todo :
             localStorage.setItem('font', this.font);
             localStorage.setItem('weight', this.weight);
             localStorage.setItem('hue', this.hue);
+            localStorage.setItem('colorMode', this.colorMode);
             localStorage.setItem('fontSize', this.fontSize);
             localStorage.setItem('shuffleEnabled', this.shuffleEnabled);
             localStorage.setItem('shufflePeriod', this.shufflePeriod);
@@ -227,10 +246,11 @@ todo :
                 <label for="color-mode" class="block text-sm font-medium mb-1">Color Mode</label>
                 <select
                   id="color-mode"
-                  x-model="colorMode"
                   class="w-full p-2 border border-gray-600 rounded-md bg-transparent"
+                  x-model="colorMode"
+                  x-init="$nextTick(() => { $el.value = colorMode })"
                 >
-                  <template x-for="mode in ['pastel', 'strong', 'B&W']" :key="mode">
+                  <template x-for="mode in  colorModes" :key="mode">
                     <option :value="mode" x-text="mode"></option>
                   </template>
                 </select>
