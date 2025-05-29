@@ -73,6 +73,7 @@ todo :
         this.colorMode = localStorage.getItem('colorMode') || defaults.colorMode;
         this.fontSize = localStorage.getItem('fontSize') || defaults.fontSize;
         this.interval = localStorage.getItem('interval') || defaults.interval;
+        this.chime = localStorage.getItem('chime') || defaults.chime;
         this.shufflePeriod =
           localStorage.getItem('shufflePeriod') === 'off'
             ? 'off'
@@ -85,6 +86,7 @@ todo :
           localStorage.setItem('weight', this.weight);
           localStorage.setItem('hue', this.hue);
           localStorage.setItem('interval', this.interval);
+          localStorage.setItem('chime', this.chime);
           localStorage.setItem('colorMode', this.colorMode);
           localStorage.setItem('fontSize', this.fontSize);
           localStorage.setItem('shufflePeriod', this.shufflePeriod);

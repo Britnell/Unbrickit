@@ -71,6 +71,7 @@
       oscillator.stop(startTime + duration);
     });
   }
+
   function playChime() {
     playNotes(
       [
@@ -80,6 +81,41 @@
       ],
       0.2,
     );
+  }
+
+  function speakTime(hour, minutes) {
+    if (!('speechSynthesis' in window)) return;
+
+    const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+
+    let timeText = 'It is ';
+
+    if (minutes === 0) {
+      timeText += `${hour12} o'clock`;
+    } else if (minutes === 15) {
+      timeText += `quarter past ${hour12}`;
+    } else if (minutes === 30) {
+      timeText += `half past ${hour12}`;
+    } else if (minutes === 45) {
+      const nextHour = hour12 === 12 ? 1 : hour12 + 1;
+      timeText += `quarter to ${nextHour}`;
+    } else if (minutes < 30) {
+      const minuteText = minutes === 1 ? 'minute' : 'minutes';
+      timeText += `${minutes} ${minuteText} past ${hour12}`;
+    } else {
+      const minutesToNext = 60 - minutes;
+      const nextHour = hour12 === 12 ? 1 : hour12 + 1;
+      const minuteText = minutesToNext === 1 ? 'minute' : 'minutes';
+      timeText += `${minutesToNext} ${minuteText} to ${nextHour}`;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(timeText);
+    utterance.rate = 0.8;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    speechSynthesis.speak(utterance);
+    console.log(`Speaking: "${timeText}"`);
   }
 
   document.addEventListener('alpine:init', () => {
@@ -103,8 +139,8 @@
         const [h, m, s] = getTime();
         this.time = display(h, m);
 
-        this.shuffleLoop(m);
-        this.chimeLoop(m);
+        this.shuffleLoop(h, m);
+        this.chimeLoop(h, m);
 
         const rem = 60 - s;
         this.timer = setTimeout(() => {
@@ -124,7 +160,7 @@
           }
         }
       },
-      chimeLoop(m) {
+      chimeLoop(h, m) {
         if (this.interval === 'off') return;
 
         if (this.lastChime === null) {
@@ -134,10 +170,12 @@
 
         if (this.interval === 'quarterly') {
           if ([15, 30, 45].includes(m)) {
+            if (this.chime === 'speak') speakTime(h, m);
             if (this.chime === 'chime') playChime();
           }
         }
         if (m === 0) {
+          if (this.chime === 'speak') speakTime(h, m);
           if (this.chime === 'chime') playChime();
         }
       },
