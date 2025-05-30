@@ -130,7 +130,7 @@
         x-init="$nextTick(() => { $el.value = interval })"
       >
         <template x-for="intvl in  intervalOptions" :key="intvl">
-          <option :value="intvl" x-text="intvl"></option>
+          <option :value="intvl" x-text="intvl === '0' ? 'off' : `${intvl} min`"></option>
         </template>
       </select>
     </div>

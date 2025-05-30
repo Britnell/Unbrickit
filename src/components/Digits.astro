@@ -168,22 +168,31 @@
         }
       },
       chimeLoop(h, m) {
-        if (this.interval === 'off') return;
+        if (this.interval === '0') return;
 
         if (this.lastChime === null) {
           this.lastChime = m;
           return;
         }
 
-        if (this.interval === 'quarter') {
-          if ([15, 30, 45].includes(m)) {
-            if (this.chime === 'speak') speakTime(h, m);
-            if (this.chime === 'chime') playChime();
-          }
-        }
         if (m === 0) {
           if (this.chime === 'speak') speakTime(h, m);
           if (this.chime === 'chime') playChime();
+          return;
+        }
+
+        if (this.interval === '15') {
+          if (m % 15 === 0) {
+            if (this.chime === 'speak') speakTime(h, m);
+            if (this.chime === 'chime') playChime();
+            return;
+          }
+        }
+        const intvl = parseInt(this.interval);
+        if (m % intvl === 0) {
+          if (this.chime === 'speak') speakTime(h, m);
+          if (this.chime === 'chime') playChime();
+          return;
         }
       },
     }));
