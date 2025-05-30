@@ -132,7 +132,13 @@
       init() {
         this.loop();
 
+        // read demo of voice on select
+        let first = true;
         Alpine.effect(() => {
+          if (first) {
+            first = false;
+            return;
+          }
           speakTime(12, 15, this.voice);
         });
 
