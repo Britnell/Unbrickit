@@ -87,6 +87,7 @@
     if (!('speechSynthesis' in window)) return;
 
     const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    const nextHour = hour12 === 12 ? 1 : hour12 + 1;
     let timeText = 'It is ';
 
     if (minutes === 0) {
@@ -96,16 +97,14 @@
     } else if (minutes === 30) {
       timeText += `half past ${hour12}`;
     } else if (minutes === 45) {
-      const nextHour = hour12 === 12 ? 1 : hour12 + 1;
       timeText += `quarter to ${nextHour}`;
     } else if (minutes < 40) {
-      const minuteText = minutes === 1 ? 'minute' : 'minutes';
-      timeText += `${minutes} ${minuteText} past ${hour12}`;
+      const mins = minutes === 1 ? 'minute' : 'minutes';
+      timeText += `${minutes} ${mins} past ${hour12}`;
     } else {
       const minutesToNext = 60 - minutes;
-      const nextHour = hour12 === 12 ? 1 : hour12 + 1;
-      const minuteText = minutesToNext === 1 ? 'minute' : 'minutes';
-      timeText += `${minutesToNext} ${minuteText} to ${nextHour}`;
+      const mins = minutesToNext === 1 ? 'minute' : 'minutes';
+      timeText += `${minutesToNext} ${mins} to ${nextHour}`;
     }
 
     const utterance = new SpeechSynthesisUtterance(timeText);
@@ -117,6 +116,7 @@
     const voices = speechSynthesis.getVoices();
     const goodNews = voices.find((v) => v.name === 'Good News');
     const daniel = voices.find((v) => v.name.includes('Daniel'));
+
     if (goodNews) utterance.voice = goodNews;
     else if (daniel) utterance.voice = daniel;
 
