@@ -39,7 +39,7 @@
 
   function noteToFrequency(note) {
     const match = note.toUpperCase().match(/^([A-G][#B]?)(\d+)$/);
-    if (!match) return console.error(`Invalid note format: ${note}`);
+    if (!match) return;
     const [, noteName, octaveStr] = match;
     const octave = parseInt(octaveStr);
     const midiNumber = (octave + 1) * 12 + noteMap[noteName];
@@ -83,7 +83,7 @@
     );
   }
 
-  function speakTime(hour, minutes) {
+  function speakTime(hour, minutes, voice) {
     if (!('speechSynthesis' in window)) return;
 
     const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
@@ -115,10 +115,10 @@
 
     const voices = speechSynthesis.getVoices();
     const goodNews = voices.find((v) => v.name === 'Good News');
-    const daniel = voices.find((v) => v.name.includes('Daniel'));
 
-    if (goodNews) utterance.voice = goodNews;
-    else if (daniel) utterance.voice = daniel;
+    const user = voices.find((v) => v.name === voice);
+    if (user) utterance.voice = user;
+    else if (goodNews) utterance.voice = goodNews;
 
     speechSynthesis.speak(utterance);
   }
@@ -131,6 +131,10 @@
       lastChime: null,
       init() {
         this.loop();
+
+        Alpine.effect(() => {
+          speakTime(12, 15, this.voice);
+        });
 
         // restart on focus
         document.addEventListener('visibilitychange', () => {
@@ -174,21 +178,21 @@
         }
 
         if (m === 0) {
-          if (this.chime === 'speak') speakTime(h, m);
+          if (this.chime === 'speak') speakTime(h, m, this.voice);
           if (this.chime === 'chime') playChime();
           return;
         }
 
         if (this.interval === '15') {
           if (m % 15 === 0) {
-            if (this.chime === 'speak') speakTime(h, m);
+            if (this.chime === 'speak') speakTime(h, m, this.voice);
             if (this.chime === 'chime') playChime();
             return;
           }
         }
         const intvl = parseInt(this.interval);
         if (m % intvl === 0) {
-          if (this.chime === 'speak') speakTime(h, m);
+          if (this.chime === 'speak') speakTime(h, m, this.voice);
           if (this.chime === 'chime') playChime();
           return;
         }

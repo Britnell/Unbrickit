@@ -41,6 +41,7 @@ todo :
     darkMode: false,
     shufflePeriod: shufflePeriodOptions[0],
     interval: intervalOptions[0],
+    voice: 'Daniel (English (United Kingdom))',
   };
 
   document.addEventListener('alpine:init', () => {
@@ -53,6 +54,8 @@ todo :
       colorMode: defaults.colorMode,
       fontSize: defaults.fontSize,
       shufflePeriod: defaults.shufflePeriod,
+      voice: defaults.voice,
+      chime: defaults.chime,
       get colors() {
         const h = parseInt(this.hue);
         let a, b;
@@ -74,6 +77,7 @@ todo :
         this.fontSize = localStorage.getItem('fontSize') || defaults.fontSize;
         this.interval = localStorage.getItem('interval') || defaults.interval;
         this.chime = localStorage.getItem('chime') || defaults.chime;
+        this.voice = localStorage.getItem('voice') || defaults.voice;
         this.shufflePeriod = localStorage.getItem('shufflePeriod') || defaults.shufflePeriod;
         this.darkMode = localStorage.getItem('darkMode') === 'true' || false;
 
@@ -84,6 +88,7 @@ todo :
           localStorage.setItem('hue', this.hue);
           localStorage.setItem('interval', this.interval);
           localStorage.setItem('chime', this.chime);
+          localStorage.setItem('voice', this.voice);
           localStorage.setItem('colorMode', this.colorMode);
           localStorage.setItem('fontSize', this.fontSize);
           localStorage.setItem('shufflePeriod', this.shufflePeriod);

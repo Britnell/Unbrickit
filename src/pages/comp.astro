@@ -6,7 +6,6 @@ import Page from '../components/Page.astro';
   <script is:inline>
     document.addEventListener('alpine:init', () => {
       Alpine.directive('comp', (el) => {
-        console.log(el);
         const compName = el.getAttribute('x-comp');
         const template = document.getElementById(compName);
         const compProps = template.getAttribute('x-props');
@@ -15,7 +14,6 @@ import Page from '../components/Page.astro';
 
         content.setAttribute('x-data', inputProps);
         el.replaceWith(content);
-        console.log({ compName, compProps, inputProps }, content);
       });
     });
   </script>
