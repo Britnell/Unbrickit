@@ -39,13 +39,13 @@
       x-init="$nextTick(() => { $el.value = shufflePeriod })"
     >
       <template x-for="period in shufflePeriodOptions" :key="period">
-        <option :value="period" x-text="`${period} min`"></option>
+        <option :value="period" x-text="period === '0' ? 'off' : `${period} min`"></option>
       </template>
     </select>
   </div>
   <div></div>
 
-  <template x-if="shufflePeriod === 'off'">
+  <template x-if="shufflePeriod === '0'">
     <div class="contents">
       <!-- Font -->
       <div class="space-y-2">

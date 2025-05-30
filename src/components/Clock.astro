@@ -14,7 +14,7 @@ todo :
     'system,humanist,industrial,serif,geometric,rounded,mono-serif,mono-code,didone,antique,old-style,transitional'.split(
       ',',
     );
-  const shufflePeriodOptions = ['off', 1, 5, 10, 15, 20, 60];
+  const shufflePeriodOptions = '0,1,5,10,15,20,60'.split(',');
   const intervalOptions = ['off', 'hourly', 'quarterly'];
   const colorModes = ['pastel', 'colourful', 'B&W'];
   const chimeOptions = ['chime', 'speak'];
@@ -74,10 +74,7 @@ todo :
         this.fontSize = localStorage.getItem('fontSize') || defaults.fontSize;
         this.interval = localStorage.getItem('interval') || defaults.interval;
         this.chime = localStorage.getItem('chime') || defaults.chime;
-        this.shufflePeriod =
-          localStorage.getItem('shufflePeriod') === 'off'
-            ? 'off'
-            : parseInt(localStorage.getItem('shufflePeriod') || defaults.shufflePeriod);
+        this.shufflePeriod = parseInt(localStorage.getItem('shufflePeriod')) || defaults.shufflePeriod;
         this.darkMode = localStorage.getItem('darkMode') === 'true' || false;
 
         // sync storage

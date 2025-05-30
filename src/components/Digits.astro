@@ -155,7 +155,7 @@
         }, rem * 1000);
       },
       shuffleLoop(m) {
-        if (this.shufflePeriod !== 'off') {
+        if (this.shufflePeriod !== '0') {
           const t = Math.floor(m / this.shufflePeriod);
           if (this.shuffleLast === null) {
             this.shuffleLast = t;
