@@ -3,12 +3,17 @@
     Alpine.data('menu', () => ({
       toggleFullscreen() {
         if (!document.fullscreenElement) {
-          document.documentElement.requestFullscreen();
+          document.documentElement.requestFullscreen().then(() => {
+            this.fullscreen = true;
+          });
         } else {
-          document.exitFullscreen();
+          document.exitFullscreen().then(() => {
+            this.fullscreen = false;
+          });
         }
       },
       wakeLock: null,
+      fullscreen: false,
       toggleUnlocked() {
         if (this.wakeLock) {
           this.wakeLock.release();
@@ -152,9 +157,12 @@
 
   <div class="space-y-2">
     <h3 class="font-bold">App</h3>
-
-    <button class="px-2 py-1 border border-gray-600 rounded-md" @click="toggleFullscreen()">Switch Fullscreen</button>
-
+    <button
+      class="px-2 py-1 border border-gray-600 rounded-md"
+      @click="toggleFullscreen()"
+      x-text="fullscreen ? 'Exit Fullscreen' : 'Enable Fullscreen'"
+    >
+    </button>
     <button
       class="px-2 py-1 border border-gray-600 rounded-md"
       @click="toggleUnlocked()"
