@@ -87,7 +87,6 @@
     if (!('speechSynthesis' in window)) return;
 
     const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-
     let timeText = 'It is ';
 
     if (minutes === 0) {
@@ -99,7 +98,7 @@
     } else if (minutes === 45) {
       const nextHour = hour12 === 12 ? 1 : hour12 + 1;
       timeText += `quarter to ${nextHour}`;
-    } else if (minutes < 30) {
+    } else if (minutes < 40) {
       const minuteText = minutes === 1 ? 'minute' : 'minutes';
       timeText += `${minutes} ${minuteText} past ${hour12}`;
     } else {
