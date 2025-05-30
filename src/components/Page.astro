@@ -1,11 +1,5 @@
 ---
 import '../styles/global.css';
-
-export type Props = {
-  alpine?: boolean;
-};
-
-const { alpine = false } = Astro.props;
 ---
 
 <html lang="en">
@@ -19,7 +13,6 @@ const { alpine = false } = Astro.props;
   </head>
   <body>
     <slot />
-    {alpine && <script src="/src/alpine.js" />}
   </body>
   <style>
     body {

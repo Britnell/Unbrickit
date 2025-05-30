@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.5.3",
+    "alpinejs": "^3.14.9",
     "astro": "^5.8.0",
     "tailwindcss": "3"
   },
