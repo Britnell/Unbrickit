@@ -32,7 +32,7 @@ onBeforeUnmount(() => {
       @click="showMenu = !showMenu"
       :aria-expanded="showMenu"
       aria-haspopup="true"
-      class="absolute top-3 right-3 p-4 text-xl bg-transparent border-none transition-transform hover:scale-110 z-50"
+      class="absolute top-3 right-3 p-4 text-xl bg-transparent border-none transition-transform z-10"
       :style="{ color: clock.colors.textColor }"
       aria-label="Settings menu"
     >
@@ -42,13 +42,13 @@ onBeforeUnmount(() => {
     <!-- Menu Popup -->
     <div
       v-if="showMenu"
-      class="absolute w-[calc(100%-2rem)] max-w-[60ch] top-4 right-4 overflow-auto z-40"
+      class="absolute w-[calc(100%-2rem)] max-w-[60ch] top-4 right-4 overflow-auto"
       role="menu"
       aria-orientation="vertical"
       aria-labelledby="menu-button"
       tabindex="-1"
     >
-      <div class="bg-[#fff8] rounded-lg shadow-lg p-3 backdrop-blur-sm">
+      <div class="bg-[#fff8] rounded-lg shadow-lg p-3">
         <div class="text-xs text-gray-600 grid grid-cols-2 gap-4">
           <!-- Font Settings -->
           <div class="space-y-2">

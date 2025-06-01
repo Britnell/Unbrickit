@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
+import { cachedRef } from '../composables/cachedRef';
 
 type Colors = {
   bgColor: string;
@@ -26,15 +27,17 @@ export type Time = {
 export const useClockStore = defineStore('clock', () => {
   const time = ref<Time | null>(null);
   const clockInterval = ref<NodeJS.Timeout | null>(null);
-  const theme = ref(themes[0]);
-  const fontSize = ref(26);
-  const weight = ref(800);
-  const hue = ref(60);
-  const colorMode = ref(colorModes[0]);
+  //
+  const theme = cachedRef('theme', themes[0]);
+  const fontSize = cachedRef('fontSize', 26);
+  const weight = cachedRef('weight', 800);
+  const hue = cachedRef('hue', 60);
+  const colorMode = cachedRef('colorMode', colorModes[0]);
   const darkMode = ref(localStorage.getItem('darkMode') === 'true' || false);
 
   onMounted(() => {
     start();
+    // todo event listener for window focus
   });
 
   function start() {
@@ -55,17 +58,8 @@ export const useClockStore = defineStore('clock', () => {
 
   function updateTime() {
     const [h, m, s] = getTime();
-    time.value = {
-      h,
-      m,
-      s,
-      string: formatTime(h, m, s),
-    };
+    time.value = { h, m, s, string: formatTime(h, m, s) };
   }
-
-  watch(darkMode, (newVal) => {
-    localStorage.setItem('darkMode', String(newVal));
-  });
 
   const colors = computed<Colors>(() => {
     const h = hue.value;
