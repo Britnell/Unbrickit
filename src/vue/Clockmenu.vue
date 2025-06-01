@@ -205,17 +205,17 @@ onBeforeUnmount(() => {
               <label for="chime-type">Chime type:</label>
               <select
                 id="chime-type"
-                v-model="clock.chime"
+                v-model="clock.chimeType"
                 class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent"
               >
-                <option v-for="chimeType in clock.chimeOptions" :key="chimeType" :value="chimeType">
-                  {{ chimeType.charAt(0).toUpperCase() + chimeType.slice(1) }}
+                <option v-for="ch in clock.chimeOptions" :key="ch" :value="ch">
+                  {{ ch.charAt(0).toUpperCase() + ch.slice(1) }}
                 </option>
               </select>
             </div>
 
             <!-- Voice Selection -->
-            <div v-show="clock.chimeInterval !== '0' && clock.chime === 'speak'" class="flex flex-col gap-1">
+            <div v-show="clock.chimeInterval !== '0' && clock.chimeType === 'speak'" class="flex flex-col gap-1">
               <label for="voice-select">Voice:</label>
               <select
                 id="voice-select"

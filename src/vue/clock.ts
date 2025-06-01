@@ -38,9 +38,8 @@ export const useClockStore = defineStore('clock', () => {
   const darkMode = ref(localStorage.getItem('darkMode') === 'true' || false);
   const shufflePeriod = cachedRef('shufflePeriod', shufflePeriodOptions[0]);
 
-  // Chime properties
+  const chimeType = cachedRef('chime', chimeOptions[0]);
   const chimeInterval = cachedRef('chimeInterval', intervalOptions[0]);
-  const chime = cachedRef('chime', chimeOptions[0]);
   const voice = cachedRef('voice', 'Daniel (English (United Kingdom))');
 
   // Shuffle tracking
@@ -116,10 +115,10 @@ export const useClockStore = defineStore('clock', () => {
   function chimeTime() {
     if (!time.value) return;
 
-    if (chime.value === 'chime') {
+    if (chimeType.value === 'chime') {
       return playChime();
     }
-    if (chime.value === 'speak') {
+    if (chimeType.value === 'speak') {
       return speakTime(time.value.h, time.value.m, String(voice.value));
     }
   }
@@ -165,7 +164,7 @@ export const useClockStore = defineStore('clock', () => {
     darkMode,
     shufflePeriod,
     chimeInterval,
-    chime,
+    chimeType,
     voice,
     colors,
     themes,
