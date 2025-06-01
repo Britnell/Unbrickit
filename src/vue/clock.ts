@@ -94,7 +94,7 @@ function getTime() {
   return [h, m, s];
 }
 
-function formatTime(h: number, m: number, s: number, format: 'hm' | 'hms' = 'hms'): string {
+function formatTime(h: number, m: number, s: number, format: 'hm' | 'hms' = 'hm'): string {
   const _h = String(h).padStart(2, '0');
   const _m = String(m).padStart(2, '0');
   const _s = String(s).padStart(2, '0');

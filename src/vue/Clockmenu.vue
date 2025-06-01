@@ -1,45 +1,125 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useClockStore } from './clock';
 
-const showMenu = ref(true);
 const clock = useClockStore();
 </script>
 
 <template>
-  <button @click="showMenu = !showMenu" class="">...</button>
-  <div v-if="showMenu" class="">
-    <div class="">
-      <h3>Theme</h3>
-      <select v-model="clock.theme" class="">
-        <option v-for="theme in clock.themes" :key="theme" :value="theme">
-          {{ theme }}
-        </option>
+  <div class="text-xs text-gray-600 grid grid-cols-2 gap-4">
+    <!-- Shuffle   -->
+    <div class="flex flex-col gap-1">
+      <label for="shuffle-select" class="">Shuffle mode:</label>
+      <select id="shuffle-select" class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent" disabled>
+        <option>off</option>
       </select>
     </div>
 
-    <div class="">
-      <h3>Size: {{ clock.fontSize }}</h3>
-      <input type="range" v-model.number="clock.fontSize" min="10" max="60" step="1" class="" />
+    <div></div>
+
+    <div class="contents">
+      <!-- Font Settings -->
+      <div class="space-y-2">
+        <label class="font-bold block">Font</label>
+
+        <!-- Theme Selector -->
+        <div class="">
+          <label for="theme-select" class="block">Theme:</label>
+          <select
+            id="theme-select"
+            v-model="clock.theme"
+            class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent"
+          >
+            <option v-for="theme in clock.themes" :key="theme" :value="theme">
+              {{ theme.charAt(0).toUpperCase() + theme.slice(1) }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Weight Slider -->
+        <div class="">
+          <label for="weight-slider" class="flex justify-between items-center">
+            Weight: <span class="font-mono">{{ clock.weight }}</span>
+          </label>
+          <input
+            type="range"
+            id="weight-slider"
+            v-model.number="clock.weight"
+            min="100"
+            max="900"
+            step="100"
+            class="w-full"
+          />
+        </div>
+
+        <!-- Size Slider -->
+        <div class="">
+          <label for="size-slider" class="flex justify-between items-center">
+            Size: <span class="font-mono">{{ clock.fontSize }}vw</span>
+          </label>
+          <input
+            type="range"
+            id="size-slider"
+            v-model.number="clock.fontSize"
+            min="20"
+            max="45"
+            step="1"
+            class="w-full"
+          />
+        </div>
+      </div>
+
+      <!-- Color Settings -->
+      <div class="space-y-2">
+        <label class="font-bold block">Color</label>
+
+        <!-- Color Mode -->
+        <div class="">
+          <label for="color-mode" class="block">Color Mode</label>
+          <select
+            id="color-mode"
+            v-model="clock.colorMode"
+            class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent"
+          >
+            <option v-for="mode in clock.colorModes" :key="mode" :value="mode">
+              {{ mode }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Hue Slider -->
+        <div class="">
+          <label for="hue-slider" class="flex justify-between items-center">
+            Hue: <span class="font-mono">{{ clock.hue }}°</span>
+          </label>
+          <input type="range" id="hue-slider" v-model.number="clock.hue" min="0" max="360" step="1" class="w-full" />
+
+          <!-- Dark Mode Toggle (Placeholder) -->
+          <div class="flex gap-2 items-center mt-2">
+            <input type="checkbox" id="dark-mode" class="" disabled />
+            <label for="dark-mode">Dark Mode</label>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="">
-      <h3>Weight: {{ clock.weight }}</h3>
-      <input type="range" v-model.number="clock.weight" min="100" max="900" step="100" class="" />
+    <!-- Chime Section (Placeholder) -->
+    <div class="space-y-2">
+      <label class="font-bold block">Chime</label>
+      <div>
+        <label for="interval" class="block">Interval</label>
+        <select id="interval" class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent" disabled>
+          <option>off</option>
+        </select>
+      </div>
     </div>
 
-    <div class="">
-      <h3>Color Mode</h3>
-      <select v-model="clock.colorMode" class="">
-        <option v-for="mode in clock.colorModes" :key="mode" :value="mode">
-          {{ mode }}
-        </option>
-      </select>
-    </div>
-
-    <div class="">
-      <h3>Hue: {{ clock.hue }}°</h3>
-      <input type="range" v-model.number="clock.hue" min="0" max="360" step="1" class="" />
+    <!-- App Section (Placeholder) -->
+    <div class="space-y-2">
+      <label class="font-bold block">App</label>
+      <div class="space-y-2">
+        <button class="w-full px-2 py-1 border border-gray-600 rounded-md text-left" disabled>Fullscreen</button>
+        <button class="w-full px-2 py-1 border border-gray-600 rounded-md text-left" disabled>Keep Screen On</button>
+      </div>
     </div>
   </div>
 </template>
