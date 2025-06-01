@@ -1,6 +1,11 @@
 import { defineStore } from 'pinia';
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 
+type Colors = {
+  bgColor: string;
+  textColor: string;
+};
+
 const fonts =
   'system,humanist,industrial,serif,geometric,rounded,mono-serif,didone,antique,old-style,transitional'.split(',');
 const svgs = 'janis'.split(',');
@@ -58,9 +63,34 @@ export const useClockStore = defineStore('clock', () => {
     };
   }
 
-  // Watch for dark mode changes and save to localStorage
   watch(darkMode, (newVal) => {
     localStorage.setItem('darkMode', String(newVal));
+  });
+
+  const colors = computed<Colors>(() => {
+    const h = hue.value;
+    let bgColor, textColor;
+
+    if (colorMode.value === 'pastel') {
+      bgColor = `hsl(${h}, 100%, 85%)`;
+      textColor = `hsl(${(h + 360 - 25) % 360}, 60%, 35%)`;
+    } else if (colorMode.value === 'colourful') {
+      bgColor = `hsl(${h}, 100%, 70%)`;
+      textColor = `hsl(${(h + 360 - 55) % 360}, 60%, 35%)`;
+    } else if (colorMode.value === 'dark') {
+      bgColor = `hsl(${h}, 100%, 7%)`;
+      textColor = `hsl(${h % 360}, 60%, 35%)`;
+    } else {
+      // B&W
+      bgColor = `hsl(${h}, 0%, 95%)`;
+      textColor = `hsl(${h}, 0%, 10%)`;
+    }
+
+    if (darkMode.value) {
+      [bgColor, textColor] = [textColor, bgColor];
+    }
+
+    return { bgColor, textColor };
   });
 
   return {
@@ -71,6 +101,7 @@ export const useClockStore = defineStore('clock', () => {
     hue,
     colorMode,
     darkMode,
+    colors,
     themes,
     fonts,
     svgs,

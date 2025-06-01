@@ -19,12 +19,13 @@ const showMenu = ref(true);
         <Clockmenu />
       </div>
     </div>
-    
+
     <!-- Menu Toggle Button -->
     <button
       @click="showMenu = !showMenu"
       class="absolute top-3 right-3 p-4 text-xl bg-transparent border-none transition-transform hover:scale-110"
       aria-label="Settings"
+      :style="{ color: clock.colors.textColor }"
     >
       ...
     </button>

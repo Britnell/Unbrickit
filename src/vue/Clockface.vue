@@ -1,55 +1,26 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { useClockStore } from './clock';
 
 const clock = useClockStore();
-
-const colors = computed(() => {
-  const h = clock.hue;
-  let bgColor, textColor;
-
-  if (clock.colorMode === 'pastel') {
-    bgColor = `hsl(${h}, 100%, 85%)`;
-    textColor = `hsl(${(h + 360 - 25) % 360}, 60%, 35%)`;
-  } else if (clock.colorMode === 'colourful') {
-    bgColor = `hsl(${h}, 100%, 70%)`;
-    textColor = `hsl(${(h + 360 - 55) % 360}, 60%, 35%)`;
-  } else if (clock.colorMode === 'dark') {
-    bgColor = `hsl(${h}, 100%, 7%)`;
-    textColor = `hsl(${h % 360}, 60%, 35%)`;
-  } else {
-    // B&W
-    bgColor = `hsl(${h}, 0%, 95%)`;
-    textColor = `hsl(${h}, 0%, 10%)`;
-  }
-
-  if (clock.darkMode) {
-    return { bgColor: textColor, textColor: bgColor };
-  }
-
-  return { bgColor, textColor };
-});
 </script>
 
 <template>
   <div
-    class="h-screen w-full flex items-center justify-center transition-colors duration-300"
-    :style="{ backgroundColor: colors.bgColor }"
+    class="h-screen w-full flex items-center justify-center transition-colors duration-1000"
+    :style="{ backgroundColor: clock.colors.bgColor, color: clock.colors.textColor }"
   >
     <span
       v-if="clock.fonts.includes(clock.theme)"
+      class="leading-none"
       :class="[clock.theme ? `font-${clock.theme}` : '']"
       :style="{
         fontSize: `${clock.fontSize}vw`,
         fontWeight: clock.weight,
-        lineHeight: 1,
-        color: colors.textColor,
-        transition: 'color 0.3s, background-color 0.3s',
       }"
     >
       {{ clock.time?.string }}
     </span>
-    <div v-else class="text-4xl" :style="{ color: colors.textColor }">SVG theme not implemented</div>
+    <div v-else class="text-4xl">SVG theme not implemented</div>
   </div>
 </template>
 

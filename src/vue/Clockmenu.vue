@@ -6,20 +6,10 @@ const clock = useClockStore();
 
 <template>
   <div class="text-xs text-gray-600 grid grid-cols-2 gap-4">
-    <!-- Shuffle   -->
-    <div class="flex flex-col gap-1">
-      <label for="shuffle-select" class="">Shuffle mode:</label>
-      <select id="shuffle-select" class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent" disabled>
-        <option>off</option>
-      </select>
-    </div>
-
-    <div></div>
-
     <div class="contents">
       <!-- Font Settings -->
       <div class="space-y-2">
-        <label class="font-bold block">Font</label>
+        <h2 class="font-bold block">Font</h2>
 
         <!-- Theme Selector -->
         <div class="">
@@ -70,7 +60,7 @@ const clock = useClockStore();
 
       <!-- Color Settings -->
       <div class="space-y-2">
-        <label class="font-bold block">Color</label>
+        <h2 class="font-bold block">Color</h2>
 
         <!-- Color Mode -->
         <div class="">
@@ -96,7 +86,7 @@ const clock = useClockStore();
           <!-- Dark Mode Toggle -->
           <div class="flex gap-2 items-center mt-2">
             <input type="checkbox" id="dark-mode" v-model="clock.darkMode" class="rounded border-gray-600" />
-            <label for="dark-mode">Dark Mode</label>
+            <label for="dark-mode">Invert colors</label>
           </div>
         </div>
       </div>
@@ -104,9 +94,19 @@ const clock = useClockStore();
 
     <!-- Chime Section (Placeholder) -->
     <div class="space-y-2">
-      <label class="font-bold block">Chime</label>
+      <h2 class="font-bold block">Periodic</h2>
+
+      <!-- Shuffle   -->
+      <div class="flex flex-col gap-1">
+        <label for="shuffle-select" class="">Shuffle mode:</label>
+        <select id="shuffle-select" class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent" disabled>
+          <option>off</option>
+        </select>
+      </div>
+
+      <!-- chime -->
       <div>
-        <label for="interval" class="block">Interval</label>
+        <label for="interval" class="block">Chime</label>
         <select id="interval" class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent" disabled>
           <option>off</option>
         </select>
@@ -115,7 +115,7 @@ const clock = useClockStore();
 
     <!-- App Section (Placeholder) -->
     <div class="space-y-2">
-      <label class="font-bold block">App</label>
+      <h2 class="font-bold block">App</h2>
       <div class="space-y-2">
         <button class="w-full px-2 py-1 border border-gray-600 rounded-md text-left" disabled>Fullscreen</button>
         <button class="w-full px-2 py-1 border border-gray-600 rounded-md text-left" disabled>Keep Screen On</button>
