@@ -21,6 +21,11 @@ export type Time = {
 export const useClockStore = defineStore('clock', () => {
   const time = ref<Time | null>(null);
   const clockInterval = ref<NodeJS.Timeout | null>(null);
+  const theme = ref(themes[0]);
+  const fontSize = ref(26);
+  const weight = ref(800);
+  const hue = ref(60);
+  const colorMode = ref(colorModes[0]);
 
   onMounted(() => {
     start();
@@ -54,9 +59,14 @@ export const useClockStore = defineStore('clock', () => {
 
   return {
     time,
+    theme,
+    fontSize,
+    weight,
+    hue,
+    colorMode,
+    themes,
     fonts,
     svgs,
-    themes,
     shufflePeriodOptions,
     intervalOptions,
     colorModes,
