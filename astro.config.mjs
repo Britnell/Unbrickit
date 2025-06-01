@@ -4,6 +4,8 @@ import AstroPWA from '@vite-pwa/astro';
 import cloudflare from '@astrojs/cloudflare';
 import tailwind from '@astrojs/tailwind';
 
+import vue from '@astrojs/vue';
+
 const pwaConfig = AstroPWA({
   injectRegister: 'script',
   registerType: 'autoUpdate',
@@ -36,6 +38,6 @@ const pwaConfig = AstroPWA({
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [pwaConfig, tailwind()],
+  integrations: [pwaConfig, tailwind(), vue()],
   adapter: cloudflare(),
 });

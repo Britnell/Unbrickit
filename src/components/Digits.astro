@@ -212,7 +212,7 @@
   :class="`${font} h-screen w-full grid place-items-center overflow-hidden leading-none transition-colors duration-1000 select-none`"
   :style="`font-weight: ${weight}; font-size: ${fontSize}vw; background-color: ${colors.bg}; color: ${colors.text};`"
 >
-  <span class="mb-[5vh]" x-text="time"></span>
+  <span x-show="fonts.includes(font)" class="mb-[5vh]" x-text="time"></span>
 </div>
 <style>
   /* Fonts  */

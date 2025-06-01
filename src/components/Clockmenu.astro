@@ -85,7 +85,7 @@
             class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent"
             x-init="$nextTick(() => { $el.value = font })"
           >
-            <template x-for="f in fonts" :key="f">
+            <template x-for="f in themes" :key="f">
               <option :value="f" x-text="f.charAt(0).toUpperCase() + f.slice(1)"></option>
             </template>
           </select>
