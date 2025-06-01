@@ -38,6 +38,12 @@ const pwaConfig = AstroPWA({
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [pwaConfig, tailwind(), vue()],
+  integrations: [
+    pwaConfig,
+    tailwind(),
+    vue({
+      appEntrypoint: './src/vue/app.ts',
+    }),
+  ],
   adapter: cloudflare(),
 });
