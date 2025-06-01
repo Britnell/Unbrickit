@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useClockStore } from './clock';
+import { toggleFullscreen, toggleWakeLock } from '../utils/helper';
 
 const clock = useClockStore();
 const showMenu = ref(false);
 const menuRef = ref<HTMLElement | null>(null);
 const availableVoices = ref<SpeechSynthesisVoice[]>([]);
+const isFullscreen = ref(false);
+const wakeLock = ref<WakeLockSentinel | null>(null);
 
 const loadVoices = () => {
   const voices = speechSynthesis.getVoices();
@@ -28,6 +31,14 @@ const handleClickOutside = (event: MouseEvent) => {
 
   // if (!menuRef.value?.contains(event.target as Node)) {
   // }
+};
+
+const handleToggleFullscreen = async () => {
+  isFullscreen.value = await toggleFullscreen();
+};
+
+const handleToggleWakeLock = async () => {
+  wakeLock.value = await toggleWakeLock(wakeLock.value);
 };
 
 onMounted(() => {
@@ -218,13 +229,21 @@ onBeforeUnmount(() => {
             </div>
           </div>
 
-          <!-- App Section (Placeholder) -->
+          <!-- App Section -->
           <div class="space-y-2">
             <h2 class="font-bold block">App</h2>
             <div class="space-y-2">
-              <button class="w-full px-2 py-1 border border-gray-600 rounded-md text-left" disabled>Fullscreen</button>
-              <button class="w-full px-2 py-1 border border-gray-600 rounded-md text-left" disabled>
-                Keep Screen On
+              <button
+                class="w-full px-2 py-1 border border-gray-600 rounded-md text-left"
+                @click="handleToggleFullscreen"
+              >
+                {{ isFullscreen ? 'Exit Fullscreen' : 'Enable Fullscreen' }}
+              </button>
+              <button
+                class="w-full px-2 py-1 border border-gray-600 rounded-md text-left"
+                @click="handleToggleWakeLock"
+              >
+                {{ wakeLock ? 'Release screen lock' : 'Keep screen unlocked' }}
               </button>
             </div>
           </div>
