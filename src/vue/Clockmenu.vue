@@ -51,7 +51,7 @@ onBeforeUnmount(() => {
       <div class="bg-[#fff8] rounded-lg shadow-lg p-3">
         <div class="text-xs text-gray-600 grid grid-cols-2 gap-4">
           <!-- Font Settings -->
-          <div class="space-y-2">
+          <div v-show="clock.shufflePeriod === '0'" class="space-y-2">
             <h2 class="font-bold block">Font</h2>
 
             <!-- Theme Selector -->
@@ -102,7 +102,7 @@ onBeforeUnmount(() => {
           </div>
 
           <!-- Color Settings -->
-          <div class="space-y-2">
+          <div v-show="clock.shufflePeriod === '0'" class="space-y-2">
             <h2 class="font-bold block">Color</h2>
             <!-- Color Mode -->
             <div>
@@ -149,10 +149,13 @@ onBeforeUnmount(() => {
               <label for="shuffle-select">Shuffle mode:</label>
               <select
                 id="shuffle-select"
+                v-model="clock.shufflePeriod"
                 class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent"
-                disabled
               >
-                <option>off</option>
+                <option value="0">off</option>
+                <option v-for="period in clock.shufflePeriodOptions.slice(1)" :key="period" :value="period">
+                  {{ period }} min
+                </option>
               </select>
             </div>
 

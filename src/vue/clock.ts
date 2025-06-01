@@ -34,6 +34,10 @@ export const useClockStore = defineStore('clock', () => {
   const hue = cachedRef('hue', 60);
   const colorMode = cachedRef('colorMode', colorModes[0]);
   const darkMode = ref(localStorage.getItem('darkMode') === 'true' || false);
+  const shufflePeriod = cachedRef('shufflePeriod', shufflePeriodOptions[0]);
+
+  // Shuffle tracking
+  const shuffleLast = ref<number | null>(null);
 
   onMounted(() => {
     start();
@@ -54,6 +58,33 @@ export const useClockStore = defineStore('clock', () => {
 
   function loop() {
     updateTime();
+    if (time.value) {
+      shuffleLoop(time.value.m);
+    }
+  }
+
+  function shuffleLoop(m: number) {
+    if (String(shufflePeriod.value) !== '0') {
+      const period = parseInt(String(shufflePeriod.value));
+      const t = Math.floor(m / period);
+      if (shuffleLast.value === null) {
+        shuffleLast.value = t;
+        return;
+      }
+      if (t !== shuffleLast.value) {
+        shuffleLast.value = t;
+        shuffle();
+      }
+    }
+  }
+
+  function shuffle() {
+    const th = Math.floor(Math.random() * themes.length);
+    theme.value = themes[th];
+    hue.value = Math.floor(Math.random() * 360);
+    weight.value = Math.round((Math.random() * 8 + 1) * 100);
+    // const cm = Math.floor(Math.random() * colorModes.length);
+    // colorMode.value = colorModes[cm];
   }
 
   function updateTime() {
@@ -95,6 +126,7 @@ export const useClockStore = defineStore('clock', () => {
     hue,
     colorMode,
     darkMode,
+    shufflePeriod,
     colors,
     themes,
     fonts,
