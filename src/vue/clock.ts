@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 import { cachedRef } from '../composables/cachedRef';
+import { playChime, speakTime } from '../utils/notes';
 
 type Colors = {
   bgColor: string;
@@ -36,8 +37,14 @@ export const useClockStore = defineStore('clock', () => {
   const darkMode = ref(localStorage.getItem('darkMode') === 'true' || false);
   const shufflePeriod = cachedRef('shufflePeriod', shufflePeriodOptions[0]);
 
+  // Chime properties
+  const chimeInterval = cachedRef('chimeInterval', intervalOptions[0]);
+  const chime = cachedRef('chime', chimeOptions[0]);
+  const voice = cachedRef('voice', 'Daniel (English (United Kingdom))');
+
   // Shuffle tracking
   const shuffleLast = ref<number | null>(null);
+  const lastChime = ref<number | null>(null);
 
   onMounted(() => {
     start();
@@ -60,6 +67,7 @@ export const useClockStore = defineStore('clock', () => {
     updateTime();
     if (time.value) {
       shuffleLoop(time.value.m);
+      chimeLoop(time.value.m);
     }
   }
 
@@ -78,6 +86,25 @@ export const useClockStore = defineStore('clock', () => {
     }
   }
 
+  function chimeLoop(min: number) {
+    if (chimeInterval.value === '0') return;
+
+    // dont chime on pageload
+    if (lastChime.value === null) {
+      lastChime.value = min;
+      return;
+    }
+
+    const interval = parseInt(chimeInterval.value);
+
+    if (min === 0 || min % interval === 0) {
+      if (min !== lastChime.value) {
+        chimeTime();
+        lastChime.value = min;
+      }
+    }
+  }
+
   function shuffle() {
     const th = Math.floor(Math.random() * themes.length);
     theme.value = themes[th];
@@ -85,6 +112,17 @@ export const useClockStore = defineStore('clock', () => {
     weight.value = Math.round((Math.random() * 8 + 1) * 100);
     // const cm = Math.floor(Math.random() * colorModes.length);
     // colorMode.value = colorModes[cm];
+  }
+
+  function chimeTime() {
+    if (!time.value) return;
+
+    if (chime.value === 'chime') {
+      return playChime();
+    }
+    if (chime.value === 'speak') {
+      return speakTime(time.value.h, time.value.m, String(voice.value));
+    }
   }
 
   function updateTime() {
@@ -127,6 +165,9 @@ export const useClockStore = defineStore('clock', () => {
     colorMode,
     darkMode,
     shufflePeriod,
+    chimeInterval,
+    chime,
+    voice,
     colors,
     themes,
     fonts,

@@ -141,7 +141,7 @@ onBeforeUnmount(() => {
             </div>
           </div>
 
-          <!-- Chime Section (Placeholder) -->
+          <!-- Chime Section -->
           <div class="space-y-2">
             <h2 class="font-bold block">Periodic</h2>
             <!-- Shuffle -->
@@ -160,11 +160,44 @@ onBeforeUnmount(() => {
             </div>
 
             <!-- Chime -->
-            <div>
-              <label for="interval" class="block">Chime</label>
-              <select id="interval" class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent" disabled>
-                <option>off</option>
+            <div class="flex flex-col gap-1">
+              <label for="chime-interval">Chime interval:</label>
+              <select
+                id="chime-interval"
+                v-model="clock.chimeInterval"
+                class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent"
+              >
+                <option value="0">off</option>
+                <option v-for="interval in clock.intervalOptions.slice(1)" :key="interval" :value="interval">
+                  {{ interval }} min
+                </option>
               </select>
+            </div>
+
+            <!-- Chime Type -->
+            <div v-show="clock.chimeInterval !== '0'" class="flex flex-col gap-1">
+              <label for="chime-type">Chime type:</label>
+              <select
+                id="chime-type"
+                v-model="clock.chime"
+                class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent"
+              >
+                <option v-for="chimeType in clock.chimeOptions" :key="chimeType" :value="chimeType">
+                  {{ chimeType.charAt(0).toUpperCase() + chimeType.slice(1) }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Voice Selection -->
+            <div v-show="clock.chimeInterval !== '0' && clock.chime === 'speak'" class="flex flex-col gap-1">
+              <label for="voice-select">Voice:</label>
+              <input
+                id="voice-select"
+                v-model="clock.voice"
+                type="text"
+                class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent text-xs"
+                placeholder="Voice name"
+              />
             </div>
           </div>
 

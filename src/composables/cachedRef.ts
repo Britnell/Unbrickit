@@ -1,29 +1,29 @@
 import { ref, watch } from 'vue';
 
-type CachedRefType = string | number;
-
-export function cachedRef(key: string, initialValue: CachedRefType = '') {
+export function cachedRef<T>(key: string, initialValue: T) {
   const storedValue = localStorage.getItem(key);
 
-  let parsedValue: CachedRefType = initialValue;
+  let parsedValue: T = initialValue;
 
   if (storedValue !== null) {
     if (typeof initialValue === 'number') {
       const x = Number(storedValue);
       if (!isNaN(x)) {
-        parsedValue = x;
+        parsedValue = x as T;
       }
+    } else if (typeof initialValue === 'boolean') {
+      parsedValue = (storedValue === 'true') as T;
     } else {
-      parsedValue = storedValue;
+      parsedValue = storedValue as T;
     }
   }
 
-  const value = ref<CachedRefType>(parsedValue);
+  const value = ref<T>(parsedValue);
 
   watch(
     value,
     (newValue) => {
-      localStorage.setItem(key, newValue.toString());
+      localStorage.setItem(key, String(newValue));
     },
     { immediate: true },
   );
