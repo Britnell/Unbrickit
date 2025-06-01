@@ -5,6 +5,20 @@ import { useClockStore } from './clock';
 const clock = useClockStore();
 const showMenu = ref(false);
 const menuRef = ref<HTMLElement | null>(null);
+const availableVoices = ref<SpeechSynthesisVoice[]>([]);
+
+const loadVoices = () => {
+  const voices = speechSynthesis.getVoices();
+  if (voices.length) {
+    availableVoices.value = voices;
+  } else {
+    const onVoicesChanged = () => {
+      availableVoices.value = speechSynthesis.getVoices();
+      speechSynthesis.removeEventListener('voiceschanged', onVoicesChanged);
+    };
+    speechSynthesis.addEventListener('voiceschanged', onVoicesChanged);
+  }
+};
 
 const handleClickOutside = (event: MouseEvent) => {
   const inside = menuRef.value?.contains(event.target as Node);
@@ -18,6 +32,7 @@ const handleClickOutside = (event: MouseEvent) => {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
+  loadVoices();
 });
 
 onBeforeUnmount(() => {
@@ -191,13 +206,15 @@ onBeforeUnmount(() => {
             <!-- Voice Selection -->
             <div v-show="clock.chimeInterval !== '0' && clock.chime === 'speak'" class="flex flex-col gap-1">
               <label for="voice-select">Voice:</label>
-              <input
+              <select
                 id="voice-select"
                 v-model="clock.voice"
-                type="text"
                 class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent text-xs"
-                placeholder="Voice name"
-              />
+              >
+                <option v-for="voice in availableVoices" :key="voice.name" :value="voice.name">
+                  {{ voice.name }} ({{ voice.lang }})
+                </option>
+              </select>
             </div>
           </div>
 

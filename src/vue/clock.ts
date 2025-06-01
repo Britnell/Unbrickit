@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia';
-import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
-import { cachedRef } from '../composables/cachedRef';
-import { playChime, speakTime } from '../utils/notes';
+import { computed, ref, onMounted } from 'vue';
+import { cachedRef } from '../utils/cachedRef';
+import { playChime } from '../utils/notes';
+import { speakTime } from '../utils/speech';
 
 type Colors = {
   bgColor: string;
@@ -110,8 +111,6 @@ export const useClockStore = defineStore('clock', () => {
     theme.value = themes[th];
     hue.value = Math.floor(Math.random() * 360);
     weight.value = Math.round((Math.random() * 8 + 1) * 100);
-    // const cm = Math.floor(Math.random() * colorModes.length);
-    // colorMode.value = colorModes[cm];
   }
 
   function chimeTime() {

@@ -1,6 +1,6 @@
 import { createPinia } from 'pinia';
 import type { App } from 'vue';
-import '../styles/global.css';
+import '../global.css';
 
 const pinia = createPinia();
 
