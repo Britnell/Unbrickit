@@ -8,7 +8,7 @@ const themes = [...fonts, ...svgs];
 
 const shufflePeriodOptions = '0,1,5,10,15,20,60'.split(',');
 const intervalOptions = ['0', '1', '5', '15', '60'];
-const colorModes = ['pastel', 'colourful', 'B&W'];
+const colorModes = ['pastel', 'colourful', 'dark', 'B&W'];
 const chimeOptions = ['chime', 'speak'];
 
 export type Time = {
@@ -26,6 +26,7 @@ export const useClockStore = defineStore('clock', () => {
   const weight = ref(800);
   const hue = ref(60);
   const colorMode = ref(colorModes[0]);
+  const darkMode = ref(localStorage.getItem('darkMode') === 'true' || false);
 
   onMounted(() => {
     start();
@@ -57,6 +58,11 @@ export const useClockStore = defineStore('clock', () => {
     };
   }
 
+  // Watch for dark mode changes and save to localStorage
+  watch(darkMode, (newVal) => {
+    localStorage.setItem('darkMode', String(newVal));
+  });
+
   return {
     time,
     theme,
@@ -64,6 +70,7 @@ export const useClockStore = defineStore('clock', () => {
     weight,
     hue,
     colorMode,
+    darkMode,
     themes,
     fonts,
     svgs,

@@ -14,9 +14,17 @@ const colors = computed(() => {
   } else if (clock.colorMode === 'colourful') {
     bgColor = `hsl(${h}, 100%, 70%)`;
     textColor = `hsl(${(h + 360 - 55) % 360}, 60%, 35%)`;
-  } else { // B&W
+  } else if (clock.colorMode === 'dark') {
+    bgColor = `hsl(${h}, 100%, 7%)`;
+    textColor = `hsl(${h % 360}, 60%, 35%)`;
+  } else {
+    // B&W
     bgColor = `hsl(${h}, 0%, 95%)`;
     textColor = `hsl(${h}, 0%, 10%)`;
+  }
+
+  if (clock.darkMode) {
+    return { bgColor: textColor, textColor: bgColor };
   }
 
   return { bgColor, textColor };
@@ -24,16 +32,19 @@ const colors = computed(() => {
 </script>
 
 <template>
-  <div class="h-screen w-full flex items-center justify-center transition-colors duration-300" :style="{ backgroundColor: colors.bgColor }">
-    <span 
-      v-if="clock.fonts.includes(clock.theme)" 
+  <div
+    class="h-screen w-full flex items-center justify-center transition-colors duration-300"
+    :style="{ backgroundColor: colors.bgColor }"
+  >
+    <span
+      v-if="clock.fonts.includes(clock.theme)"
       :class="[clock.theme ? `font-${clock.theme}` : '']"
       :style="{
         fontSize: `${clock.fontSize}vw`,
         fontWeight: clock.weight,
         lineHeight: 1,
         color: colors.textColor,
-        transition: 'color 0.3s, background-color 0.3s'
+        transition: 'color 0.3s, background-color 0.3s',
       }"
     >
       {{ clock.time?.string }}

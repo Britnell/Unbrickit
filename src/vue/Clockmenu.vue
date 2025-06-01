@@ -93,9 +93,9 @@ const clock = useClockStore();
           </label>
           <input type="range" id="hue-slider" v-model.number="clock.hue" min="0" max="360" step="1" class="w-full" />
 
-          <!-- Dark Mode Toggle (Placeholder) -->
+          <!-- Dark Mode Toggle -->
           <div class="flex gap-2 items-center mt-2">
-            <input type="checkbox" id="dark-mode" class="" disabled />
+            <input type="checkbox" id="dark-mode" v-model="clock.darkMode" class="rounded border-gray-600" />
             <label for="dark-mode">Dark Mode</label>
           </div>
         </div>
