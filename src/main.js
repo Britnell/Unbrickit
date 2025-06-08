@@ -10,6 +10,7 @@ import './data/theme.js';
 import './data/chime.js';
 import './data/system.js';
 import './data/habit.js';
+import './data/timer.js';
 
 // components
 import './components/menu-theme.js';
