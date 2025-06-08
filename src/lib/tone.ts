@@ -38,7 +38,17 @@ export function noteToFrequency(note: string): number {
 export function playNotes(notes: Note[], staggerDelay = 0.1): void {
   const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
 
-  notes.forEach((note, index) => {
+  let cumulativeTime = 0;
+
+  notes.forEach((note) => {
+    const duration = note.duration || 2.0;
+    const startTime = audioContext.currentTime + cumulativeTime;
+
+    if (note.note === '') {
+      cumulativeTime += duration + staggerDelay;
+      return;
+    }
+
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
 
@@ -48,15 +58,22 @@ export function playNotes(notes: Note[], staggerDelay = 0.1): void {
     oscillator.frequency.value = noteToFrequency(note.note);
     oscillator.type = 'sine';
 
-    const startTime = audioContext.currentTime + index * staggerDelay;
-    const duration = note.duration || 2.0;
+    const attackTime = 0.2;
+    const releaseTime = 0.2;
+    const sustainTime = Math.max(0, duration - attackTime - releaseTime);
 
     gainNode.gain.setValueAtTime(0, startTime);
-    gainNode.gain.linearRampToValueAtTime(0.2, startTime + 0.1);
+    gainNode.gain.linearRampToValueAtTime(0.8, startTime + attackTime);
+
+    gainNode.gain.setValueAtTime(0.8, startTime + attackTime);
+    gainNode.gain.setValueAtTime(0.8, startTime + attackTime + sustainTime);
+
     gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
 
     oscillator.start(startTime);
     oscillator.stop(startTime + duration);
+
+    cumulativeTime += duration + staggerDelay;
   });
 }
 
@@ -74,12 +91,14 @@ export function playChime(): void {
 export function playTimerBeep() {
   playNotes(
     [
-      { note: 'G3', duration: 0.5 },
-      { note: 'G3', duration: 0.5 },
-      { note: 'G3', duration: 0.5 },
-      { note: 'G3', duration: 0.5 },
+      { note: 'G4', duration: 0.7 },
+      { note: 'G4', duration: 0.7 },
+      { note: 'G4', duration: 0.7 },
+      { note: '', duration: 1.5 },
+      { note: 'G#4', duration: 0.6 },
+      { note: 'G#4', duration: 0.6 },
     ],
-    0.8,
+    0.2,
   );
 }
 
