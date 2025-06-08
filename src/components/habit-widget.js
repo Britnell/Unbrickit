@@ -15,7 +15,7 @@ class HabitWidget extends HTMLElement {
         </button>
       </div>
 
-      <div x-show="openHabit" class="absolute bottom-2 left-2 p-2 bg-[#fff5] rounded"
+      <div x-show="openHabit" class="absolute bottom-2 left-2 p-2 bg-[#fff5] rounded max-w-[calc(100vw-1rem)] overflow-auto"
         @click.outside="openHabit = null">
         <div class="flex gap-2 justify-center">
           <template x-for="habit in Object.values(habits)">
