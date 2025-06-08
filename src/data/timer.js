@@ -42,7 +42,6 @@ Alpine.data('timer', () => ({
   },
 
   toggleTimer() {
-    playTimerBeep();
     if (this.isRunning) {
       this.stopTimer();
     } else {
