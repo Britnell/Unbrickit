@@ -16,24 +16,6 @@
   font-weight: 400;
   src: url('/font/Bebas-Neue.woff2') format('woff2');
 }
-/* @font-face {
-  font-family: 'Josefin Sans';
-  font-style: normal;
-  font-weight: 200;
-  src: url('/font/Josefin-200.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Josefin Sans';
-  font-style: normal;
-  font-weight: 400;
-  src: url('/font/Josefin-400.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Josefin Sans';
-  font-style: normal;
-  font-weight: 700;
-  src: url('/font/Josefin-700.woff2') format('woff2');
-} */
 @font-face {
   font-family: 'Raleway';
   font-style: normal;
@@ -100,6 +82,150 @@
   font-weight: 700;
   src: url('/font/Silkscreen-700.woff2') format('woff2');
 }
+/* 
+ */
+@font-face {
+  font-family: 'Pirata One';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/l/font?kit=I_urMpiDvgLdLh0fAtofti2EqZ_AX5T326HzTUPC1zsh&skey=13fae7b324dc3d5d&v=v22)
+    format('woff2');
+}
+@font-face {
+  font-family: 'Rubik Bubbles';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/l/font?kit=JIA1UVdwbHFJtwA7Us1BPFbRNTQNejxzb3kNS6OgAtaQc0rM&skey=e3ee332baf4daec4&v=v3)
+    format('woff2');
+}
+@font-face {
+  font-family: 'Monoton';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/l/font?kit=5h1aiZUrOngCibe4fkPBRWS6P0R5lkPYWEpj1lOV&skey=6851b793dcae5a6c&v=v21)
+    format('woff2');
+}
+@font-face {
+  font-family: 'Aldrich';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/l/font?kit=MCoTzAn-1s3IGyJMZaUS2JP4Nfox8FzVlSthMdNw&skey=b376a342fbff0b06&v=v22)
+    format('woff2');
+}
+@font-face {
+  font-family: 'Rampart One';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/l/font?kit=K2F1fZFGl_JSR1tAWNG9R6qlLSj6ZVmHvtQKC7pVmg7-mQ&skey=371d955f2895c58d&v=v12)
+    format('woff2');
+}
+@font-face {
+  font-family: 'Kalnia';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  src: url(https://fonts.gstatic.com/l/font?kit=11hqGpPCwUbbYwZZP0RBuDY62BQZhjvOytM_sLzi-TFWAW9ilmxUGNcykY5cbjhRuwb1CBaUuIar&skey=ea8d0768d67a7659&v=v5)
+    format('woff2');
+}
+@font-face {
+  font-family: 'Palette Mosaic';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/l/font?kit=AMOIz4aBvWuBFe3TohdW6YZ9MFi34dpL4x6gopggG3r5q5CjmA&skey=2554bc5f0b8b38e6&v=v11)
+    format('woff2');
+}
+@font-face {
+  font-family: 'Plaster';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/l/font?kit=DdTm79QatW80eRh4EitJPNLPUrnLdNiMw9JVKCON&skey=6748ccde38e8a5e5&v=v24)
+    format('woff2');
+}
+@font-face {
+  font-family: 'Kenia';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/l/font?kit=jizURE5PuHQH9qCLNUeswNuHGAQqyAYGvWnxsQ&skey=4963fd4437f2b5f&v=v29)
+    format('woff2');
+}
+/* @font-face {
+  font-family: 'Press Start 2P';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/l/font?kit=e3t4euO8T-267oIAQAu6jDQyK0nXgPRE4rU_NaQv3l5sRCy1oA&skey=24cc298767068e24&v=v15) format('woff2');
+} */
+@font-face {
+  font-family: 'Smokum';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/l/font?kit=TK3iWkUbAhopmrdGGzUBte91IaWd5QoYlHd1WDc&skey=169a792a81b804a4&v=v30)
+    format('woff2');
+}
+@font-face {
+  font-family: 'Fascinate';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/l/font?kit=z7NWdRrufC8XJK0IIEli0bbWRP2npLuQVc6XK9TbeqQ&skey=7162e4816d2dd13a&v=v22)
+    format('woff2');
+}
+@font-face {
+  font-family: 'Zen Tokyo Zoo';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/l/font?kit=NGSyv5ffC0J_BK6aFNtr6sRv8ahuQ2e8QGOT9n65aDthn5Yl&skey=7c958eadb8bf05e7&v=v7)
+    format('woff2');
+}
+@font-face {
+  font-family: 'Bagel Fat One';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/l/font?kit=hYkPPucsQOr5dy02WmQr5Zkd0BtmuP0cY7izQU1Zv20s0-sm&skey=bd815ee148ed631c&v=v2)
+    format('woff2');
+}
+@font-face {
+  font-family: 'Matemasie';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/l/font?kit=OD5BuMCN3ne3Gmr7dlL3qUq-DL-a0PpQWlzDlyQqR-Y&skey=c67a9e8bcba1d851&v=v4)
+    format('woff2');
+}
+@font-face {
+  font-family: 'Sankofa Display';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/l/font?kit=Ktk1ALSRd4LucUDghJ2rTqXOoh33EqmfVY5y7PTQOda_gtC-26o&skey=7855f8a841e8d061&v=v2)
+    format('woff2');
+}
+@font-face {
+  font-family: 'Micro 5';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/l/font?kit=H4cnBX2MkcfEngTr0gMQ6rO4sKyGWgJYIuwmVIxz&skey=698c832f1f339ffa&v=v2)
+    format('woff2');
+}
+@font-face {
+  font-family: 'Mrs Sheppards';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/l/font?kit=PN_2Rfm9snC0XUGoEZhb91ig3v3xzHMj7Y0sYe8iiuUmqLvr&skey=e03a0d98536a56e9&v=v24)
+    format('woff2');
+}
+@font-face {
+  font-family: 'Londrina Outline';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/l/font?kit=C8c44dM8vmb14dfsZxhetg3pDH-Sfu8xqyKNJPkYUrcQGQfXg9IP&skey=38835ee470879933&v=v28)
+    format('woff2');
+}
+@font-face {
+  font-family: 'Kumar One Outline';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/l/font?kit=Noao6VH62pyLP0fsrZ-v18wlUEcX9zD1RQ28EUiOfbQ0qOjNWOv_Bw&skey=2ecb457e319c5c85&v=v17)
+    format('woff2');
+}
+
+/* ---------------------- */
 
 .font-system {
   font-family: system-ui, sans-serif;
@@ -124,6 +250,8 @@
 }
 .font-mono-serif {
   font-family: 'Nimbus Mono PS', 'Courier New', monospace;
+  transform-origin: center;
+  transform: scale(0.8);
 }
 .font-industrial {
   font-family: Bahnschrift, 'DIN Alternate', 'Franklin Gothic Medium', 'Nimbus Sans Narrow', sans-serif-condensed,
@@ -179,4 +307,67 @@
   font-family: 'Rubik Mono One', monospace;
   transform-origin: center;
   transform: scale(0.7);
+}
+.font-pirata-one {
+  font-family: 'Pirata One', cursive;
+}
+.font-rubik-bubbles {
+  font-family: 'Rubik Bubbles', cursive;
+}
+.font-monoton {
+  font-family: 'Monoton', cursive;
+}
+.font-aldrich {
+  font-family: 'Aldrich', sans-serif;
+}
+.font-rampart-one {
+  font-family: 'Rampart One', cursive;
+}
+.font-kalnia {
+  font-family: 'Kalnia', serif;
+}
+.font-palette-mosaic {
+  font-family: 'Palette Mosaic', cursive;
+}
+.font-plaster {
+  font-family: 'Plaster', cursive;
+  transform-origin: center;
+  transform: scale(0.8);
+}
+.font-kenia {
+  font-family: 'Kenia', cursive;
+}
+.font-smokum {
+  font-family: 'Smokum', cursive;
+}
+.font-fascinate {
+  font-family: 'Fascinate', cursive;
+}
+.font-zen-tokyo-zoo {
+  font-family: 'Zen Tokyo Zoo', cursive;
+}
+.font-bagel-fat-one {
+  font-family: 'Bagel Fat One', cursive;
+}
+.font-matemasie {
+  font-family: 'Matemasie', cursive;
+}
+.font-sankofa-display {
+  font-family: 'Sankofa Display', serif;
+}
+.font-micro-5 {
+  font-family: 'Micro 5', monospace;
+}
+.font-mrs-sheppards {
+  font-family: 'Mrs Sheppards', cursive;
+  transform-origin: center;
+  transform: scale(0.9);
+}
+.font-londrina-outline {
+  font-family: 'Londrina Outline', cursive;
+}
+.font-kumar-one-outline {
+  font-family: 'Kumar One Outline', cursive;
+  transform-origin: center;
+  transform: scale(0.9);
 }

@@ -34,7 +34,7 @@ class MenuTheme extends HTMLElement {
     </div>
 
     <!-- Font -->
-    <div class="contents" x-show="showMenuSection('font')">
+    <div class="contents">
       <label for="font-select" class="flex justify-between items-center"> Font </label>
       <select id="font-select" x-model="theme"
         class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent"
@@ -68,7 +68,7 @@ class MenuTheme extends HTMLElement {
     <!-- Dark Mode Checkbox -->
     <div class=" col-span-full flex items-center" x-show="showMenuSection('color')">
       <input type="checkbox" id="darkmode-checkbox" x-model="darkMode" class="mr-2">
-      <label for="darkmode-checkbox">Dark Mode</label>
+      <label for="darkmode-checkbox">Swap colours</label>
     </div>
 
     <!-- Color Mode Dropdown -->

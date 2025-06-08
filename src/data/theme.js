@@ -1,10 +1,10 @@
 import Alpine from 'alpinejs';
 
-// , josefin-sans,
+// transitional, serif, old-style
 const fonts =
-  'humanist,industrial,bebas-neue,serif,geometric,rounded,lobster,badeen,raleway,cherry-bomb-one,bangers,silkscreen,alfa-slab-one,rubik-mono-one,orbitron,mono-serif,didone,antique,old-style,transitional,system'.split(
-    ',',
-  );
+  'humanist,industrial,bebas-neue,geometric,rounded,lobster,badeen,raleway,cherry-bomb-one,bangers,silkscreen,alfa-slab-one,rubik-mono-one,orbitron,mono-serif,didone,antique,system,pirata-one,rubik-bubbles,monoton,aldrich,rampart-one,kalnia,palette-mosaic,plaster,kenia,smokum,fascinate,zen-tokyo-zoo,bagel-fat-one,matemasie,sankofa-display,micro-5,mrs-sheppards,londrina-outline,kumar-one-outline'
+    .split(',')
+    .sort((a, b) => (a > b ? 1 : -1));
 
 const themes = fonts;
 const colorModes = ['pastel', 'colourful', 'dark', 'B&W'];
