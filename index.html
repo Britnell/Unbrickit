@@ -6,7 +6,7 @@
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Unbrick-it! - Retro Tech Revival</title>
-  <script type="module" src="/src/base.js"></script>
+  <script type="module" src="/src/index.js"></script>
 </head>
 
 <body class="font-mono bg-retro-dark text-retro-green min-h-screen">
@@ -14,30 +14,36 @@
   <!-- Sticky Header -->
   <header class="sticky top-0 z-50 bg-black/90 text-white backdrop-blur-sm border-b-2 border-retro-green">
     <nav class="container mx-auto px-6 py-4">
-      <div class="flex justify-between items-center">
-        <div class="text-xl font-bold text-retro-green">
+      <div class="flex items-center">
+        <div class="text-xl font-bold text-retro-green mr-auto">
           > UNBRICK-IT_
         </div>
-        <div class="flex space-x-8">
-          <a href="#go" class="text-white hover:text-teal-500 font-bold duration-300 ">
-            #🧱
-          </a>
+        <div x-data="{show: false }" class="relative">
+          <button @click="show = !show" class="sm:hidden p-2" :aria-expanded="show" aria-controls="mobile-menu"
+            aria-label="Toggle navigation menu">...</button>
+          <div id="mobile-menu"
+            class="  ml-6 grow max-w-[460px] flex-col sm:flex-row justify-between absolute sm:relative top-full right-0 bg-black px-3 py-2 sm:p-0 gap-1"
+            :class="show ? 'flex' : 'hidden sm:flex '">
+            <a href="#go" class="text-white hover:text-teal-500 font-bold duration-300 ">
+              #🧱
+            </a>
 
-          <a href="#what" class="text-white hover:text-teal-500 font-bold duration-300 ">
-            #WHAT
-          </a>
-          <a href="#why" class="text-white hover:text-teal-500 font-bold duration-300 ">
-            #WHY
-          </a>
-          <a href="#how" class="text-white hover:text-teal-500 font-bold duration-300 ">
-            #HOW
-          </a>
-          <a href="#about" class="text-white hover:text-teal-500 font-bold duration-300 ">
-            #ABOUT
-          </a>
-          <a href="/app" class="text-white hover:text-teal-500 font-bold duration-300 ">
-            >APP
-          </a>
+            <a href="#what" class="text-white hover:text-teal-500 font-bold duration-300 ">
+              #WHAT
+            </a>
+            <a href="#why" class="text-white hover:text-teal-500 font-bold duration-300 ">
+              #WHY
+            </a>
+            <a href="#how" class="text-white hover:text-teal-500 font-bold duration-300 ">
+              #HOW
+            </a>
+            <a href="#about" class="text-white hover:text-teal-500 font-bold duration-300 ">
+              #ABOUT
+            </a>
+            <a href="/app" class="text-white hover:text-teal-500 font-bold duration-300 ">
+              >APP
+            </a>
+          </div>
         </div>
       </div>
     </nav>
