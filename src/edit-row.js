@@ -1,4 +1,4 @@
-import Alpine from 'alpinejs';
+// import Alpine from 'alpinejs';
 
 class EditRow extends HTMLElement {
   constructor() {
