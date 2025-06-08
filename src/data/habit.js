@@ -39,7 +39,6 @@ Alpine.data('habit', () => ({
       throw new Error('never');
     }
     const id = this.openHabit.id;
-    console.log('toggle', { date, id });
     if (existing?.habit) {
       const opp = existing.habit?.value === 1 ? 0 : 1;
       this.writeHabitLog(id, datestr(date), opp);
@@ -68,6 +67,11 @@ Alpine.data('habit', () => ({
   },
   getFulfilledDaysCount(habitId) {
     return this.habitData.filter((log) => log.habitId === habitId && log.value === 1).length;
+  },
+  habitValToday(habitId) {
+    const today = datestr(new Date());
+    const todayLog = this.habitData.find((log) => log.habitId === habitId && log.date === today);
+    return todayLog ? todayLog.value : 0;
   },
   saveHabit(event, editing = '') {
     const form = event.target;

@@ -33,7 +33,6 @@ export function getLastTwoWeeksDates(): Date[] {
   for (let i = 13; i >= 0; i--) {
     const date = new Date(today);
     date.setDate(today.getDate() - i);
-    date.setHours(0, 0, 0, 0);
     dates.push(date);
   }
 

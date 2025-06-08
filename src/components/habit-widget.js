@@ -9,7 +9,7 @@ class HabitWidget extends HTMLElement {
         <button @click="openHabit = Object.values(habits)?.[0]" class="p-3 flex space-x-1 ">
           <template x-for="habit in Object.values(habits)">
             <span :style="{background: habit.color}" class=" size-5 rounded-full grid place-items-center">
-              <span x-text="getFulfilledDaysCount(habit.id)" class="text-xs"></span>
+              <span x-text="habitValToday(habit.id)" class="text-xs"></span>
             </span>
           </template>
         </button>
