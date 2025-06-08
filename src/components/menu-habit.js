@@ -47,8 +47,8 @@ class HabitMenu extends HTMLElement {
 
   <div class="mb-4">
     <label class="flex items-center gap-2">
-      <input type="checkbox" x-model="showHabitApp" class="rounded">
-      <span>Show Habit App</span>
+      <input type="checkbox" x-model="showHabitWidget" class="rounded">
+      <span>Show Habit Widget</span>
     </label>
   </div>
   

@@ -6,7 +6,7 @@ class ChimeMenu extends HTMLElement {
     this.innerHTML = `
     <div class=" grid grid-cols-2 gap-y-1 gap-x-2">
               <div class="col-span-full">
-                <button @click="menu = ''" class="px-2 py-1 hover:bg-[#fff5]">← ⏰ Chime</button>
+                <button @click="menu = ''" class="px-2 py-1 hover:bg-[#fff5]">← 🔔 Chime</button>
               </div>
 
 
