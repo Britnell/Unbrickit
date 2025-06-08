@@ -79,14 +79,14 @@
 
             </div>
 
-            <div x-data="{ showMenu: false, menu: '' }">
+            <div>
               <button x-show="!showMenu" @click="showMenu = !showMenu"
                 class="absolute bottom-2 left-1/2 -translate-x-1/2 px-8 py-1 text-2xl"
                 :style="{color: colors.text}">...</button>
 
 
               <div x-show="showMenu" @click.outside="showMenu = false"
-                class="absolute w-[300px] left-1/2 -translate-x-1/2 bottom-2 p-2 bg-[#fff8] rounded">
+                class="absolute w-[300px] left-1/2 -translate-x-1/2 bottom-2 p-2 bg-[#fff8] rounded z-10">
 
                 <ul x-show="menu === ''" class="grid grid-cols-2" x-data="system">
                   <li><button @click="menu = 'theme'" class="w-full px-2 py-3 hover:bg-[#fff5]">🎨 theme</button></li>
@@ -94,8 +94,6 @@
                   <li><button @click="menu = 'habit'" class="w-full px-2 py-3 hover:bg-[#fff5]">📊 habit</button></li>
                   <li><button @click="page = 'timer', showMenu = false" class="w-full px-2 py-3 hover:bg-[#fff5]">⏱️
                       timer</button></li>
-                  <!-- <li><button @click="page = 'piano'" class="w-full px-2 py-3 hover:bg-[#fff5]"> piano</button></li> -->
-                  <!-- <div></div> -->
                   <li>
                     <button @click="toggleFullscreen" class="w-full px-2 py-3 hover:bg-[#fff5] text-sm">
                       <span x-text="fullscreen ? 'Exit fullscreen' : 'Fullscreen'"></span>
