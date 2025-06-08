@@ -1,5 +1,6 @@
 import Alpine from 'alpinejs';
 
+const pages = ['clock', 'timer'];
 Alpine.data('app', () => ({
-  page: 'timer',
+  page: pages[0],
 }));
