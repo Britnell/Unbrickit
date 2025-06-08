@@ -1,3 +1,5 @@
+import { getRandom } from './helper';
+
 const noteMap: Record<string, number> = {
   C: 0,
   'C#': 1,
@@ -55,18 +57,26 @@ export function playNotes(notes: Note[], staggerDelay = 0.1): void {
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
 
+    const real = new Float32Array([0, 1, 0.3, 0.1]);
+    const imaginary = new Float32Array(real.length);
+
+    const wave = audioContext.createPeriodicWave(real, imaginary);
+    oscillator.setPeriodicWave(wave);
+
     oscillator.frequency.value = noteToFrequency(note.note);
-    oscillator.type = 'sine';
 
     const attackTime = 0.2;
     const releaseTime = 0.2;
+
+    const volume = 0.4;
+
     const sustainTime = Math.max(0, duration - attackTime - releaseTime);
 
     gainNode.gain.setValueAtTime(0, startTime);
-    gainNode.gain.linearRampToValueAtTime(0.8, startTime + attackTime);
+    gainNode.gain.linearRampToValueAtTime(volume, startTime + attackTime);
 
-    gainNode.gain.setValueAtTime(0.8, startTime + attackTime);
-    gainNode.gain.setValueAtTime(0.8, startTime + attackTime + sustainTime);
+    gainNode.gain.setValueAtTime(volume, startTime + attackTime);
+    gainNode.gain.setValueAtTime(volume, startTime + attackTime + sustainTime);
 
     gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
 
@@ -119,7 +129,7 @@ export function randomChord(): void {
   const majSeventh = Math.random() < 0.2 ? 1 : 0;
   const seventh = base + 11 + majSeventh;
 
-  const dur = 0.8 + Math.random() * 1;
+  const dur = getRandom(0.5, 0.9, 0.1);
 
   playNotes(
     [
@@ -129,8 +139,8 @@ export function randomChord(): void {
         duration: dur,
       },
       { note: wrapNotes(fifth, oct), duration: dur },
-      { note: wrapNotes(seventh, oct), duration: dur },
+      { note: wrapNotes(seventh, oct), duration: dur + 0.3 },
     ],
-    0.3,
+    -0.3,
   );
 }

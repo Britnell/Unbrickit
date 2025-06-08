@@ -51,3 +51,8 @@ export function datestr(date: Date | string) {
   else d = date;
   return d.toISOString().split('T')[0];
 }
+
+export function getRandom(min: number, max: number, round: number = 1): number {
+  const r = Math.random() * (max - min) + min;
+  return Math.round(r / round) * round;
+}
