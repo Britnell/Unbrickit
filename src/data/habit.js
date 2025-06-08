@@ -1,6 +1,6 @@
 import Alpine from 'alpinejs';
-import { getLastTwoWeeksDates, getWeekday, safeParse, datestr } from './helper';
-import { initializeDB, getHabitLogsForDateRange, upsertHabitLog } from './db';
+import { getLastTwoWeeksDates, getWeekday, safeParse, datestr } from '../helper';
+import { initializeDB, getHabitLogsForDateRange, upsertHabitLog } from '../db';
 
 Alpine.data('habit', () => ({
   habits: safeParse('habits') || {},

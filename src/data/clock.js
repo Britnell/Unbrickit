@@ -1,5 +1,5 @@
 import Alpine from 'alpinejs';
-import { getTime, formatTime } from './helper';
+import { getTime, formatTime } from '../helper';
 
 Alpine.data('clock', () => ({
   time: {},

@@ -1,6 +1,6 @@
 import Alpine from 'alpinejs';
-import { playChime, randomChord } from './notes';
-import { speakTime } from './speech';
+import { playChime, randomChord } from '../notes';
+import { speakTime } from '../speech';
 
 const chimeTypes = ['jazzy', 'speak', 'chime'];
 const chimeIntervalOptions = '0,1,5,15,20,30,60'.split(',');
