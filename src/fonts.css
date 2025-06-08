@@ -291,6 +291,8 @@
 }
 .font-alfa-slab-one {
   font-family: 'Alfa Slab One', serif;
+  transform-origin: center;
+  transform: scale(0.9);
 }
 .font-orbitron {
   font-family: 'Orbitron', sans-serif;
@@ -310,6 +312,8 @@
 }
 .font-pirata-one {
   font-family: 'Pirata One', cursive;
+  transform-origin: center;
+  transform: scale(1.2);
 }
 .font-rubik-bubbles {
   font-family: 'Rubik Bubbles', cursive;
@@ -339,12 +343,16 @@
 }
 .font-smokum {
   font-family: 'Smokum', cursive;
+  transform-origin: center;
+  transform: scale(1.3);
 }
 .font-fascinate {
   font-family: 'Fascinate', cursive;
 }
 .font-zen-tokyo-zoo {
   font-family: 'Zen Tokyo Zoo', cursive;
+  transform-origin: bottom;
+  transform: scale(1.5);
 }
 .font-bagel-fat-one {
   font-family: 'Bagel Fat One', cursive;
@@ -357,6 +365,8 @@
 }
 .font-micro-5 {
   font-family: 'Micro 5', monospace;
+  transform-origin: center;
+  transform: scale(1.3);
 }
 .font-mrs-sheppards {
   font-family: 'Mrs Sheppards', cursive;
