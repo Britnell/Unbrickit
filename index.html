@@ -25,25 +25,22 @@
               <button @click="page = 'clock'" class="absolute top-2 right-2 p-2 text-2xl hover:opacity-70">×</button>
 
 
-              <!-- Timer Display -->
+              <!-- Running Timer -->
               <div x-show="isRunning" class="contents">
-                <h2 class="text-2xl mb-4">Timer</h2>
+                <h2 class="text-2xl mb-4">
+                  <span x-text="remainingTime > 0 ? 'Timer' : 'Times up!' "></span>
+                </h2>
                 <span class="text-8xl font-mono font-bold tracking-wider mb-4" x-text="displayTime">
                 </span>
 
-                <!-- Timer Status -->
-                <div class="text-lg opacity-70" x-show="isRunning">
-                  <!-- <span x-show="remainingTime > 0">Time Remaining</span> -->
-                  <span x-show="remainingTime <= 0" class="text-red-400 font-bold">TIME'S UP!</span>
-                </div>
               </div>
 
-              <!-- Timer Controls -->
+              <!-- Set timer -->
               <div x-show="!isRunning" class="contents">
                 <h2 class="text-xl mb-4">Set Timer</h2>
 
-                <!-- Hours Control -->
                 <div class="flex items-center justify-center space-x-4">
+                  <!-- hr -->
                   <div class="">
                     <button @click="incrementHours()" class="w-12 h-12 rounded-full hover:bg-white/20 text-2xl">
                       +
@@ -56,7 +53,7 @@
 
                   <div class="text-4xl font-bold">:</div>
 
-                  <!-- Minutes Control -->
+                  <!-- min -->
                   <div class="">
                     <button @click="incrementMinutes()" class="w-12 h-12 rounded-full hover:bg-white/20 text-2xl">
                       +
@@ -75,9 +72,9 @@
               </div>
 
 
-              <!-- Action Buttons -->
+              <!-- Start stop -->
               <button @click="toggleTimer()" class="mt-10 px-8 py-3 rounded-lg border"
-                :style="{ color: colors.text, 'border-color': colors.text }" x-text="isRunning ? 'Stop' : 'Start'">
+                :style="{ 'border-color': colors.text }" x-text="isRunning ? 'Stop' : 'Start'">
               </button>
 
             </div>
