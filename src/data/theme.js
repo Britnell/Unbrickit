@@ -1,7 +1,11 @@
 import Alpine from 'alpinejs';
 
+// , josefin-sans,
 const fonts =
-  'system,humanist,industrial,serif,geometric,rounded,mono-serif,didone,antique,old-style,transitional'.split(',');
+  'humanist,industrial,bebas-neue,serif,geometric,rounded,lobster,badeen,raleway,cherry-bomb-one,bangers,silkscreen,alfa-slab-one,rubik-mono-one,orbitron,mono-serif,didone,antique,old-style,transitional,system'.split(
+    ',',
+  );
+
 const themes = fonts;
 const colorModes = ['pastel', 'colourful', 'dark', 'B&W'];
 const shufflePeriodOptions = '0,1,5,10,15,20,60'.split(',');

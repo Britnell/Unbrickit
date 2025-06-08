@@ -1,0 +1,182 @@
+@font-face {
+  font-family: 'Lobster';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/font/Lobster.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Badeen Display';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/font/Badeen-Display.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Bebas Neue';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/font/Bebas-Neue.woff2') format('woff2');
+}
+/* @font-face {
+  font-family: 'Josefin Sans';
+  font-style: normal;
+  font-weight: 200;
+  src: url('/font/Josefin-200.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Josefin Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/font/Josefin-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Josefin Sans';
+  font-style: normal;
+  font-weight: 700;
+  src: url('/font/Josefin-700.woff2') format('woff2');
+} */
+@font-face {
+  font-family: 'Raleway';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/font/Raleway-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Raleway';
+  font-style: normal;
+  font-weight: 600;
+  src: url('/font/Raleway-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Raleway';
+  font-style: normal;
+  font-weight: 800;
+  src: url('/font/Raleway-800.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Cherry Bomb One';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/font/Cherry-Bomb-One.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Alfa Slab One';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/font/Alfa-Slab-One.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Orbitron';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/font/Orbitron-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Orbitron';
+  font-style: normal;
+  font-weight: 800;
+  src: url('/font/Orbitron-800.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Rubik Mono One';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/font/Rubik-Mono-One.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Bangers';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/font/Bangers.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Silkscreen';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/font/Silkscreen-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Silkscreen';
+  font-style: normal;
+  font-weight: 700;
+  src: url('/font/Silkscreen-700.woff2') format('woff2');
+}
+
+.font-system {
+  font-family: system-ui, sans-serif;
+}
+.font-transitional {
+  font-family: Charter, 'Bitstream Charter', 'Sitka Text', Cambria, serif;
+}
+.font-old-style {
+  font-family: 'Iowan Old Style', 'Palatino Linotype', 'URW Palladio L', P052, serif;
+}
+.font-humanist {
+  font-family: Seravek, 'Gill Sans Nova', Ubuntu, Calibri, 'DejaVu Sans', source-sans-pro, sans-serif;
+}
+.font-geometric {
+  font-family: Avenir, Montserrat, Corbel, 'URW Gothic', source-sans-pro, sans-serif;
+}
+.font-classical {
+  font-family: Optima, Candara, 'Noto Sans', source-sans-pro, sans-serif;
+}
+.font-neo-grotesque {
+  font-family: Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial, sans-serif;
+}
+.font-mono-serif {
+  font-family: 'Nimbus Mono PS', 'Courier New', monospace;
+}
+.font-industrial {
+  font-family: Bahnschrift, 'DIN Alternate', 'Franklin Gothic Medium', 'Nimbus Sans Narrow', sans-serif-condensed,
+    sans-serif;
+}
+.font-rounded {
+  font-family: ui-rounded, 'Hiragino Maru Gothic ProN', Quicksand, Comfortaa, Manjari, 'Arial Rounded MT',
+    'Arial Rounded MT Bold', Calibri, source-sans-pro, sans-serif;
+}
+.font-serif {
+  font-family: Rockwell, 'Rockwell Nova', 'Roboto Slab', 'DejaVu Serif', 'Sitka Small', serif;
+}
+.font-antique {
+  font-family: Superclarendon, 'Bookman Old Style', 'URW Bookman', 'URW Bookman L', 'Georgia Pro', Georgia, serif;
+}
+.font-didone {
+  font-family: Didot, 'Bodoni MT', 'Noto Serif Display', 'URW Palladio L', P052, Sylfaen, serif;
+}
+.font-lobster {
+  font-family: 'Lobster', cursive;
+}
+.font-badeen {
+  font-family: 'Badeen Display', serif;
+  font-synthesis: none;
+}
+.font-bebas-neue {
+  font-family: 'Bebas Neue', cursive;
+}
+/* .font-josefin-sans {
+  font-family: 'Josefin Sans', sans-serif;
+} */
+.font-raleway {
+  font-family: 'Raleway', sans-serif;
+}
+.font-cherry-bomb-one {
+  font-family: 'Cherry Bomb One', cursive;
+}
+.font-alfa-slab-one {
+  font-family: 'Alfa Slab One', serif;
+}
+.font-orbitron {
+  font-family: 'Orbitron', sans-serif;
+}
+.font-silkscreen {
+  font-family: 'Silkscreen', cursive;
+  transform-origin: center;
+  transform: scale(0.8);
+}
+.font-bangers {
+  font-family: 'Bangers', cursive;
+}
+.font-rubik-mono-one {
+  font-family: 'Rubik Mono One', monospace;
+  transform-origin: center;
+  transform: scale(0.7);
+}

@@ -1,3 +1,4 @@
+import './fonts.css';
 import './style.css';
 // import component from 'alpinejs-component';
 // import logo from './typescript.svg';

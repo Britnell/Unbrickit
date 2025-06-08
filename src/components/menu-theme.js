@@ -89,7 +89,7 @@ class MenuTheme extends HTMLElement {
         Size
       </label>
       <span x-text="fontSize + 'vw'" class="font-mono"></span>
-      <input type="range" id="size-slider" x-model="fontSize" min="20" max="45" step="1" class="col-span-full" />
+      <input type="range" id="size-slider" x-model="fontSize" min="25" max="35" step="1" class="col-span-full" />
     </div>
 
   </div>`;
