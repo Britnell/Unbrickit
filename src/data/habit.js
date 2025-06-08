@@ -4,7 +4,7 @@ import { initializeDB, getHabitLogsForDateRange, upsertHabitLog } from '../lib/d
 
 Alpine.data('habit', () => ({
   habits: safeParse('habits') || {},
-  showHabitApp: 'showHabitApp' || false,
+  showHabitWidget: safeParse('showHabitWidget') || false,
   editHabit: '',
   habitData: [],
   openHabit: null,
@@ -18,7 +18,7 @@ Alpine.data('habit', () => ({
 
     Alpine.effect(() => {
       localStorage.setItem('habits', JSON.stringify(this.habits));
-      localStorage.setItem('showHabitApp', this.showHabitApp);
+      localStorage.setItem('showHabitWidget', this.showHabitWidget);
     });
   },
   get habitWeek() {
