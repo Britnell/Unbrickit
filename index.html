@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 
 <head>
   <meta charset="UTF-8" />
@@ -7,13 +7,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Unbrick-it! - Retro Tech Revival</title>
   <script type="module" src="/src/base.js"></script>
-
 </head>
 
 <body class="font-mono bg-retro-dark text-retro-green min-h-screen">
 
-  <!-- Section 1: Green Theme -->
-  <section class="py-20 bg-rose-200 text-retro-dark">
+  <!-- Sticky Header -->
+  <header class="sticky top-0 z-50 bg-black/90 text-white backdrop-blur-sm border-b-2 border-retro-green">
+    <nav class="container mx-auto px-6 py-4">
+      <div class="flex justify-between items-center">
+        <div class="text-xl font-bold text-retro-green">
+          > UNBRICK-IT_
+        </div>
+        <div class="flex space-x-8">
+          <a href="#go" class="text-white hover:text-teal-500 font-bold duration-300 ">
+            #🧱
+          </a>
+
+          <a href="#what" class="text-white hover:text-teal-500 font-bold duration-300 ">
+            #WHAT
+          </a>
+          <a href="#why" class="text-white hover:text-teal-500 font-bold duration-300 ">
+            #WHY
+          </a>
+          <a href="#how" class="text-white hover:text-teal-500 font-bold duration-300 ">
+            #HOW
+          </a>
+          <a href="#about" class="text-white hover:text-teal-500 font-bold duration-300 ">
+            #ABOUT
+          </a>
+          <a href="/app" class="text-white hover:text-teal-500 font-bold duration-300 ">
+            >APP
+          </a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <section class="scroll-mt-20 py-20 bg-rose-200 text-retro-dark">
     <div class="container mx-auto px-6">
       <div class="grid md:grid-cols-2 gap-12 items-center">
         <div>
@@ -39,15 +69,23 @@
     </div>
   </section>
 
-  <section class="bg-black text-white h-[200px] flex flex-col items-center justify-center">
-    <h3 class="text-4xl font-bold mb-6">Unbrick-it!</h3>
-    <p>
-      <a href="/app" class="underline text-3xl">== GO TO APP 🧱 ==</a>
-    </p>
+  <section id="go" class="scroll-mt-20 bg-black text-white py-20 bg-retro-dark text-retro-green">
+    <div class="container mx-auto px-6 text-center">
+      <h2 class="text-5xl md:text-6xl font-bold mb-8">
+        > READY_TO_UNBRICK?
+      </h2>
+      <p class="text-xl mb-12 text-retro-cyan max-w-2xl mx-auto">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Launch the application and start recovering your
+        devices today.
+      </p>
+      <a href="/app"
+        class="inline-block bg-retro-green text-retro-dark px-12 py-4 text-2xl font-bold border-4 hover:bg-white hover:border-white hover:text-black ">
+        == START APP 🧱 ==
+      </a>
+    </div>
   </section>
 
-  <!-- Section 4: Amber Theme -->
-  <section class="py-20 bg-retro-amber text-retro-dark">
+  <section id="what" class="py-20 bg-retro-amber text-retro-dark">
     <div class="container mx-auto px-6">
       <div class="grid md:grid-cols-2 gap-12 items-center">
         <div class="flex justify-center order-2 md:order-1">
@@ -59,7 +97,7 @@
         </div>
         <div class="order-1 md:order-2">
           <h2 class="text-4xl md:text-5xl font-bold mb-6">
-            > BOOTLOADER.SYS
+            WHAT
           </h2>
           <p class="text-lg mb-4">
             Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi
@@ -74,24 +112,79 @@
     </div>
   </section>
 
-  <!-- Call to Action Section -->
-  <section class="py-20 bg-retro-dark text-retro-green">
-    <div class="container mx-auto px-6 text-center">
-      <h2 class="text-5xl md:text-6xl font-bold mb-8">
-        > READY_TO_UNBRICK?
-      </h2>
-      <p class="text-xl mb-12 text-retro-cyan max-w-2xl mx-auto">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Launch the application and start recovering your
-        devices today.
-      </p>
-      <a href="app.html"
-        class="inline-block bg-retro-green text-retro-dark px-12 py-4 text-2xl font-bold border-4 border-retro-green hover:bg-retro-dark hover:text-retro-green transition-colors duration-300 transform hover:scale-105">
-        >> LAUNCH_APP.EXE
-      </a>
+
+  <section id="why" class="py-20 bg-retro-amber text-retro-dark">
+    <div class="container mx-auto px-6">
+      <div class="grid md:grid-cols-2 gap-12 items-center">
+
+        <div class="">
+          <h2 class="text-4xl md:text-5xl font-bold mb-6">
+            WHY
+          </h2>
+          <p class="text-lg mb-4">
+            Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi
+            optio cumque nihil impedit quo minus id quod maxime.
+          </p>
+          <p class="text-lg">
+            Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates
+            repudiandae sint et molestiae non recusandae.
+          </p>
+        </div>
+
+        <div class="flex justify-center ">
+          <!-- Placeholder for brick image -->
+          <div
+            class="w-48 h-48 bg-retro-dark border-4 border-retro-gray flex items-center justify-center text-retro-amber font-bold">
+            [BRICK.PNG]
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- Footer -->
+  <section id="how" class="py-20 bg-retro-gray text-retro-green text-center">
+    <div class="container mx-auto px-6">
+      <h2 class="text-4xl md:text-5xl font-bold mb-6">
+        HOW
+      </h2>
+      <p class="text-lg mb-4">
+        Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi
+        optio cumque nihil impedit quo minus id quod maxime.
+      </p>
+    </div>
+    <div class="flex justify-center">
+      <img src="/qr-code.png" alt="QR Code" class="w-48 h-48">
+    </div>
+  </section>
+
+  <section id="about" class="scroll-mt-20 py-20 bg-retro-amber text-retro-dark">
+    <div class="container mx-auto px-6">
+      <div class="grid md:grid-cols-2 gap-12 items-center">
+
+        <div class="">
+          <h2 class="text-4xl md:text-5xl font-bold mb-6">
+            About
+          </h2>
+          <p class="text-lg mb-4">
+            Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi
+            optio cumque nihil impedit quo minus id quod maxime.
+          </p>
+          <p class="text-lg">
+            Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates
+            repudiandae sint et molestiae non recusandae.
+          </p>
+        </div>
+
+        <div class="flex justify-center">
+          <div
+            class="w-48 h-48 bg-retro-dark border-4 border-retro-gray flex items-center justify-center text-retro-amber font-bold">
+            [BRICK.PNG]
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <footer class="py-8 bg-retro-gray text-retro-green text-center">
     <div class="container mx-auto px-6">
       <p class="text-lg">
