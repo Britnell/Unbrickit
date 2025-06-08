@@ -1,10 +1,12 @@
 import Alpine from 'alpinejs';
+import { playTimerBeep } from '../lib/tone.ts';
 
 Alpine.data('timer', () => ({
   duration: 5 * 60 * 1000,
   startTime: null,
   remainingTime: 0,
   intervalId: null,
+  // hasCompleted: false,
 
   init() {
     this.loadTimerState();
@@ -53,6 +55,7 @@ Alpine.data('timer', () => ({
     }
 
     this.startTime = Date.now();
+    // this.hasCompleted = false; // Reset completion flag when starting
     this.startUpdateInterval();
     this.saveTimerState();
   },
@@ -60,6 +63,7 @@ Alpine.data('timer', () => ({
   stopTimer() {
     this.startTime = null;
     this.remainingTime = 0;
+    // this.hasCompleted = false; // Reset completion flag when stopping
 
     if (this.intervalId) {
       clearInterval(this.intervalId);
@@ -87,6 +91,19 @@ Alpine.data('timer', () => ({
 
     const elapsed = Date.now() - this.startTime;
     this.remainingTime = this.duration - elapsed;
+
+    const reachedZero = Math.floor(this.remainingTime / 1000) === 0;
+
+    if (reachedZero) {
+      const timerCompleteEvent = new CustomEvent('timerComplete', {
+        detail: {
+          duration: this.duration,
+          completedAt: new Date().toISOString(),
+        },
+      });
+      document.dispatchEvent(timerCompleteEvent);
+      playTimerBeep();
+    }
   },
 
   get isRunning() {

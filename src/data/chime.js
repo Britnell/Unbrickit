@@ -1,5 +1,5 @@
 import Alpine from 'alpinejs';
-import { playChime, randomChord } from '../lib/notes';
+import { playChime, randomChord } from '../lib/tone';
 import { speakTime } from '../lib/speech';
 
 const chimeTypes = ['jazzy', 'speak', 'chime'];

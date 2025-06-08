@@ -71,6 +71,18 @@ export function playChime(): void {
   );
 }
 
+export function playTimerBeep() {
+  playNotes(
+    [
+      { note: 'G3', duration: 0.5 },
+      { note: 'G3', duration: 0.5 },
+      { note: 'G3', duration: 0.5 },
+      { note: 'G3', duration: 0.5 },
+    ],
+    0.8,
+  );
+}
+
 const wrapNotes = (n: number, oct: number = 4) => {
   if (n < notes.length) return notes[n] + oct;
   return wrapNotes(n - notes.length, oct + 1);
