@@ -52,12 +52,12 @@
                         radio</button>
                     </li>
                     <li>
-                      <button @click="page = 'timer', showMenu = false"
+                      <button @click="page = page==='timer' ? 'clock' : 'timer', showMenu = false"
                         class="w-full px-2 py-3 rounded hover:bg-[#fff5]">⏱️
                         timer</button>
                     </li>
                     <li>
-                      <button @click="page = 'alarm', showMenu = false"
+                      <button @click="page = page==='alarm' ? 'clock' : 'alarm', showMenu = false"
                         class="w-full px-2 py-3 rounded hover:bg-[#fff5]">
                         ⏰ alarm</button>
                     </li>
