@@ -1,7 +1,16 @@
 {
+  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "unbrickit",
-  "compatibility_date": "2025-05-29",
+  "compatibility_date": "2024-04-01",
+  "main": "./src/worker.ts",
   "assets": {
     "directory": "./dist"
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "unbrickit-habits",
+      "database_id": "your-database-id-here"
+    }
+  ]
 }

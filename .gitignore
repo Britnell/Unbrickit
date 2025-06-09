@@ -1,6 +1,9 @@
+hono/
+
 # build output
 dev-dist/
 dist/
+
 # generated types
 .astro/
 .vscode/

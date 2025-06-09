@@ -5,17 +5,27 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+    "build": "vite build",
+    "build:worker": "tsc src/worker.ts --outDir dist --target es2022 --module es2022 --moduleResolution bundler",
+    "build:all": "npm run build && npm run build:worker",
+    "worker:dev": "npm run build:all && wrangler dev",
+    "worker:deploy": "npm run build:all && wrangler deploy",
+    "preview": "run build && vite preview",
+    "deploy": "run build && wrangler deploy",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.2.3",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.4",
     "tailwindcss": "3",
     "typescript": "~5.8.3",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "wrangler": "^4.19.1"
   },
   "dependencies": {
-    "alpinejs": "^3.14.9"
+    "@cloudflare/workers-types": "^4.20250607.0",
+    "alpinejs": "^3.14.9",
+    "hono": "^4.7.11"
   }
 }
