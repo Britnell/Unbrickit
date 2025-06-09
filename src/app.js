@@ -14,6 +14,7 @@ import './data/habit.js';
 import './data/timer.js';
 import './data/alarm.js';
 import './data/radio.js';
+import './data/podcast.js';
 
 // components
 import './components/menu-theme.js';
