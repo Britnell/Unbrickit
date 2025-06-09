@@ -4,7 +4,8 @@
 
 @layer components {
   input:not([type='checkbox']):not([type='color']),
-  select {
+  select,
+  button.button {
     @apply w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent;
   }
 }

@@ -33,7 +33,7 @@
                 :style="{color: colors.text}">...</button>
 
               <div x-show="showMenu" @click.outside="showMenu = false"
-                class="absolute w-[300px] left-1/2 -translate-x-1/2 bottom-2 p-2 bg-[#fff8] rounded z-10 overflow-auto max-h-[calc(100vh-1rem)]">
+                class="absolute w-[300px] left-1/2 -translate-x-1/2 bottom-2 p-2 bg-[#fff8] rounded z-10 overflow-auto max-h-[calc(100svh-1rem)]">
 
                 <ul x-show="menu === ''" class="grid grid-cols-2" x-data="system">
                   <li><button @click="menu = 'theme'" class="w-full px-2 py-3 hover:bg-[#fff5]">🎨 theme</button></li>
@@ -41,6 +41,8 @@
                   <li><button @click="menu = 'habit'" class="w-full px-2 py-3 hover:bg-[#fff5]">📊 habit</button></li>
                   <li><button @click="page = 'timer', showMenu = false" class="w-full px-2 py-3 hover:bg-[#fff5]">⏱️
                       timer</button></li>
+                  <li><button @click="menu = 'radio'" class="w-full px-2 py-3 hover:bg-[#fff5]">📻 radio</button></li>
+                  <div></div>
                   <li>
                     <button @click="toggleFullscreen" class="w-full px-2 py-3 hover:bg-[#fff5] text-sm">
                       <span x-text="fullscreen ? 'Exit fullscreen' : 'Fullscreen'"></span>
@@ -54,9 +56,10 @@
 
                 </ul>
 
-                <menu-theme x-show="menu==='theme'" />
-                <menu-chime x-show="menu==='chime'" />
-                <menu-habit x-show="menu==='habit'" />
+                <menu-theme x-show="menu==='theme'"></menu-theme>
+                <menu-chime x-show="menu==='chime'"></menu-chime>
+                <menu-habit x-show="menu==='habit'"></menu-habit>
+                <menu-radio x-show="menu==='radio'"></menu-radio>
               </div>
 
               <a x-show="showMenu" href="/" class=" absolute right-2 top-2 leading-none p-2   ">

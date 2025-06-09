@@ -12,11 +12,13 @@ import './data/chime.js';
 import './data/system.js';
 import './data/habit.js';
 import './data/timer.js';
+import './data/radio.js';
 
 // components
 import './components/menu-theme.js';
 import './components/menu-habit.js';
 import './components/menu-chime.js';
+import './components/menu-radio.js';
 import './components/clock-face.js';
 // import './components/template.js';
 import './components/edit-row.js';
