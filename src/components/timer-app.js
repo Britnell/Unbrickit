@@ -4,8 +4,7 @@ class TimerApp extends HTMLElement {
   }
   connectedCallback() {
     this.innerHTML = `
-  <div x-data="timer"
-    class="absolute inset-0 flex flex-col items-center justify-center"
+  <div class="absolute inset-0 flex flex-col items-center justify-center"
     :style="{color: colors.text, background: colors.bg}">
     <button @click="page = 'clock'" class="absolute top-2 right-2 p-2 text-2xl hover:opacity-70">×</button>
 

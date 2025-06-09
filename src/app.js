@@ -21,6 +21,7 @@ import './components/clock-face.js';
 // import './components/template.js';
 import './components/edit-row.js';
 import './components/habit-widget.js';
+import './components/timer-widget.js';
 import './components/timer-app.js';
 
 window.Alpine = Alpine;

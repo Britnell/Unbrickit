@@ -14,20 +14,23 @@
       <div x-data="chime">
         <div x-data="habit">
           <main>
-            <div x-show="page === 'clock'"
-              @tick="onShuffle($event.detail.m) , onChime($event.detail.h,$event.detail.m)">
-              <clock-face />
+
+            <clock-face x-show="page === 'clock'"
+              @tick="onShuffle($event.detail.m) , onChime($event.detail.h,$event.detail.m)"></clock-face>
+
+            <div x-data="timer">
+              <timer-app x-show="page === 'timer'"></timer-app>
+              <timer-widget x-show="page === 'clock'"></timer-widget>
             </div>
 
-            <div x-show="page === 'timer'">
-              <timer-app />
-            </div>
+            <template x-if="showHabitWidget && page === 'clock'">
+              <habit-widget></habit-widget>
+            </template>
 
-            <div>
+            <div class="menu">
               <button x-show="!showMenu" @click="showMenu = !showMenu"
                 class="absolute bottom-2 left-1/2 -translate-x-1/2 px-8 py-1 text-2xl"
                 :style="{color: colors.text}">...</button>
-
 
               <div x-show="showMenu" @click.outside="showMenu = false"
                 class="absolute w-[300px] left-1/2 -translate-x-1/2 bottom-2 p-2 bg-[#fff8] rounded z-10 overflow-auto max-h-[calc(100vh-1rem)]">
@@ -51,18 +54,9 @@
 
                 </ul>
 
-                <div x-show="menu==='theme'">
-                  <menu-theme />
-                </div>
-
-                <div x-show="menu==='chime'">
-                  <menu-chime />
-                </div>
-
-
-                <div x-show="menu==='habit'">
-                  <menu-habit />
-                </div>
+                <menu-theme x-show="menu==='theme'" />
+                <menu-chime x-show="menu==='chime'" />
+                <menu-habit x-show="menu==='habit'" />
               </div>
 
               <a x-show="showMenu" href="/" class=" absolute right-2 top-2 leading-none p-2   ">
@@ -72,9 +66,6 @@
 
             </div>
 
-            <template x-if="showHabitWidget && page === 'clock'">
-              <habit-widget></habit-widget>
-            </template>
 
           </main>
         </div>
