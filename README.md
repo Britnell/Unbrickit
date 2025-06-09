@@ -2,7 +2,10 @@
 
 ## TODO list
 
--[ ] asdasd
+- [ ] dont chime at night
+- [ ] add vibration to chime & timer
+- [ ] alarm: chime, speak, vibrate
+- [ ] podcast? DI Discs
 
 **auth**
 Hono + better auth

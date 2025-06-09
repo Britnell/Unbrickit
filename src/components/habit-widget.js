@@ -8,7 +8,7 @@ class HabitWidget extends HTMLElement {
       <div x-show="!openHabit" class=" absolute bottom-2 left-2">
         <button @click="openHabit = Object.values(habits)?.[0]" class="p-3 flex space-x-1 ">
           <template x-for="habit in Object.values(habits)">
-            <span :style="{ background: habit.color }" class=" size-5 rounded-full grid place-items-center" :class="habitValToday(habit.id) === 1 ? ' ':' opacity-50'">
+            <span :style="{ background: habit.color, color: habit.color }" class=" size-5 rounded-full grid place-items-center" :class="habitValToday(habit.id) === 1 ? ' !text-black ':' !bg-[#fff5] '">
               <span x-text="habitValToday(habit.id)" class="text-xs"></span>
             </span>
           </template>
