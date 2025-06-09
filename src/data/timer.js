@@ -95,13 +95,13 @@ Alpine.data('timer', () => ({
     const reachedZero = Math.floor(this.remainingTime / 1000) === 0;
 
     if (reachedZero) {
-      const timerCompleteEvent = new CustomEvent('timerComplete', {
-        detail: {
-          duration: this.duration,
-          completedAt: new Date().toISOString(),
-        },
-      });
-      document.dispatchEvent(timerCompleteEvent);
+      // const timerCompleteEvent = new CustomEvent('timerComplete', {
+      //   detail: {
+      //     duration: this.duration,
+      //     completedAt: new Date().toISOString(),
+      //   },
+      // });
+      // document.dispatchEvent(timerCompleteEvent);
       playTimerBeep();
     }
   },
