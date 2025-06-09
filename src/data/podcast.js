@@ -55,33 +55,36 @@ Alpine.data('podcast', () => ({
     if (!this.episodeAudio) return;
 
     try {
-      // Stop current audio if playing
-      if (this.audio) {
-        this.audio.pause();
-        this.audio = null;
+      // Only create new audio if we don't have one or if the source changed
+      if (!this.audio || this.audio.src !== this.episodeAudio) {
+        // Clean up existing audio if it exists
+        if (this.audio) {
+          this.audio.pause();
+          this.audio = null;
+        }
+
+        this.audio = new Audio(this.episodeAudio);
+        this.audio.preload = 'metadata';
+
+        this.audio.addEventListener('loadstart', () => {
+          this.loading = true;
+        });
+
+        this.audio.addEventListener('canplay', () => {
+          this.loading = false;
+        });
+
+        this.audio.addEventListener('error', (e) => {
+          this.loading = false;
+          console.error('Audio error:', e);
+          this.error = 'Error loading episode audio. Please try another episode.';
+          this.playing = false;
+        });
+
+        this.audio.addEventListener('ended', () => {
+          this.playing = false;
+        });
       }
-
-      this.audio = new Audio(this.episodeAudio);
-      this.audio.preload = 'metadata';
-
-      this.audio.addEventListener('loadstart', () => {
-        this.loading = true;
-      });
-
-      this.audio.addEventListener('canplay', () => {
-        this.loading = false;
-      });
-
-      this.audio.addEventListener('error', (e) => {
-        this.loading = false;
-        console.error('Audio error:', e);
-        this.error = 'Error loading episode audio. Please try another episode.';
-        this.playing = false;
-      });
-
-      this.audio.addEventListener('ended', () => {
-        this.playing = false;
-      });
 
       await this.audio.play();
       this.playing = true;
