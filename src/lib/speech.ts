@@ -46,18 +46,12 @@ export function isHapticFeedbackAvailable(): boolean {
   return 'vibrate' in navigator;
 }
 
-export function triggerHapticFeedback(durationMs: number = 50, pattern?: number | number[]): boolean {
+export function buzzz(pattern: number | number[]): boolean {
   if (!isHapticFeedbackAvailable()) return false;
-
   try {
-    if (pattern !== undefined) {
-      navigator.vibrate(pattern);
-    } else {
-      navigator.vibrate(durationMs);
-    }
+    navigator.vibrate(pattern);
     return true;
-  } catch (error) {
-    console.warn('Failed to trigger haptic feedback:', error);
+  } catch {
     return false;
   }
 }

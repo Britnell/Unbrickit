@@ -1,6 +1,6 @@
 import Alpine from 'alpinejs';
 import { randomChord } from '../lib/tone.ts';
-import { speak } from '../lib/speech.ts';
+import { buzzz, isHapticFeedbackAvailable, speak } from '../lib/speech.ts';
 
 const alarmText = [
   'alarm beep beep beep beep',
@@ -22,6 +22,10 @@ Alpine.data('alarm', () => ({
   init() {
     this.loadAlarmState();
     this.startTimeCheck();
+
+    if (isHapticFeedbackAvailable()) {
+      this.alarmOptions.push('vibrate');
+    }
 
     Alpine.effect(() => {
       const hr = parseInt(this.alarmHours);
@@ -77,6 +81,7 @@ Alpine.data('alarm', () => ({
   },
 
   toggleAlarm() {
+    this.triggerAlarm(new Date().toDateString());
     this.isAlarmSet = !this.isAlarmSet;
     this.lastTriggeredDate = null;
     this.saveAlarmState();
@@ -145,6 +150,9 @@ Alpine.data('alarm', () => ({
       }
       if (this.alarmType === 'speak') {
         speak(alarmText[x++ % alarmText.length]);
+      }
+      if (this.alarmType === 'vibrate') {
+        buzzz([400, 330, 200, 330, 200, 330, 200]);
       }
       //
     };
