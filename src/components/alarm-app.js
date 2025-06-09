@@ -6,6 +6,7 @@ class AlarmApp extends HTMLElement {
     this.innerHTML = `
   <div class="absolute inset-0 flex flex-col items-center justify-center"
     :style="{color: colors.text, background: colors.bg}">
+    <div class=" max-w-[400px] contents">
     <button @click="page = 'clock'" class="absolute top-2 right-2 p-2 text-2xl hover:opacity-70">×</button>
 
     <!-- Alarm Set Display -->
@@ -21,57 +22,54 @@ class AlarmApp extends HTMLElement {
     <div x-show="!isAlarmSet && !isAlarmRinging" class="contents">
       <h2 class="text-xl mb-4">Set Alarm</h2>
 
-      <div class="flex items-center justify-center space-x-4 mb-2">
+      <div class="flex items-center justify-center gap-4 mb-2">
+      
         <!-- hours -->
-        <div class="flex flex-col items-center">
-          <input type="number" 
-                 x-model="alarmHours"
-                 class="text-4xl font-mono font-bold w-20 text-center bg-transparent border-none"
-                 :style="{color: colors.text, borderColor: colors.text + '50'}" >
-        </div>
+        <input type="number" 
+            x-model="alarmHours"
+            class="!w-20 text-4xl font-mono font-bold text-center bg-transparent border-none"
+            :style="{color: colors.text, borderColor: colors.text + '50'}" >
 
         <div class="text-4xl font-bold">:</div>
 
         <!-- minutes -->
-        <div class="flex flex-col items-center">
-          <input type="number" 
-                 x-model="alarmMinutes"
-                 class="text-4xl font-mono font-bold w-20 text-center bg-transparent border-none"
-                 :style="{color: colors.text, borderColor: colors.text + '50'}" >
-        </div>
+        <input type="number" 
+            x-model="alarmMinutes"
+            class="!w-20 text-4xl font-mono font-bold text-center bg-transparent border-none"
+            :style="{color: colors.text, borderColor: colors.text + '50'}" >
       </div>
 
       <span class="text-sm opacity-70">
         24-hour format
       </span>
+    </div>
 
-      <!-- Alarm Type Dropdown -->
-      <div class="my-4">
-        <label for="alarmType" class="block text-sm opacity-70 mb-2">Alarm Type</label>
-        <select x-model="alarmType" 
-                id="alarmType"
-                @change="saveAlarmState()"
-                class="px-4 py-2 rounded-lg bg-transparent border"
-                :style="{color: colors.text, borderColor: colors.text }">
-          <template x-for="option in alarmOptions" :key="option">
-            <option :value="option" x-text="option.charAt(0).toUpperCase() + option.slice(1)"></option>
-          </template>
-        </select>
-      </div>
-
-      
+    <!-- Alarm Type Dropdown -->
+    <div class="my-4">
+      <label for="alarmType" class="block text-sm opacity-70 mb-2">Alarm Type</label>
+      <select x-model="alarmType" 
+              id="alarmType"
+              @change="saveAlarmState()"
+              class="px-4 py-2 rounded-lg bg-transparent border"
+              :style="{color: colors.text, borderColor: colors.text }" 
+              x-init="$nextTick(() => { $el.value = alarmType })">
+              >
+        <template x-for="option in alarmOptions" :key="option">
+          <option :value="option" x-text="option.charAt(0).toUpperCase() + option.slice(1)"></option>
+        </template>
+      </select>
     </div>
 
     <!-- Toggle Alarm Button -->
     <div x-show="!isAlarmRinging" class="contents">
       <button @click="toggleAlarm()" class="mt-6 px-8 py-3 rounded-lg border"
         :style="{ 'border-color': colors.text }" 
-        :class="isAlarmSet ? 'bg-green-500 text-white border-green-500' : ''"
-        x-text="isAlarmSet ? 'Turn Off Alarm' : 'Set Alarm'">
+        x-text="isAlarmSet ? 'Turn Off' : 'Turn On'">
       </button>
     </div>
-
+  
   </div>
+</div>
     `;
   }
 }

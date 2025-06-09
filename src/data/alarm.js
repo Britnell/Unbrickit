@@ -14,9 +14,10 @@ Alpine.data('alarm', () => ({
     this.loadAlarmState();
     this.startTimeCheck();
 
-    this.$effect(() => {
+    Alpine.effect(() => {
       const hr = parseInt(this.alarmHours);
-      if (!isNaN(hr)) {
+
+      if (isNaN(hr)) {
         this.alarmHours = 12;
       } else if (hr < 0) {
         this.alarmHours = 0;
@@ -25,17 +26,17 @@ Alpine.data('alarm', () => ({
       } else {
         this.alarmHours = hr;
       }
-      this.saveAlarmState();
+      // this.saveAlarmState();
     });
 
-    this.$effect(() => {
+    Alpine.effect(() => {
       let min = parseInt(this.alarmMinutes);
-      if (!isNaN(min)) {
+      if (isNaN(min)) {
         this.alarmMinutes = 12;
       } else if (min < 0) {
         this.alarmMinutes = 0;
-      } else if (min >= 60) {
-        this.alarmMinutes = 0;
+      } else if (min > 59) {
+        this.alarmMinutes = 59;
       } else {
         this.alarmMinutes = min;
       }
