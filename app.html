@@ -23,7 +23,7 @@
               <timer-widget x-show="page === 'clock'"></timer-widget>
             </div>
 
-            <div x-data="alarm">
+            <div x-data="alarm" @alarm="page = 'alarm'">
               <alarm-app x-show="page === 'alarm'"></alarm-app>
               <alarm-widget x-show="page === 'clock'"></alarm-widget>
             </div>

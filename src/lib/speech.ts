@@ -41,3 +41,26 @@ export function speakTime(hour: number, minutes: number, voice?: string): void {
 
   speechSynthesis.speak(utterance);
 }
+
+export function speak(text: string, voice?: string): void {
+  if (!('speechSynthesis' in window)) return;
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = 0.8;
+  utterance.pitch = 1;
+  utterance.volume = 1;
+  utterance.lang = 'en-GB';
+
+  const voices = speechSynthesis.getVoices();
+  const goodNews = voices.find((v) => v.name === 'Good News');
+
+  if (voice) {
+    const userVoice = voices.find((v) => v.name === voice);
+    if (userVoice) utterance.voice = userVoice;
+    else if (goodNews) utterance.voice = goodNews;
+  } else if (goodNews) {
+    utterance.voice = goodNews;
+  }
+
+  speechSynthesis.speak(utterance);
+}

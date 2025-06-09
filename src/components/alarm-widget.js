@@ -13,7 +13,7 @@ class AlarmWidget extends HTMLElement {
           <!-- <span x-text="alarmTime" class="text-xs font-mono"></span> -->
         </button>
       </div>
-    `;
+      `;
   }
 }
 

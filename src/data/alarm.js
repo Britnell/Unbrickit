@@ -1,4 +1,6 @@
 import Alpine from 'alpinejs';
+import { playTimerBeep } from '../lib/tone.ts';
+import { speak } from '../lib/speech.ts';
 
 Alpine.data('alarm', () => ({
   alarmHours: 7,
@@ -16,7 +18,6 @@ Alpine.data('alarm', () => ({
 
     Alpine.effect(() => {
       const hr = parseInt(this.alarmHours);
-
       if (isNaN(hr)) {
         this.alarmHours = 12;
       } else if (hr < 0) {
@@ -26,7 +27,6 @@ Alpine.data('alarm', () => ({
       } else {
         this.alarmHours = hr;
       }
-      // this.saveAlarmState();
     });
 
     Alpine.effect(() => {
@@ -71,13 +71,11 @@ Alpine.data('alarm', () => ({
 
   toggleAlarm() {
     this.isAlarmSet = !this.isAlarmSet;
-    this.isAlarmRinging = false;
     this.saveAlarmState();
   },
 
   stopAlarm() {
     this.isAlarmRinging = false;
-    this.saveAlarmState();
   },
 
   startTimeCheck() {
@@ -117,6 +115,18 @@ Alpine.data('alarm', () => ({
     this.isAlarmRinging = true;
     this.lastTriggeredDate = date;
     this.saveAlarmState();
+
+    // Play alarm sound based on type
+    if (this.alarmType === 'chime') {
+      playTimerBeep();
+    } else if (this.alarmType === 'speak') {
+      const timeString = this.alarmTimeString;
+      const message = `Hello, it is ${timeString} and this is your alarm. Please be aware that this alarm has been set to notify you at this time. We hope you have a wonderful day ahead. Thank you for using our alarm system.`;
+      speak(message);
+    }
+
+    // Navigate to alarm page when alarm triggers
+    this.$dispatch('alarm');
   },
 
   get alarmTimeString() {
