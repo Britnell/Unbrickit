@@ -1,5 +1,7 @@
 import { Hono } from 'hono';
 import { serveStatic } from 'hono/cloudflare-workers';
+import indexHtml from '../index.html?raw';
+import appHtml from '../app.html?raw';
 
 interface Env {
   DB: any;
@@ -35,6 +37,15 @@ api.post('/habits', async (c) => {
 });
 
 app.route('/api', api);
+
+// HTML Routes
+app.get('/', async (c) => {
+  return c.html(indexHtml);
+});
+
+app.get('/app', async (c) => {
+  return c.html(appHtml);
+});
 
 app.get(
   '*',
