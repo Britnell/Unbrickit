@@ -1,4 +1,4 @@
-class MyClock extends HTMLElement {
+class ClockFace extends HTMLElement {
   constructor() {
     super();
   }
@@ -16,6 +16,6 @@ class MyClock extends HTMLElement {
   }
 }
 
-customElements.define('my-clock', MyClock);
+customElements.define('clock-face', ClockFace);
 
-export default MyClock;
+export default ClockFace;

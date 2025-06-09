@@ -1,5 +1,5 @@
-import './fonts.css';
 import './style.css';
+import './fonts.css';
 // import component from 'alpinejs-component';
 // import logo from './typescript.svg';
 import Alpine from 'alpinejs';
@@ -17,10 +17,11 @@ import './data/timer.js';
 import './components/menu-theme.js';
 import './components/menu-habit.js';
 import './components/menu-chime.js';
-import './components/my-clock.js';
-import './components/template.js';
+import './components/clock-face.js';
+// import './components/template.js';
 import './components/edit-row.js';
 import './components/habit-widget.js';
+import './components/timer-app.js';
 
 window.Alpine = Alpine;
 

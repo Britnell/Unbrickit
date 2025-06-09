@@ -4,6 +4,10 @@
 
 -[ ] asdasd
 
+**auth**
+Hono + better auth
+https://hono.dev/examples/better-auth-on-cloudflare
+
 **radio**
 
 - radio browser? https://www.radio-browser.info/search?page=1&order=clickcount&reverse=true&hidebroken=true&name=fm4
