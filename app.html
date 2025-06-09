@@ -32,40 +32,41 @@
                 class="absolute bottom-2 left-1/2 -translate-x-1/2 px-8 py-1 text-2xl"
                 :style="{color: colors.text}">...</button>
 
-              <div x-show="showMenu" @click.outside="showMenu = false"
-                class="absolute w-[300px] left-1/2 -translate-x-1/2 bottom-2 p-2 bg-[#fff8] rounded z-10 overflow-auto max-h-[calc(100svh-1rem)]">
+              <div x-show="showMenu" @click.outside="showMenu = false">
 
-                <ul x-show="menu === ''" class="grid grid-cols-2" x-data="system">
-                  <li><button @click="menu = 'theme'" class="w-full px-2 py-3 hover:bg-[#fff5]">🎨 theme</button></li>
-                  <li><button @click="menu = 'chime'" class="w-full px-2 py-3 hover:bg-[#fff5]">🔔 chime</button></li>
-                  <li><button @click="menu = 'habit'" class="w-full px-2 py-3 hover:bg-[#fff5]">📊 habit</button></li>
-                  <li><button @click="page = 'timer', showMenu = false" class="w-full px-2 py-3 hover:bg-[#fff5]">⏱️
-                      timer</button></li>
-                  <li><button @click="menu = 'radio'" class="w-full px-2 py-3 hover:bg-[#fff5]">📻 radio</button></li>
-                  <div></div>
-                  <li>
-                    <button @click="toggleFullscreen" class="w-full px-2 py-3 hover:bg-[#fff5] text-sm">
-                      <span x-text="fullscreen ? 'Exit fullscreen' : 'Fullscreen'"></span>
-                    </button>
-                  </li>
-                  <li>
-                    <button @click="toggleScreenLock" class="w-full leading-tight py-1 hover:bg-[#fff5] text-sm">
-                      <span x-text="screenLock ? 'Release' : 'Keep screen unlocked'"></span>
-                    </button>
-                  </li>
+                <div
+                  class="absolute w-[300px] left-1/2 -translate-x-1/2 bottom-2 p-2 bg-[#fff8] rounded z-10 overflow-auto max-h-[calc(100svh-1rem)]">
 
-                </ul>
+                  <ul x-show="menu === ''" class="grid grid-cols-2">
+                    <li><button @click="menu = 'theme'" class="w-full px-2 py-3 hover:bg-[#fff5]">🎨 theme</button></li>
+                    <li><button @click="menu = 'chime'" class="w-full px-2 py-3 hover:bg-[#fff5]">🔔 chime</button></li>
+                    <li><button @click="menu = 'habit'" class="w-full px-2 py-3 hover:bg-[#fff5]">📊 habit</button></li>
+                    <li><button @click="page = 'timer', showMenu = false" class="w-full px-2 py-3 hover:bg-[#fff5]">⏱️
+                        timer</button></li>
+                    <li><button @click="menu = 'radio'" class="w-full px-2 py-3 hover:bg-[#fff5]">📻 radio</button></li>
+                  </ul>
 
-                <menu-theme x-show="menu==='theme'"></menu-theme>
-                <menu-chime x-show="menu==='chime'"></menu-chime>
-                <menu-habit x-show="menu==='habit'"></menu-habit>
-                <menu-radio x-show="menu==='radio'"></menu-radio>
+                  <menu-theme x-show="menu==='theme'"></menu-theme>
+                  <menu-chime x-show="menu==='chime'"></menu-chime>
+                  <menu-habit x-show="menu==='habit'"></menu-habit>
+                  <menu-radio x-show="menu==='radio'"></menu-radio>
+                </div>
+
+                <div x-data="system" class="absolute right-2 top-2 flex items-center gap-2">
+                  <button @click="toggleFullscreen"
+                    class="py-1 px-2 rounded-full bg-[#fff5] grid place-items-center text-xs hover:bg-[#fff8]">
+                    <span x-text="fullscreen ? 'exit fullscreen' : 'fullscreen'"></span>
+                  </button>
+                  <button @click="toggleScreenLock"
+                    class="py-1 px-2 rounded-full bg-[#fff5] grid place-items-center text-xs hover:bg-[#fff8]">
+                    <span x-text="screenLock ? 'sleep' : 'keep screen unlocked'"></span>
+                  </button>
+                  <a href="/" class="size-6 rounded-full bg-[#fff5] grid place-items-center">
+                    ?
+                  </a>
+                </div>
               </div>
 
-              <a x-show="showMenu" href="/" class=" absolute right-2 top-2 leading-none p-2   ">
-                <span class="size-5 rounded-full bg-[#fff5] grid place-items-center">
-                  ?
-                </span></a>
 
             </div>
 
