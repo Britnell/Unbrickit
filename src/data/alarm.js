@@ -1,6 +1,13 @@
 import Alpine from 'alpinejs';
-import { playTimerBeep } from '../lib/tone.ts';
+import { randomChord } from '../lib/tone.ts';
 import { speak } from '../lib/speech.ts';
+
+const alarmText = [
+  'alarm beep beep beep beep',
+  'your time is up',
+  'bleep bloop bleep bloop bleep',
+  'what you gonna do about it',
+];
 
 Alpine.data('alarm', () => ({
   alarmHours: 7,
@@ -9,9 +16,9 @@ Alpine.data('alarm', () => ({
   alarmOptions: ['chime', 'speak'],
   isAlarmSet: false,
   isAlarmRinging: false,
+  alarmInterval: null,
   intervalId: null,
   lastTriggeredDate: null,
-
   init() {
     this.loadAlarmState();
     this.startTimeCheck();
@@ -77,17 +84,30 @@ Alpine.data('alarm', () => ({
 
   stopAlarm() {
     this.isAlarmRinging = false;
+    if (this.alarmInterval) {
+      clearInterval(this.alarmInterval);
+      this.alarmInterval = null;
+    }
   },
 
   startTimeCheck() {
     if (this.intervalId) {
       clearInterval(this.intervalId);
+      this.intervalId = null;
     }
 
     this.checkAlarmTime();
-    this.intervalId = setInterval(() => {
+
+    const now = new Date();
+    const nextMinute = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+
+    setTimeout(() => {
       this.checkAlarmTime();
-    }, 60000);
+
+      this.intervalId = setInterval(() => {
+        this.checkAlarmTime();
+      }, 60000);
+    }, nextMinute);
   },
 
   checkAlarmTime() {
@@ -117,16 +137,20 @@ Alpine.data('alarm', () => ({
     this.lastTriggeredDate = date;
     this.saveAlarmState();
 
-    // Play alarm sound based on type
-    if (this.alarmType === 'chime') {
-      playTimerBeep();
-    } else if (this.alarmType === 'speak') {
-      const timeString = this.alarmTimeString;
-      const message = `Hello, it is ${timeString} and this is your alarm. Please be aware that this alarm has been set to notify you at this time. We hope you have a wonderful day ahead. Thank you for using our alarm system.`;
-      speak(message);
-    }
+    let x = 0;
 
-    // Navigate to alarm page when alarm triggers
+    const bleep = () => {
+      if (this.alarmType === 'chime') {
+        randomChord();
+      }
+      if (this.alarmType === 'speak') {
+        speak(alarmText[x++ % alarmText.length]);
+      }
+      //
+    };
+
+    bleep();
+    this.alarmInterval = setInterval(bleep, 5000);
     this.$dispatch('alarm');
   },
 

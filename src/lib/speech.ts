@@ -42,6 +42,26 @@ export function speakTime(hour: number, minutes: number, voice?: string): void {
   speechSynthesis.speak(utterance);
 }
 
+export function isHapticFeedbackAvailable(): boolean {
+  return 'vibrate' in navigator;
+}
+
+export function triggerHapticFeedback(durationMs: number = 50, pattern?: number | number[]): boolean {
+  if (!isHapticFeedbackAvailable()) return false;
+
+  try {
+    if (pattern !== undefined) {
+      navigator.vibrate(pattern);
+    } else {
+      navigator.vibrate(durationMs);
+    }
+    return true;
+  } catch (error) {
+    console.warn('Failed to trigger haptic feedback:', error);
+    return false;
+  }
+}
+
 export function speak(text: string, voice?: string): void {
   if (!('speechSynthesis' in window)) return;
 
@@ -52,14 +72,11 @@ export function speak(text: string, voice?: string): void {
   utterance.lang = 'en-GB';
 
   const voices = speechSynthesis.getVoices();
-  const goodNews = voices.find((v) => v.name === 'Good News');
+  // const goodNews = voices.find((v) => v.name === 'Good News');
 
   if (voice) {
     const userVoice = voices.find((v) => v.name === voice);
     if (userVoice) utterance.voice = userVoice;
-    else if (goodNews) utterance.voice = goodNews;
-  } else if (goodNews) {
-    utterance.voice = goodNews;
   }
 
   speechSynthesis.speak(utterance);
