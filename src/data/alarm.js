@@ -71,6 +71,7 @@ Alpine.data('alarm', () => ({
 
   toggleAlarm() {
     this.isAlarmSet = !this.isAlarmSet;
+    this.lastTriggeredDate = null;
     this.saveAlarmState();
   },
 
