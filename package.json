@@ -10,8 +10,8 @@
     "build:all": "npm run build && npm run build:worker",
     "worker:dev": "npm run build:all && wrangler dev",
     "worker:deploy": "npm run build:all && wrangler deploy",
-    "preview": "run build && vite preview",
-    "deploy": "run build && wrangler deploy",
+    "preview": "npm run build && vite preview",
+    "deploy": "npm run build && wrangler deploy",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "devDependencies": {
@@ -21,7 +21,6 @@
     "tailwindcss": "3",
     "typescript": "~5.8.3",
     "vite": "^6.3.5",
-    "vite-ssr-components": "^0.2.0",
     "wrangler": "^4.19.1"
   },
   "dependencies": {

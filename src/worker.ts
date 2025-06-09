@@ -1,5 +1,4 @@
 import { Hono } from 'hono';
-import { renderPage } from './renderer';
 
 interface Env {
   DB: any;
@@ -23,6 +22,7 @@ api.post('/auth/login', async (c) => {
 });
 
 api.get('/habits', async (c) => {
+  console.log('/habit');
   return c.json([
     { id: 1, name: 'Exercise', completed: false, streak: 5 },
     { id: 2, name: 'Read', completed: true, streak: 12 },
@@ -37,30 +37,6 @@ api.post('/habits', async (c) => {
 
 app.route('/api', api);
 
-// HTML Routes - these will be served with Vite integration
-app.get('/', async (c) => {
-  console.log('/HOME');
-
-  const content = `
-  <div id="app">
-  <h1>Welcome to Unbrickit</h1>
-  <p>Your habit tracking app</p>
-  </div>
-  `;
-  return c.html(renderPage('Unbrickit - Home', content, 'src/index.js'));
-});
-
-app.get('/app', async (c) => {
-  console.log('/APP');
-  const content = `
-    <div id="app">
-      <h1>Habit Tracker</h1>
-      <div x-data="habitApp()">
-        <!-- Your Alpine.js app content here -->
-      </div>
-    </div>
-  `;
-  return c.html(renderPage('Unbrickit - App', content, 'src/app.js'));
-});
+// app.use('*', serveStatic({ root: './dist' }));
 
 export default app;

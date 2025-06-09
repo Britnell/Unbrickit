@@ -1,14 +1,13 @@
 import { cloudflare } from '@cloudflare/vite-plugin';
 import { defineConfig } from 'vite';
-import ssrPlugin from 'vite-ssr-components/plugin';
 
 export default defineConfig({
-  plugins: [cloudflare(), ssrPlugin()],
+  plugins: [cloudflare()],
   build: {
     rollupOptions: {
       input: {
-        index: 'src/index.js',
-        app: 'src/app.js',
+        main: 'index.html',
+        app: 'app.html',
       },
     },
   },
