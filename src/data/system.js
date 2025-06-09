@@ -7,6 +7,10 @@ Alpine.data('system', () => ({
     if (document.fullscreenElement) {
       this.fullscreen = true;
     }
+
+    document.addEventListener('fullscreenchange', () => {
+      this.fullscreen = !!document.fullscreenElement;
+    });
   },
   toggleFullscreen() {
     if (!document.fullscreenElement) {
