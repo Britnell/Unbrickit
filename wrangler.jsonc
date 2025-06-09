@@ -6,11 +6,5 @@
   "assets": {
     "directory": "./dist"
   },
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "unbrickit-habits",
-      "database_id": "your-database-id-here"
-    }
-  ]
+  "d1_databases": []
 }
