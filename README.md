@@ -2,6 +2,9 @@
 
 ## TODO list
 
+- [ ] timer on small screen
+- [ ] radio sleep mode
+- [ ] pomodoro timer
 - [ ] dont chime at night
 - [ ] add vibration to chime & timer
 - [ ] alarm: chime, speak, vibrate

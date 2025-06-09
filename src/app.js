@@ -12,6 +12,7 @@ import './data/chime.js';
 import './data/system.js';
 import './data/habit.js';
 import './data/timer.js';
+import './data/alarm.js';
 import './data/radio.js';
 
 // components
@@ -25,6 +26,8 @@ import './components/edit-row.js';
 import './components/habit-widget.js';
 import './components/timer-widget.js';
 import './components/timer-app.js';
+import './components/alarm-app.js';
+import './components/alarm-widget.js';
 
 window.Alpine = Alpine;
 
