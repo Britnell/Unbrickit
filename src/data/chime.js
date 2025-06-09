@@ -1,8 +1,8 @@
 import Alpine from 'alpinejs';
 import { playChime, randomChord } from '../lib/tone';
-import { speakTime } from '../lib/speech';
+import { speakTime, buzzz } from '../lib/speech';
 
-const chimeTypes = ['jazzy', 'speak', 'chime'];
+const chimeTypes = ['jazzy', 'speak', 'chime', 'vibrate'];
 const chimeIntervalOptions = '0,1,5,15,20,30,60'.split(',');
 
 Alpine.data('chime', () => ({
@@ -56,6 +56,9 @@ Alpine.data('chime', () => ({
       }
       if (this.chimeType === 'jazzy') {
         randomChord();
+      }
+      if (this.chimeType === 'vibrate') {
+        buzzz([200, 200, 100]);
       }
     }
   },
