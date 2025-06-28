@@ -4,7 +4,7 @@ class MenuRadio extends HTMLElement {
   }
   connectedCallback() {
     this.innerHTML = `
-<div x-show="menu==='podcast'" class="p-4 space-y-2">
+<div class="p-4 space-y-2">
   <button @click="menu = ''" class="px-2 py-1 hover:bg-[#fff5]">← 🎙️ Podcast</button>
 
   <a href="https://www.bbc.co.uk/programmes/b006qnmr" target="_blank">
