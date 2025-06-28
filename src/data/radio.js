@@ -15,9 +15,9 @@ Alpine.data('radio', () => ({
   selectedStation: '',
   playingStation: '',
   error: null,
-  playing: false,
+  playingRadio: false,
   loading: false,
-  audio: null,
+  radio: null,
   init() {
     this.selectedStation = localStorage.getItem('selectedStation') || Object.keys(this.stations)[0];
 
@@ -27,7 +27,7 @@ Alpine.data('radio', () => ({
   },
 
   toggleRadio() {
-    if (this.playing) {
+    if (this.playingRadio) {
       this.stopRadio();
     } else {
       this.playRadio();
@@ -41,50 +41,50 @@ Alpine.data('radio', () => ({
     try {
       this.loading = true;
 
-      if (!this.audio || this.audio.src !== url) {
-        if (this.audio) {
-          this.audio.pause();
-          this.audio = null;
+      if (!this.radio || this.radio.src !== url) {
+        if (this.radio) {
+          this.radio.pause();
+          this.radio = null;
         }
 
-        this.audio = new Audio(url);
-        this.audio.preload = 'none';
+        this.radio = new Audio(url);
+        this.radio.preload = 'none';
 
-        this.audio.addEventListener('loadstart', () => {
+        this.radio.addEventListener('loadstart', () => {
           this.loading = true;
         });
 
-        this.audio.addEventListener('canplay', () => {
+        this.radio.addEventListener('canplay', () => {
           this.loading = false;
         });
 
-        this.audio.addEventListener('error', (e) => {
+        this.radio.addEventListener('error', (e) => {
           this.loading = false;
-          console.error('Audio error:', e);
+          console.error('radio error:', e);
           this.error = ' Error loading radio station, try another one or try again';
         });
 
-        this.audio.addEventListener('ended', () => {
-          this.playing = false;
+        this.radio.addEventListener('ended', () => {
+          this.playingRadio = false;
         });
       }
 
-      await this.audio.play();
-      this.playing = true;
+      await this.radio.play();
+      this.playingRadio = true;
       this.loading = false;
       this.error = '';
       this.playingStation = this.selectedStation;
     } catch (error) {
       this.loading = false;
-      this.playing = false;
+      this.playingRadio = false;
       this.error = 'Failed to play radio stream. Please try another station.';
     }
   },
 
   stopRadio() {
-    if (this.audio) {
-      this.audio.pause();
-      this.playing = false;
+    if (this.radio) {
+      this.radio.pause();
+      this.playingRadio = false;
     }
   },
 }));

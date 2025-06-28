@@ -16,14 +16,14 @@ class MenuRadio extends HTMLElement {
       </select>
 
       <div>
-        <span x-show="!loading && !playing">Ready</span>
+        <span x-show="!loading && !playingRadio">Ready</span>
         <span x-show="loading">Loading stream...</span>
-        <span x-show="playing && !loading" x-text="\`🔴 \${playingStation} live\`"></span>
+        <span x-show="playingRadio && !loading" x-text="\`🔴 \${playingStation} live\`"></span>
       </div>
 
       <button @click="toggleRadio()" class="button" :disabled="loading" >
-        <span x-show="playing">Stop</span>
-        <span x-show="!playing">Play</span>
+        <span x-show="playingRadio">Stop</span>
+        <span x-show="!playingRadio">Play</span>
       </button>
       
       <p x-show="error" x-text="error"></p>
