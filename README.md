@@ -6,9 +6,17 @@
 - [ ] radio sleep mode
 - [ ] pomodoro timer
 - [ ] dont chime at night
-- [ ] add vibration to chime & timer
-- [ ] alarm: chime, speak, vibrate
-- [ ] podcast? DI Discs
+- [/] add vibration to chime & timer
+- [x] alarm: chime, speak, vibrate
+- [x] podcast? DI Discs
+- [ ] weather
+- [ ] spotify api - control / play music?
+- [ ] canvas animated background
+- [ ] analog & other clock?
+- [ ] usb - HW buttons ? what for?
+- [ ] web speech api
+- [ ] debug on ios
+- [ ] dont show voices dropdown when no voices to select
 
 **auth**
 Hono + better auth

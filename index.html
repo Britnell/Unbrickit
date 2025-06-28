@@ -3,9 +3,13 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Unbrick_it!">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Unbrick-it! - Retro Tech Revival</title>
+  <title>Unbrick_it! - Retro Tech Revival</title>
   <script type="module" src="/src/index.js"></script>
 </head>
 
@@ -16,7 +20,7 @@
     <nav class="container mx-auto px-6 py-4">
       <div class="flex items-center">
         <div class="text-xl font-bold text-retro-green mr-auto">
-          > UNBRICK-IT_
+          > UNBRICK_IT_
         </div>
         <div x-data="{show: false }" class="relative">
           <button @click="show = !show" class="sm:hidden p-2" :aria-expanded="show" aria-controls="mobile-menu"
@@ -28,18 +32,18 @@
               #🧱
             </a>
 
-            <a href="#what" class="text-white hover:text-teal-500 font-bold duration-300 ">
-              #WHAT
-            </a>
             <a href="#why" class="text-white hover:text-teal-500 font-bold duration-300 ">
               #WHY
             </a>
-            <a href="#how" class="text-white hover:text-teal-500 font-bold duration-300 ">
+            <!-- <a href="#how" class="text-white hover:text-teal-500 font-bold duration-300 ">
               #HOW
+            </a> -->
+            <a href="#what" class="text-white hover:text-teal-500 font-bold duration-300 ">
+              #WHAT
             </a>
-            <a href="#about" class="text-white hover:text-teal-500 font-bold duration-300 ">
+            <!-- <a href="#about" class="text-white hover:text-teal-500 font-bold duration-300 ">
               #ABOUT
-            </a>
+            </a> -->
             <a href="/app" class="text-white hover:text-teal-500 font-bold duration-300 ">
               >APP
             </a>
@@ -51,25 +55,26 @@
 
   <section class="scroll-mt-20 py-20 bg-rose-200 text-retro-dark">
     <div class="container mx-auto px-6">
-      <div class="grid md:grid-cols-2 gap-12 items-center">
-        <div>
-          <h2 class="text-4xl md:text-5xl font-bold mb-6">
-            UNBRICK-IT
+      <div class="">
+        <div class="flex justify-between items-center">
+          <h2 class="text-4xl font-bold mb-6 shrink">
+            Looking for something to do with your old smartphone?
           </h2>
-          <p> </p>
-          <p class="text-lg mb-4">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-            dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
-          </p>
+          <div class=" p-10 text-4xl">
+            : [
+          </div>
+
 
         </div>
-        <div class="flex justify-center">
-          <!-- Placeholder for smartphone image -->
-          <div
-            class="w-48 h-80 bg-retro-dark border-4 border-retro-gray flex flex-col items-center justify-center text-retro-green">
-            <!-- <div class="text-6xl mb-4"></div> -->
-            <div class="text-6xl">🧱</div>
+        <div class="flex justify-between items-center ">
+
+          <div class=" p-10 text-4xl">
+            : }
           </div>
+          <h2 class="text-4xl font-bold mb-6 shrink">
+            Turn any old device into a smart-clock
+          </h2>
+          <!-- Placeholder for smartphone image -->
         </div>
       </div>
     </div>
@@ -81,8 +86,7 @@
         > READY_TO_UNBRICK?
       </h2>
       <p class="text-xl mb-12 text-retro-cyan max-w-2xl mx-auto">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Launch the application and start recovering your
-        devices today.
+        Get that old phone out of the draw and open this website. No installation needed
       </p>
       <a href="/app"
         class="inline-block bg-retro-green text-retro-dark px-12 py-4 text-2xl font-bold border-4 hover:bg-white hover:border-white hover:text-black ">
@@ -91,58 +95,24 @@
     </div>
   </section>
 
-  <section id="what" class="py-20 bg-retro-amber text-retro-dark">
-    <div class="container mx-auto px-6">
-      <div class="grid md:grid-cols-2 gap-12 items-center">
-        <div class="flex justify-center order-2 md:order-1">
-          <!-- Placeholder for brick image -->
-          <div
-            class="w-48 h-48 bg-retro-dark border-4 border-retro-gray flex items-center justify-center text-retro-amber font-bold">
-            [BRICK.PNG]
-          </div>
-        </div>
-        <div class="order-1 md:order-2">
-          <h2 class="text-4xl md:text-5xl font-bold mb-6">
-            WHAT
-          </h2>
-          <p class="text-lg mb-4">
-            Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi
-            optio cumque nihil impedit quo minus id quod maxime.
-          </p>
-          <p class="text-lg">
-            Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates
-            repudiandae sint et molestiae non recusandae.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-
-  <section id="why" class="py-20 bg-retro-amber text-retro-dark">
+  <section id="why" class="py-20 bg-retro-amber text-retro-dark bg-red-400">
     <div class="container mx-auto px-6">
       <div class="grid md:grid-cols-2 gap-12 items-center">
 
         <div class="">
           <h2 class="text-4xl md:text-5xl font-bold mb-6">
-            WHY
+            WHY ?
           </h2>
           <p class="text-lg mb-4">
-            Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi
-            optio cumque nihil impedit quo minus id quod maxime.
-          </p>
-          <p class="text-lg">
-            Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates
-            repudiandae sint et molestiae non recusandae.
+            Smartphones specs go out of date fast (boooo!), and manufacturers quickly stop making
+            newest OS updates available, so eventually the app store goes out of date
+            and you can no longer install new apps, essentially turning
+            your computer into a brick : [
           </p>
         </div>
 
         <div class="flex justify-center ">
-          <!-- Placeholder for brick image -->
-          <div
-            class="w-48 h-48 bg-retro-dark border-4 border-retro-gray flex items-center justify-center text-retro-amber font-bold">
-            [BRICK.PNG]
-          </div>
+          <span class="text-8xl">🧱</span>
         </div>
       </div>
     </div>
@@ -151,53 +121,82 @@
   <section id="how" class="py-20 bg-retro-gray text-retro-green text-center">
     <div class="container mx-auto px-6">
       <h2 class="text-4xl md:text-5xl font-bold mb-6">
-        HOW
+        HOW? - BROWSERS MAN
       </h2>
+
       <p class="text-lg mb-4">
-        Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi
-        optio cumque nihil impedit quo minus id quod maxime.
+        But the <strong>browser</strong> can do the same as any app,
+        and you can always open the newest version of a website! - every old
+        device still has a browser. so I made a little <strong> web app </strong>
       </p>
     </div>
-    <div class="flex justify-center">
-      <span class="w-48 h-48"></span>
-      [[QR CODE]]
-      </span>
-    </div>
+
   </section>
 
-  <section id="about" class="scroll-mt-20 py-20 bg-retro-amber text-retro-dark">
+  <section id="what" class="py-20 bg-green-600">
     <div class="container mx-auto px-6">
       <div class="grid md:grid-cols-2 gap-12 items-center">
+        <div class="flex justify-center order-2 md:order-1">
+          <span class="text-6xl w-[190px]">⏰🔔📊⏳🍉📻🍅🎙️❓</span>
+        </div>
+        <div class="order-1 md:order-2">
+          <h2 class="text-4xl md:text-5xl font-bold mb-6">
+            WHAT
+          </h2>
+          <p class="text-lg">
+            This started as just a little clock, you can change the styles,
+            the colours, let it chime, on time,
+            then added some timers, alarms and other little things that are handy.
 
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+
+  <section id="what" class="py-20 bg-green-300">
+    <div class="container mx-auto px-6">
+      <div class="flex flex-col items-center my-10">
+        <h3 class="text-2xl md:text-4xl font-bold mb-6">What you'll need:</h3>
+        <ul class="max-w-[500px] text-xl list-disc">
+          <li>Any old phone or tablet, Android or iOS</li>
+          <li>BUT depending on the age & type of your browser, some features may not work...</li>
+          <li>We're not a fan of Google either, but Chrome might work best</li>
+          <li>best try out different browsers if you have them installed</li>
+          <li>Can run in fullscreen and keep device unlocked, just like an app</li>
+          <li>But you'll want to keep it charged of course 🔋 </li>
+          <li>have fun, and let me know if you have a dream feature</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+  <section class="py-20 bg-retro-amber text-retro-dark">
+    <div class="container mx-auto px-6">
+      <div class="grid md:grid-cols-2 gap-12 items-center">
         <div class="">
           <h2 class="text-4xl md:text-5xl font-bold mb-6">
-            About
+            Lazy fingers?
           </h2>
           <p class="text-lg mb-4">
-            Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi
-            optio cumque nihil impedit quo minus id quod maxime.
-          </p>
-          <p class="text-lg">
-            Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates
-            repudiandae sint et molestiae non recusandae.
+            Here's a QR code to open the app straight on your phone:
           </p>
         </div>
 
-        <div class="flex justify-center">
-          <div
-            class="w-48 h-48 bg-retro-dark border-4 border-retro-gray flex items-center justify-center text-retro-amber font-bold">
-            [BRICK.PNG]
-          </div>
-        </div>
+        <span class="text-4xl">[ QR CODE to come ... ]</span>
       </div>
     </div>
   </section>
 
-  <footer class="py-8 bg-retro-gray text-retro-green text-center">
-    <div class="container mx-auto px-6">
-      <p class="text-lg">
-        2025 UNBRICK-IT! | SYSTEM_STATUS: OPERATIONAL
+
+  <footer class="py-8 bg-gray-300 text-center">
+    <div class="flex gap-6 mx-auto px-6">
+      <p class="text-lg mr-auto">
+        UNBRICK_IT!
       </p>
+      <span>[_]</span>
+      <span>[_]</span>
     </div>
   </footer>
 </body>
