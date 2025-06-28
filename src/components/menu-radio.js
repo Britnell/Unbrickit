@@ -4,7 +4,7 @@ class MenuRadio extends HTMLElement {
   }
   connectedCallback() {
     this.innerHTML = `
-<div x-data="radio">
+<div>
   <button @click="menu = ''">← 📻 Radio</button>
   
   <div class="grid grid-cols-2 gap-2">

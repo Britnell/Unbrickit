@@ -13,138 +13,148 @@
     <div x-data="theme">
       <div x-data="chime">
         <div x-data="habit">
-          
-          <main>
+          <div x-data="radio">
 
-            <clock-face x-show="page === 'clock'"
-              @click="showMenu = openHabit ? false : !showMenu"
-              @tick="onShuffle($event.detail.m) , onChime($event.detail.h,$event.detail.m)"></clock-face>
+            <main>
 
-            <div x-data="timer">
-              <div x-data="alarm" @alarm="page = 'alarm'">
+              <clock-face x-show="page === 'clock'" @click="showMenu = openHabit ? false : !showMenu"
+                @tick="onShuffle($event.detail.m) , onChime($event.detail.h,$event.detail.m)"></clock-face>
 
-              <timer-app x-show="page === 'timer'"></timer-app>
-              <alarm-app x-show="page === 'alarm'"></alarm-app>
+              <div x-data="timer">
+                <div x-data="alarm" @alarm="page = 'alarm'">
+                  <timer-app x-show="page === 'timer'"></timer-app>
+                  <alarm-app x-show="page === 'alarm'"></alarm-app>
 
-              <div class="absolute bottom-2 right-2 flex gap-2">
-                <timer-widget x-show="page === 'clock'"></timer-widget>
-                <alarm-widget x-show="page === 'clock'"></alarm-widget>
+                  <div x-show="page === 'clock'" class="absolute bottom-2 right-2 flex gap-2">
+                    <timer-widget></timer-widget>
+                    <alarm-widget></alarm-widget>
+
+                    <div x-show="playing">
+                      <button @click="showMenu = true, menu='radio'"
+                        class="px-2 py-1 bg-[#fff5] rounded-full flex items-center space-x-2 shadow-lg ">
+                        <span class="text-lg">📻</span>
+                      </button>
+
+                    </div>
+                  </div>
+
+
+                </div>
               </div>
-              </div>
-            </div>
-            
-            <template x-if="showHabitWidget && page === 'clock'">
-              <habit-widget></habit-widget>
-            </template>
 
-            <div class="menu">
-              <button x-show="!showMenu" @click="showMenu = !showMenu"
-                class="absolute bottom-2 left-1/2 -translate-x-1/2 px-8 py-1 text-2xl"
-                :style="{color: colors.text}">...</button>
+              <template x-if="showHabitWidget && page === 'clock'">
+                <habit-widget></habit-widget>
+              </template>
 
-              <div x-show="showMenu" @click.outside="showMenu = false">
+              <div class="menu">
+                <button x-show="!showMenu" @click="showMenu = !showMenu"
+                  class="absolute bottom-2 left-1/2 -translate-x-1/2 px-8 py-1 text-2xl"
+                  :style="{color: colors.text}">...</button>
 
-                <div
-                  class="absolute w-[300px] left-1/2 -translate-x-1/2 bottom-2 p-1 bg-[#fff8] rounded z-10 overflow-auto max-h-[calc(100svh-1rem)]">
+                <div x-show="showMenu" @click.outside="showMenu = false">
 
-                  <ul x-show="menu === ''" class="grid grid-cols-2">
-                    <li>
-                      <button @click="menu = 'habit'" class="w-full px-2 py-3 rounded hover:bg-[#fff5]">📊
-                        habit</button>
-                    </li>
-                    <div></div>
-                    <li>
-                      <button @click="menu = 'radio'" class="w-full px-2 py-3 rounded hover:bg-[#fff5]">📻
-                        radio</button>
-                    </li>
-                    <li>
-                      <button @click="menu = 'podcast'" class="w-full px-2 py-3 rounded hover:bg-[#fff5]">🎙️
-                        podcast</button>
-                    </li>
+                  <div
+                    class="absolute w-[300px] left-1/2 -translate-x-1/2 bottom-2 p-1 bg-[#fff8] rounded z-10 overflow-auto max-h-[calc(100svh-1rem)]">
 
-                    <li>
-                      <button @click="page = page==='timer' ? 'clock' : 'timer', showMenu = false"
-                        class="w-full px-2 py-3 rounded hover:bg-[#fff5]">⏱️
-                        timer</button>
-                    </li>
-                    <li>
-                      <button @click="page = page==='alarm' ? 'clock' : 'alarm', showMenu = false"
-                        class="w-full px-2 py-3 rounded hover:bg-[#fff5]">
-                        ⏰ alarm</button>
-                    </li>
-                    <li>
-                      <button @click="menu = 'theme'" class="w-full px-2 py-3 rounded hover:bg-[#fff5]">🎨
-                        theme</button>
-                    </li>
-                    <li>
-                      <button @click="menu = 'chime'" class="w-full px-2 py-3 rounded hover:bg-[#fff5]">🔔
-                        chime</button>
-                    </li>
-                  </ul>
+                    <ul x-show="menu === ''" class="grid grid-cols-2">
+                      <li>
+                        <button @click="menu = 'habit'" class="w-full px-2 py-3 rounded hover:bg-[#fff5]">📊
+                          habit</button>
+                      </li>
+                      <div></div>
+                      <li>
+                        <button @click="menu = 'radio'" class="w-full px-2 py-3 rounded hover:bg-[#fff5]">📻
+                          radio</button>
+                      </li>
+                      <li>
+                        <button @click="menu = 'podcast'" class="w-full px-2 py-3 rounded hover:bg-[#fff5]">🎙️
+                          podcast</button>
+                      </li>
 
-                  <menu-theme x-show="menu==='theme'"></menu-theme>
-                  <menu-chime x-show="menu==='chime'"></menu-chime>
-                  <menu-habit x-show="menu==='habit'"></menu-habit>
-                  <menu-radio x-show="menu==='radio'"></menu-radio>
+                      <li>
+                        <button @click="page = page==='timer' ? 'clock' : 'timer', showMenu = false"
+                          class="w-full px-2 py-3 rounded hover:bg-[#fff5]">⏱️
+                          timer</button>
+                      </li>
+                      <li>
+                        <button @click="page = page==='alarm' ? 'clock' : 'alarm', showMenu = false"
+                          class="w-full px-2 py-3 rounded hover:bg-[#fff5]">
+                          ⏰ alarm</button>
+                      </li>
+                      <li>
+                        <button @click="menu = 'theme'" class="w-full px-2 py-3 rounded hover:bg-[#fff5]">🎨
+                          theme</button>
+                      </li>
+                      <li>
+                        <button @click="menu = 'chime'" class="w-full px-2 py-3 rounded hover:bg-[#fff5]">🔔
+                          chime</button>
+                      </li>
+                    </ul>
 
-                  <!-- Podcast Menu -->
-                  <div x-data="podcast" x-show="menu==='podcast'" class="p-4 space-y-2">
-                    <button @click="menu = ''" class="px-2 py-1 hover:bg-[#fff5]">← 🎙️ Podcast</button>
+                    <menu-theme x-show="menu==='theme'"></menu-theme>
+                    <menu-chime x-show="menu==='chime'"></menu-chime>
+                    <menu-habit x-show="menu==='habit'"></menu-habit>
+                    <menu-radio x-show="menu==='radio'"></menu-radio>
 
-                    <a href="https://www.bbc.co.uk/programmes/b006qnmr" target="_blank">
-                      <h3 class="text-lg font-semibold text-center">
-                        Desert Island Discs
-                      </h3>
-                    </a>
+                    <!-- Podcast Menu -->
+                    <div x-data="podcast" x-show="menu==='podcast'" class="p-4 space-y-2">
+                      <button @click="menu = ''" class="px-2 py-1 hover:bg-[#fff5]">← 🎙️ Podcast</button>
 
-                    <div x-show="episodeAudio" class="space-y-2">
-                      <div class="text-sm flex gap-4 flex-wrap justify-between">
-                        <strong>Current Episode:</strong>
-                        <a :href="episodeUrl" target="_blank" class="hover:underline">
-                          <span x-text="episodeTitle"></span>
-                        </a>
+                      <a href="https://www.bbc.co.uk/programmes/b006qnmr" target="_blank">
+                        <h3 class="text-lg font-semibold text-center">
+                          Desert Island Discs
+                        </h3>
+                      </a>
+
+                      <div x-show="episodeAudio" class="space-y-2">
+                        <div class="text-sm flex gap-4 flex-wrap justify-between">
+                          <strong>Current Episode:</strong>
+                          <a :href="episodeUrl" target="_blank" class="hover:underline">
+                            <span x-text="episodeTitle"></span>
+                          </a>
+                        </div>
+
+                        <button @click="togglePlayback()" :disabled="!episodeAudio"
+                          class="w-full px-4 py-2 rounded bg-[#fff2] hover:bg-[#fff5] disabled:bg-none">
+                          <span x-show="!playing">Play</span>
+                          <span x-show="playing">Pause</span>
+                        </button>
                       </div>
 
-                      <button @click="togglePlayback()" :disabled="!episodeAudio"
-                        class="w-full px-4 py-2 rounded bg-[#fff2] hover:bg-[#fff5] disabled:bg-none">
-                        <span x-show="!playing">Play</span>
-                        <span x-show="playing">Pause</span>
+                      <p x-show="error" class=" bg-red-500/40 text-white" x-text="error"></p>
+
+                      <button @click="loadRandomEpisode()" :disabled="loading"
+                        class="w-full px-4 py-2  rounded bg-[#fff2] hover:bg-[#fff5] disabled:bg-none"
+                        :class="loading ? 'opacity-50 cursor-not-allowed' : ''">
+                        <span x-show="!loading">🎲 Load Random Episode</span>
+                        <span x-show="loading">Loading...</span>
                       </button>
+
                     </div>
+                  </div>
 
-                    <p x-show="error" class=" bg-red-500/40 text-white" x-text="error"></p>
-
-                    <button @click="loadRandomEpisode()" :disabled="loading"
-                      class="w-full px-4 py-2  rounded bg-[#fff2] hover:bg-[#fff5] disabled:bg-none"
-                      :class="loading ? 'opacity-50 cursor-not-allowed' : ''">
-                      <span x-show="!loading">🎲 Load Random Episode</span>
-                      <span x-show="loading">Loading...</span>
+                  <!-- Helper Buttons -->
+                  <div x-data="system" class="absolute right-2 top-2 flex items-center gap-2">
+                    <button @click="toggleFullscreen"
+                      class="py-1 px-2 rounded-full bg-[#fff5] grid place-items-center text-xs hover:bg-[#fff8]">
+                      <span x-text="fullscreen ? 'exit fullscreen' : 'fullscreen'"></span>
                     </button>
-
+                    <button @click="toggleScreenLock"
+                      class="py-1 px-2 rounded-full bg-[#fff5] grid place-items-center text-xs hover:bg-[#fff8]">
+                      <span x-text="screenLock ? 'sleep' : 'keep screen unlocked'"></span>
+                    </button>
+                    <a href="/" class="size-6 rounded-full bg-[#fff5] grid place-items-center">
+                      ?
+                    </a>
                   </div>
                 </div>
 
-                <!-- Helper Buttons -->
-                <div x-data="system" class="absolute right-2 top-2 flex items-center gap-2">
-                  <button @click="toggleFullscreen"
-                    class="py-1 px-2 rounded-full bg-[#fff5] grid place-items-center text-xs hover:bg-[#fff8]">
-                    <span x-text="fullscreen ? 'exit fullscreen' : 'fullscreen'"></span>
-                  </button>
-                  <button @click="toggleScreenLock"
-                    class="py-1 px-2 rounded-full bg-[#fff5] grid place-items-center text-xs hover:bg-[#fff8]">
-                    <span x-text="screenLock ? 'sleep' : 'keep screen unlocked'"></span>
-                  </button>
-                  <a href="/" class="size-6 rounded-full bg-[#fff5] grid place-items-center">
-                    ?
-                  </a>
-                </div>
+
               </div>
 
 
-            </div>
-
-
-          </main>
+            </main>
+          </div>
         </div>
       </div>
     </div>
