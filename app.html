@@ -44,38 +44,15 @@
                         class="absolute w-[300px] left-1/2 -translate-x-1/2 bottom-2 p-1 bg-[#fff8] rounded z-10 overflow-auto max-h-[calc(100svh-1rem)]">
 
                         <ul x-show="menu === ''" class="grid grid-cols-2">
-                          <li>
-                            <button @click="menu = 'habit'" class="w-full px-2 py-3 rounded hover:bg-[#fff5]">📊
-                              habit</button>
-                          </li>
-                          <div></div>
-                          <li>
-                            <button @click="menu = 'radio'" class="w-full px-2 py-3 rounded hover:bg-[#fff5]">📻
-                              radio</button>
-                          </li>
-                          <li>
-                            <button @click="menu = 'podcast'" class="w-full px-2 py-3 rounded hover:bg-[#fff5]">🎙️
-                              podcast</button>
-                          </li>
-
-                          <li>
-                            <button @click="page = page==='timer' ? 'clock' : 'timer', showMenu = false"
-                              class="w-full px-2 py-3 rounded hover:bg-[#fff5]">⏱️
-                              timer</button>
-                          </li>
-                          <li>
-                            <button @click="page = page==='alarm' ? 'clock' : 'alarm', showMenu = false"
-                              class="w-full px-2 py-3 rounded hover:bg-[#fff5]">
-                              ⏰ alarm</button>
-                          </li>
-                          <li>
-                            <button @click="menu = 'theme'" class="w-full px-2 py-3 rounded hover:bg-[#fff5]">🎨
-                              theme</button>
-                          </li>
-                          <li>
-                            <button @click="menu = 'chime'" class="w-full px-2 py-3 rounded hover:bg-[#fff5]">🔔
-                              chime</button>
-                          </li>
+                          <template x-for="item in menuItems">
+                            <li>
+                              <button x-show="item.type === 'menu'" @click="menu = item.key"
+                                class="w-full px-2 py-3 rounded hover:bg-[#fff5]" x-text="item.label"></button>
+                              <button x-show="item.type === 'page'"
+                                @click="page = page===item.key ? 'clock' : item.key, showMenu = false"
+                                class="w-full px-2 py-3 rounded hover:bg-[#fff5]" x-text="item.label"></button>
+                            </li>
+                          </template>
                         </ul>
 
                         <menu-theme x-show="menu==='theme'"></menu-theme>
