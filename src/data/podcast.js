@@ -124,6 +124,18 @@ Alpine.data('podcast', () => ({
     }
   },
 
+  seekForward() {
+    if (this.audio) {
+      this.audio.currentTime += 15;
+    }
+  },
+
+  seekBackward() {
+    if (this.audio) {
+      this.audio.currentTime -= 15;
+    }
+  },
+
   // Cleanup when component is destroyed
   destroy() {
     if (this.audio) {

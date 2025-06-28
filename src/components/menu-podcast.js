@@ -21,11 +21,22 @@ class MenuRadio extends HTMLElement {
       </a>
     </div>
 
-    <button @click="togglePlayback()" :disabled="!episodeAudio"
-      class="w-full px-4 py-2 rounded bg-[#fff2] hover:bg-[#fff5] disabled:bg-none">
-      <span x-show="!playingPodcast">Play</span>
-      <span x-show="playingPodcast">Pause</span>
-    </button>
+    <div class="flex items-center justify-center gap-2">
+      <button @click="seekBackward()" :disabled="!episodeAudio"
+        class="flex items-center justify-center whitespace-nowrap bg-white rounded-full px-3 h-10">
+        « 15s
+      </button>
+
+      <button @click="togglePlayback()" :disabled="!episodeAudio"
+        class="flex items-center justify-center whitespace-nowrap bg-white rounded-full w-10 h-10">
+        <span x-text="playingPodcast ? '||' : '►'"></span>
+      </button>
+
+      <button @click="seekForward()" :disabled="!episodeAudio"
+        class="flex items-center justify-center whitespace-nowrap bg-white rounded-full px-3 h-10">
+        30s »
+      </button>
+    </div>
   </div>
 
   <p x-show="error" class=" bg-red-500/40 text-white" x-text="error"></p>
