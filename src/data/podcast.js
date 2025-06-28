@@ -5,7 +5,7 @@ Alpine.data('podcast', () => ({
   episodeAudio: '',
   episodeTitle: '',
   episodeUrl: '',
-  playing: false,
+  playingPodcast: false,
   loading: false,
   error: null,
   audio: null,
@@ -44,7 +44,7 @@ Alpine.data('podcast', () => ({
   },
 
   togglePlayback() {
-    if (this.playing) {
+    if (this.playingPodcast) {
       this.pauseEpisode();
     } else {
       this.playEpisode();
@@ -78,28 +78,28 @@ Alpine.data('podcast', () => ({
           this.loading = false;
           console.error('Audio error:', e);
           this.error = 'Error loading episode audio. Please try another episode.';
-          this.playing = false;
+          this.playingPodcast = false;
         });
 
         this.audio.addEventListener('ended', () => {
-          this.playing = false;
+          this.playingPodcast = false;
         });
       }
 
       await this.audio.play();
-      this.playing = true;
+      this.playingPodcast = true;
       this.error = null;
     } catch (error) {
       console.error('Playback error:', error);
       this.error = 'Failed to play episode. Please try again.';
-      this.playing = false;
+      this.playingPodcast = false;
     }
   },
 
   pauseEpisode() {
     if (this.audio) {
       this.audio.pause();
-      this.playing = false;
+      this.playingPodcast = false;
     }
   },
 

@@ -22,13 +22,12 @@ import './components/menu-habit.js';
 import './components/menu-chime.js';
 import './components/menu-radio.js';
 import './components/clock-face.js';
+import './components/quick-widgets.js';
 // import './components/template.js';
 import './components/edit-row.js';
 import './components/habit-widget.js';
-import './components/timer-widget.js';
 import './components/timer-app.js';
 import './components/alarm-app.js';
-import './components/alarm-widget.js';
 
 window.Alpine = Alpine;
 
