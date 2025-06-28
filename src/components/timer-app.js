@@ -6,9 +6,11 @@ class TimerApp extends HTMLElement {
     this.innerHTML = `
   <div class="absolute inset-0 flex flex-col items-center justify-center"
     :style="{color: colors.text, background: colors.bg}">
-    <button @click="page = 'clock'" class="absolute top-2 right-2 py-3 px-4 text-3xl hover:opacity-70">×</button>
+    
 
-
+    <div class=" w-[400px]">
+      <button @click="page = 'clock'" class="block ml-auto py-3 px-4 text-3xl hover:opacity-70">×</button>
+      </div>
     <!-- Running Timer -->
     <div x-show="isRunning" class="contents">
       <h2 class="text-2xl mb-4">

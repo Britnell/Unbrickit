@@ -7,7 +7,10 @@ class AlarmApp extends HTMLElement {
   <div class="absolute inset-0 flex flex-col items-center justify-center"
     :style="{color: colors.text, background: colors.bg}">
     <div x-show="!isAlarmRinging" class=" max-w-[400px] contents">
-      <button @click="page = 'clock'" class="absolute top-2 right-2 py-3 px-4 text-3xl hover:opacity-70">×</button>
+    
+    <div class=" w-[400px]">
+      <button @click="page = 'clock'" class="block ml-auto py-3 px-4 text-3xl hover:opacity-70">×</button>
+    </div>
 
       <!-- Alarm Set Display -->
       <div x-show="isAlarmSet" class="contents">
