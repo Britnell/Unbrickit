@@ -19,15 +19,18 @@
               @tick="onShuffle($event.detail.m) , onChime($event.detail.h,$event.detail.m)"></clock-face>
 
             <div x-data="timer">
+              <div x-data="alarm" @alarm="page = 'alarm'">
+
               <timer-app x-show="page === 'timer'"></timer-app>
-              <timer-widget x-show="page === 'clock'"></timer-widget>
-            </div>
-
-            <div x-data="alarm" @alarm="page = 'alarm'">
               <alarm-app x-show="page === 'alarm'"></alarm-app>
-              <alarm-widget x-show="page === 'clock'"></alarm-widget>
-            </div>
 
+              <div class="absolute bottom-2 right-2 flex gap-2">
+                <timer-widget x-show="page === 'clock'"></timer-widget>
+                <alarm-widget x-show="page === 'clock'"></alarm-widget>
+              </div>
+              </div>
+            </div>
+            
             <template x-if="showHabitWidget && page === 'clock'">
               <habit-widget></habit-widget>
             </template>

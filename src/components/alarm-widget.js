@@ -5,7 +5,7 @@ class AlarmWidget extends HTMLElement {
 
   connectedCallback() {
     this.innerHTML = `
-      <div x-show="isAlarmSet" class="absolute bottom-2 right-16">
+      <div x-show="isAlarmSet" >
         <button @click="page='alarm'" 
                 class="px-2 py-1 bg-[#fff5] rounded-full flex items-center space-x-2 shadow-lg "
                 >

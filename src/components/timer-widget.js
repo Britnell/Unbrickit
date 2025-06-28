@@ -5,7 +5,7 @@ class TimerWidget extends HTMLElement {
 
   connectedCallback() {
     this.innerHTML = `
-      <div x-show="isRunning" class="absolute bottom-2 right-2">
+      <div x-show="isRunning" >
         <button @click="page='timer'" 
                 class="px-2 py-1 bg-[#fff5] rounded-full flex items-center space-x-2 shadow-lg">
           <span class="text-lg">⏱️</span>
