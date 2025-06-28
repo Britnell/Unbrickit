@@ -28,9 +28,11 @@ Alpine.data('podcast', () => ({
   },
 
   async loadRandomEpisode() {
+    this.pauseEpisode();
+    this.lastPlaybackPosition = 0;
+
     this.loading = true;
     this.error = null;
-    this.lastPlaybackPosition = 0;
 
     const episodeData = await getDesertIslandEpisode();
 
