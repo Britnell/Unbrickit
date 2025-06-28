@@ -13,9 +13,11 @@
     <div x-data="theme">
       <div x-data="chime">
         <div x-data="habit">
+          
           <main>
 
             <clock-face x-show="page === 'clock'"
+              @click="showMenu = openHabit ? false : !showMenu"
               @tick="onShuffle($event.detail.m) , onChime($event.detail.h,$event.detail.m)"></clock-face>
 
             <div x-data="timer">
