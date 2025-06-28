@@ -21,6 +21,7 @@ import './components/menu-theme.js';
 import './components/menu-habit.js';
 import './components/menu-chime.js';
 import './components/menu-radio.js';
+import './components/menu-podcast.js';
 import './components/clock-face.js';
 import './components/quick-widgets.js';
 // import './components/template.js';
