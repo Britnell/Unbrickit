@@ -34,7 +34,7 @@
                   </template>
 
                   <div class="menu">
-                    <button x-show="!showMenu" @click="showMenu = !showMenu"
+                    <button x-show="!showMenu && page==='clock' " @click="showMenu = !showMenu"
                       class="absolute bottom-2 left-1/2 -translate-x-1/2 px-8 py-1 text-2xl"
                       :style="{color: colors.text}">...</button>
 
@@ -89,7 +89,7 @@
       </div>
     </div>
   </div>
-  <script type="module" src="/src/app.js"></script>
+  <script type="module" src="/src/main.js"></script>
 
 </body>
 
