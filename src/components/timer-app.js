@@ -59,7 +59,7 @@ class TimerApp extends HTMLElement {
 
 
     <!-- Start stop -->
-    <button @click="toggleTimer()" class="mt-10 px-8 py-3 rounded-lg border"
+    <button @click="toggleTimer()" class="px-8 py-3 rounded-lg border"
       :style="{ 'border-color': colors.text }" x-text="isRunning ? 'Stop' : 'Start'">
     </button>
 
