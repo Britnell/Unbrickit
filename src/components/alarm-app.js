@@ -53,12 +53,12 @@ class AlarmApp extends HTMLElement {
           <div>
             <label for="alarmType" class="block text-sm opacity-70 mb-2">Alarm Type</label>
             <select x-model="alarmType" 
-                    id="alarmType"
-                    @change="saveAlarmState()"
-                    class="px-4 py-2 rounded-lg bg-transparent border"
-                    :style="{color: colors.text, borderColor: colors.text }" 
-                    x-init="$nextTick(() => { $el.value = alarmType })">
-                    >
+                id="alarmType"
+                @change="saveAlarmState()"
+                class="px-4 py-2 rounded-lg bg-transparent border"
+                :style="{color: colors.text, borderColor: colors.text }" 
+                x-init="$nextTick(() => { $el.value = alarmType })"
+            >
               <template x-for="option in alarmOptions" :key="option">
                 <option :value="option" x-text="option.charAt(0).toUpperCase() + option.slice(1)"></option>
               </template>
