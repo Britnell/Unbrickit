@@ -36,8 +36,10 @@ const directives: Record<string, (el: Element, expression: string, data: any) =>
       return;
     }
 
-    // set for <select>
-    setTimeout(() => setInputValue(inputEl, field.value), 0);
+    // Set initial value after next tick to fix select element timing issue
+    setTimeout(() => {
+      setInputValue(inputEl, field.value);
+    }, 0);
 
     effect(() => {
       setInputValue(inputEl, field.value);
@@ -52,6 +54,26 @@ const directives: Record<string, (el: Element, expression: string, data: any) =>
   'x-for': forLoopDirective,
   'x-load': (el, _expression, _data) => {
     (el as HTMLElement).style.display = 'block';
+  },
+  'x-temp': (el, expression, _data) => {
+    const templateId = expression;
+    const template = document.getElementById(templateId) as HTMLTemplateElement;
+
+    if (!template) {
+      console.error(`Template with id "${templateId}" not found.`);
+      return;
+    }
+
+    const slotContent = el.innerHTML;
+    const templateContent = template.content.cloneNode(true) as DocumentFragment;
+    const slot = templateContent.querySelector('slot');
+
+    if (slot) {
+      slot.outerHTML = slotContent;
+    }
+
+    el.innerHTML = '';
+    el.appendChild(templateContent);
   },
 };
 
@@ -511,7 +533,7 @@ function validateForm(formEl: HTMLFormElement, formConfig: any): boolean {
   return allValid;
 }
 
-const Way = { data, component, render, form, signal, effect, store };
+const way = { data, component, render, form, signal, effect, store };
 
 declare global {
   interface Window {
@@ -529,9 +551,9 @@ declare global {
 }
 
 if (typeof window !== 'undefined') {
-  window.way = Way;
+  window.way = way;
 }
-export default Way;
+export default way;
 
 //  *** helpers
 
@@ -582,7 +604,7 @@ function setInputValue(inputEl: HTMLInputElement | HTMLTextAreaElement | HTMLSel
   inputEl.value = String(value ?? '');
 }
 
-class WayComponent extends HTMLElement {
+class wayComponent extends HTMLElement {
   template: HTMLTemplateElement;
   _data: any;
 
@@ -604,7 +626,7 @@ class WayComponent extends HTMLElement {
 }
 
 function createWebComponent(tag: string, template: HTMLTemplateElement) {
-  class WebComponent extends WayComponent {
+  class WebComponent extends wayComponent {
     constructor() {
       super(template);
     }
