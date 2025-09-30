@@ -1,4 +1,3 @@
-import { computed, effect } from '@preact/signals-core';
 import way from './framework';
 
 const fonts =
