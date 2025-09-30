@@ -36,6 +36,9 @@ const directives: Record<string, (el: Element, expression: string, data: any) =>
       return;
     }
 
+    // set for <select>
+    setTimeout(() => setInputValue(inputEl, field.value), 0);
+
     effect(() => {
       setInputValue(inputEl, field.value);
     });

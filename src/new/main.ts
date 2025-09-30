@@ -1,4 +1,5 @@
 import '../style.css';
+import '../fonts.css';
 
 import way from './framework';
 import './clock';
