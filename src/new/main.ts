@@ -1,12 +1,45 @@
 import '../style.css';
-import Way from './framework';
+
+import way from './framework';
 import './clock';
+import './theme';
 
-Way.render(document.body, window.pageprops);
+const pages = ['clock', 'timer', 'alarm'];
 
-Way.store('theme', () => {
-  const fontSize = Way.signal(28);
+const menuItems = [
+  //   { type: 'menu', key: 'habit', label: '📊 habit' },
+  //   { type: 'placeholder' },
+  //   { type: 'menu', key: 'radio', label: '📻 radio' },
+  //   { type: 'menu', key: 'podcast', label: '🎙️ podcast' },
+  //   { type: 'page', key: 'timer', label: '⏱️ timer' },
+  //   { type: 'page', key: 'alarm', label: '⏰ alarm' },
+  { type: 'menu', key: 'theme', label: '🎨 theme' },
+  //   { type: 'menu', key: 'chime', label: '🔔 chime' },
+];
+
+way.store('app', () => {
+  const page = way.signal(pages[0]);
+  const showMenu = way.signal(true);
+  const menu = way.signal('theme');
+
+  const openMenu = (it: (typeof menuItems)[0]) => {
+    if (it.type === 'menu') {
+      menu.value = it.key;
+    } else {
+      page.value = it.key;
+      showMenu.value = false;
+    }
+  };
   return {
-    fontSize,
+    page,
+    pages,
+    showMenu,
+    menu,
+    menuItems,
+    openMenu,
   };
 });
+
+way.component('menu-theme', () => ({}));
+
+way.render(document.body, window.pageprops);

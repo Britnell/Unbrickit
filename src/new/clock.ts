@@ -1,11 +1,11 @@
-import Way from './framework';
+import way from './framework';
 
-Way.component('clock-face', (_, ctx) => {
-  const time = Way.signal('_');
+way.component('clock-face', (_, ctx) => {
+  const time = way.signal('_');
 
   const update = () => {
     const [h, m, s] = getTime();
-    time.value = formatTime(h, m, s, 'hms');
+    time.value = formatTime(h, m, s, 'hm');
     // this.time = { h, m, s, string: formatTime(h, m, s, 'hm') };
     ctx.emit('tick', { h, m, s });
   };
