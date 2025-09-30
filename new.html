@@ -17,40 +17,32 @@
 
         <clock-face @tick="$event"></clock-face>
 
-        <div class="menu">
+        <div>
           <button x-show="!app.showMenu.value" @click="app.showMenu.value = !app.showMenu.value"
             class="absolute bottom-2 left-1/2 -translate-x-1/2 px-8 py-1 text-2xl">...</button>
           <div x-else
             class="absolute w-[300px] left-1/2 -translate-x-1/2 bottom-2 p-1 bg-[#fff8] rounded z-10 overflow-auto max-h-[calc(100svh-1rem)]">
-
-            <!-- <span x-text="JSON.stringify(app.menuItems)"></span> -->
             <ul x-show="app.menu.value === ''" class="grid grid-cols-2">
               <button @click="app.showMenu.value = false">close</button>
               <template x-for="item in app.menuItems">
                 <li>
                   <button @click="app.openMenu(item)" class="w-full px-2 py-3 rounded hover:bg-[#fff5]"
                     x-text="item.label"></button>
-                  <!-- <button x-show="item.type === 'page'"
-                    @click="page = page===item.key ? 'clock' : item.key, showMenu = false"
-                    class="w-full px-2 py-3 rounded hover:bg-[#fff5]" x-text="item.label"></button> -->
                 </li>
               </template>
             </ul>
 
-            <div x-show="app.menu.value === 'theme'">
-              <menu-theme></menu-theme>
+            <menu-theme x-show="app.menu.value === 'theme'"></menu-theme>
+            <div x-show="app.menu.value === 'chime'">
+              <menu-item x-props="{name: 'chime'}">
+                <p>asdasd</p>
+              </menu-item>
             </div>
-            <div x-show="app.menu.value === 'habit'">habit</div>
-            <div x-show="app.menu.value === 'radio'">radio</div>
-            <div x-show="app.menu.value === 'chime'">chime</div>
-            <div x-show="app.menu.value === 'podcast'">podcast</div>
-            <!-- <menu-theme x-show="menu==='theme'"></menu-theme>
-            <menu-chime x-show="menu==='chime'"></menu-chime>
-            <menu-habit x-show="menu==='habit'"></menu-habit>
-            <menu-radio x-show="menu==='radio'"></menu-radio>
-            <menu-podcast x-show="menu==='podcast'"></menu-podcast> -->
+
+
           </div>
         </div>
+
       </main>
     </div>
   </div>
@@ -67,39 +59,20 @@
     </div>
   </template>
 
-  <template id="menu-theme">
+
+  <template id="menu-item">
     <div class="grid grid-cols-2 gap-y-1 gap-x-2">
       <div class=" col-span-full">
-        <button @click="app.menu.value = ''" class="px-2 py-1 hover:bg-[#fff5]">← 🎨 Theme </button>
+        <button @click="app.menu.value = ''" class="px-2 py-1 hover:bg-[#fff5]">← 🎨
+          <span x-text="name"></span>
+        </button>
       </div>
+      <slot></slot>
+    </div>
+  </template>
 
-      <!-- Shuffle -->
-      <!-- <div class="contents">
-        <label for="shuffle-period-select"> Shuffle Period </label>
-        <select id="shuffle-period-select" x-model="shufflePeriod"
-          class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent"
-          x-init="$nextTick(() => { $el.value = shufflePeriod })">
-          <template x-for="period in shufflePeriodOptions" :key="period">
-            <option :value="period" x-text="period === '0' ? 'Off' : \`\${period} min\`"></option>
-          </template>
-        </select>
-      </div> -->
-
-      <!-- shuffle style -->
-      <!-- <div class="contents" x-show="shufflePeriod !== '0'">
-        <label for="shuffle-style-select"> Shuffle Style </label>
-        <select id="shuffle-style-select" x-model="shuffleStyle"
-          class="w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent"
-          x-init="$nextTick(() => { $el.value = shuffleStyle })">
-          <template x-for="style in shuffleStyleOptions" :key="style">
-            <option :value="style" x-text="style"></option>
-          </template>
-        </select>
-      </div> -->
-
-      <!-- <i x-text="JSON.stringify(theme.invert)"></i> -->
-
-
+  <template id="menu-theme">
+    <menu-item x-props="{name: 'theme'}">
       <!-- Size Slider -->
       <div class="contents">
         <label for="size-slider">
@@ -149,7 +122,6 @@
         </select>
       </div>
 
-
       <!-- Font -->
       <div class="contents">
         <label for="font-select"> Font </label>
@@ -161,7 +133,7 @@
         </select>
       </div>
 
-    </div>
+    </menu-item>
 
   </template>
 
