@@ -355,14 +355,15 @@ function hydrateBindings(element: Element, context: any): void {
   // {} text interpolation
   const shouldSkipInterpolation = 'STYLE,SCRIPT'.includes(element.tagName);
   if (!shouldSkipInterpolation) {
-    Array.from(element.childNodes).forEach((node) => {
-      if (node.nodeType === Node.TEXT_NODE) {
-        const textContent = node.textContent || '';
-        if (textContent.includes('{') && textContent.includes('}')) {
-          bindTextInterpolation(node as Text, context);
-        }
-      }
-    });
+    if (element.nodeType !== Node.TEXT_NODE) return;
+    const text = element.textContent;
+    if (!text) return;
+    const a = text.indexOf('{');
+    const b = text.indexOf('}', a);
+    if (a === -1 || b === -1) {
+      return;
+    }
+    bindTextInterpolation(element, context);
   }
 
   // @events, :properties
@@ -383,7 +384,7 @@ function hydrateBindings(element: Element, context: any): void {
   });
 }
 
-function bindTextInterpolation(textNode: Text, context: any) {
+function bindTextInterpolation(textNode: Element, context: any) {
   const originalText = textNode.textContent || '';
 
   effect(() => {
