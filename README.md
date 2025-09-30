@@ -2,7 +2,7 @@
 
 ## TODO list
 
-- [ ] timer on small screen
+- [x] timer on small screen
 - [ ] radio sleep mode
 - [ ] pomodoro timer
 - [ ] dont chime at night
@@ -14,9 +14,10 @@
 - [ ] canvas animated background
 - [ ] analog & other clock?
 - [ ] usb - HW buttons ? what for?
-- [ ] web speech api
+- [x] web speech api
 - [ ] debug on ios
 - [ ] dont show voices dropdown when no voices to select
+- [ ] tiny desk? https://www.youtube.com/watch?v=kfUcI82SZv4&list=PL1B627337ED6F55F0
 
 **auth**
 Hono + better auth
@@ -56,3 +57,8 @@ async function getDesertIslandDiscs() {
 **weather**
 
 - https://open-meteo.com
+
+
+**framework submodule**
+
+`git submodule update --remote framework`

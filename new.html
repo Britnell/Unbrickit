@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>New App with Framework</title>
+</head>
+
+<body class="">
+  <div id="app">
+    <div x-data="{page:'clock'}">
+      <main>
+        <clock-face></clock-face>
+      </main>
+    </div>
+  </div>
+
+  <template id="clock-face">
+    <div class="grid place-items-center h-screen">
+      <span x-text="time.value"></span>
+    </div>
+  </template>
+
+  <script type="module" src="/src/new/main.ts"></script>
+</body>
+
+</html>
