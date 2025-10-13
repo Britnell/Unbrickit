@@ -47,6 +47,8 @@
     </div>
   </div>
 
+  <!--  components -->
+
   <template id="clock-face">
     <div class="grid place-items-center h-screen" :style="{
       background: theme.bg.value,
@@ -101,9 +103,6 @@
         <input type="range" id="hue-slider" x-model="theme.hue" min="0" max="360" step="1" class=" col-span-full" />
       </div>
 
-
-
-
       <!-- Dark Mode Checkbox -->
       <div class=" col-span-full flex items-center">
         <input type="checkbox" id="darkmode-checkbox" x-model="theme.invert" class="mr-2">
@@ -139,8 +138,6 @@
 
 
   <template id="menu-chime">
-
-
 
     <!-- Interval -->
     <div class="contents">
