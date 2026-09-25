@@ -2,8 +2,8 @@
 
 ## TODO list
 -[ ] store if tracking, auto-start if permission still granted
--[ ] daylight mode - dont show hue + swap
--[ ] PWA
+-[ ] one clock tick per app, not 3 / use jotai or so atomic
+-[x] PWA
 
 ## OLD 
 

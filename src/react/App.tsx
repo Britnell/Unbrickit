@@ -157,11 +157,11 @@ function ClockPage({
   const system = useSystem();
 
   const menuItems = [
+    // { label: "💬 Chat", go: "chat" },
     { label: "🍅 Pomodoro", go: "pomodoro" },
     { label: "🪑 Tracker", go: "tracker" },
     { label: "🎨 Theme", go: "theme" },
     { label: "🔔 Chime", go: "chime" },
-    { label: "💬 Chat", go: "chat" },
   ];
 
   const selectMenuItem = (go: string) => {
