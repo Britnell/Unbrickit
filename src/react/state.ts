@@ -11,10 +11,6 @@ export function titleCase(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-export function useLocalStorage<T>(key: string, initial: T) {
-  const value = localStorage.getItem(key) ?? initial;
-  return value as T;
-}
 
 // daylight mode: hour (0-24) -> color via anchor stops, interpolated in OKLab
 // (perceptually smooth, no muddy greys; Kelvin/blackbody was abandoned - it

@@ -1,9 +1,31 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createLandmarker } from "./poseLandmarker";
 import { LandmarkOneEuro } from "./filter";
+import { useLocalStorage } from "./useLocalStorage";
+import { playChimeType } from "./Chime";
 import type { PoseLandmarker } from "@mediapipe/tasks-vision";
 
 const POS_KEY = "tracker-position";
+const HOURS_KEY = "tracker-hours";
+
+interface HoursData {
+  /** date string, e.g. 2025-01-31; if not today, data is from a previous day */
+  date: string;
+  /** minutes seated per hour, index 0 = 00:00-00:59 */
+  hours: number[];
+}
+
+function todayStr(d = new Date()) {
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+
+function freshHours(): HoursData {
+  return { date: todayStr(), hours: Array.from({ length: 24 }, () => 0) };
+}
+
+function sameDay(a: string, b: string) {
+  return a === b;
+}
 
 // --- seat comparison tuning knobs ---
 /** max |angle difference| from calibrated angle before we call it a false positive (degrees) */
@@ -111,7 +133,16 @@ function extractPoints(lm: { x: number; y: number; z: number }[]): Points {
   };
 }
 
-export function useTracker() {
+// in minutes
+export const reminderIntervals = [0, 30, 45, 60];
+
+export function useTracker({
+  reminderMinutes,
+  chimeType,
+}: {
+  reminderMinutes: number;
+  chimeType: string;
+}) {
   // camera only ever starts from an explicit user click
   const [isRunning, setIsRunning] = useState(false);
   const pointsRef = useRef<Points | null>(null);
@@ -128,6 +159,27 @@ export function useTracker() {
   const [seated, setSeated] = useState(false);
   const [distance, setDistance] = useState(0);
   const [seatedSince, setSeatedSince] = useState<number | null>(null);
+
+  // minutes seated per hour of the current day, persisted in localStorage
+  const [hoursData, setHoursData] = useLocalStorage<HoursData>(
+    HOURS_KEY,
+    freshHours(),
+  );
+  if (!sameDay(hoursData.date, todayStr())) setHoursData(freshHours());
+
+  // add one seated-minute to the current hour bucket
+  const addSeatedMinute = useCallback(() => {
+    setHoursData((d) =>
+      sameDay(d.date, todayStr())
+        ? {
+            ...d,
+            hours: d.hours.map((m, h) =>
+              h === new Date().getHours() ? m + 1 : m,
+            ),
+          }
+        : freshHours(),
+    );
+  }, [setHoursData]);
 
   const start = () => setIsRunning(true);
   const stop = () => setIsRunning(false);
@@ -178,7 +230,6 @@ export function useTracker() {
               const s = calibRef.current;
               if (s) {
                 const d = seatDistance(f, s);
-                console.log("seatDistance", d);
                 setSeated(matchesSeat(f, s));
                 setDistance(d);
               }
@@ -215,14 +266,43 @@ export function useTracker() {
     setSeatedSince(seated ? Date.now() : null);
   }, [seated]);
 
-  // keep the displayed counter ticking while seated
+  // keep the displayed counter ticking while seated, +1 minute per hour bucket
   const [now, setNow] = useState(Date.now());
+  const countedMinutesRef = useRef(0);
   useEffect(() => {
-    if (seatedSince === null) return;
-    const id = setInterval(() => setNow(Date.now()), 1000);
+    if (seatedSince === null) {
+      countedMinutesRef.current = 0;
+      return;
+    }
+    const id = setInterval(() => {
+      const nowMs = Date.now();
+      setNow(nowMs);
+      const whole = Math.floor((nowMs - seatedSince) / 60000);
+      while (countedMinutesRef.current < whole) {
+        countedMinutesRef.current++;
+        addSeatedMinute();
+      }
+    }, 1000);
     return () => clearInterval(id);
-  }, [seatedSince]);
+  }, [seatedSince, addSeatedMinute]);
   const seatedMs = seatedSince !== null ? now - seatedSince : 0;
+
+  const seatedMinutesToday = hoursData.hours.reduce((a, b) => a + b, 0);
+
+  // seating reminder: derived state + one-time chime
+  const overdue =
+    seated && reminderMinutes > 0 && seatedMs >= reminderMinutes * 60000;
+  const chimedForRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!overdue) {
+      chimedForRef.current = null;
+      return;
+    }
+    if (chimedForRef.current !== seatedSince) {
+      chimedForRef.current = seatedSince;
+      playChimeType(chimeType);
+    }
+  }, [overdue, seatedSince, chimeType]);
 
   return {
     isRunning,
@@ -233,6 +313,9 @@ export function useTracker() {
     seatedSince,
     seatedMs,
     distance,
+    hours: hoursData.hours,
+    seatedMinutesToday,
+    overdue,
   };
 }
 
@@ -255,16 +338,25 @@ export function TrackerWidget({
       }}
       className="px-3 py-1 rounded bg-white text-black text-lg z-10"
     >
-      {tracker.seated ? "🪑" : "🕳️"}
+      {tracker.seated ? "🪑" : "🕳️"}{" "}
+      {tracker.overdue
+        ? "!"
+        : tracker.seated
+          ? Math.floor(tracker.seatedMs / 60000) + "m"
+          : ""}
     </button>
   );
 }
 
 export default function TrackerApp({
   tracker,
+  reminder,
+  setReminder,
   onClose,
 }: {
   tracker: Tracker;
+  reminder: number;
+  setReminder: (v: number) => void;
   onClose: () => void;
 }) {
   const { isRunning, start, stop, capture, seated, seatedMs, distance } =
@@ -301,10 +393,30 @@ export default function TrackerApp({
 
         {isRunning && seated && (
           <div className="mb-2 text-3xl tabular-nums">
-            {Math.floor(seatedMs / 60000)}:
-            {String(Math.floor((seatedMs % 60000) / 1000)).padStart(2, "0")}
+            {Math.floor(seatedMs / 60000)}m
           </div>
         )}
+
+        {tracker.overdue && (
+          <div className="mb-2 text-lg">�⏰ Time for a break!</div>
+        )}
+
+        <div className="mb-2 text-lg tabular-nums">
+          Total today: {Math.floor(tracker.seatedMinutesToday / 60)}h{" "}
+          {tracker.seatedMinutesToday % 60}m
+        </div>
+
+        <label className="text-sm">Seating reminder</label>
+        <select
+          value={reminder}
+          onChange={(e) => setReminder(Number(e.target.value))}          className="mb-2 w-full px-2 py-1 border border-gray-600 rounded-md bg-white text-black text-sm"
+        >
+          {reminderIntervals.map((i) => (
+            <option key={i} value={i}>
+              {i === 0 ? "Off" : `${i} min`}
+            </option>
+          ))}
+        </select>
 
         <button
           onClick={isRunning ? stop : start}

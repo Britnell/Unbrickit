@@ -4,25 +4,18 @@ import Theme from "./Theme";
 import PomodoroApp, { PomodoroWidget, usePomodoro } from "./Pomodoro";
 import TrackerApp, { TrackerWidget, useTracker } from "./Tracker";
 import Chime, { useChime } from "./Chime";
-import { colors, fonts, useLocalStorage } from "./state";
+import { colors, fonts } from "./state";
+import { useLocalStorage } from "./useLocalStorage";
 
 /* ---------------------------------- state --------------------------------- */
 
 function useThemeSettings() {
-  const [font, setFont] = useState(() => useLocalStorage("theme", fonts[0]));
-  const [fontSize, setFontSize] = useState(() =>
-    useLocalStorage("fontSize", 28),
-  );
-  const [fontWeight, setFontWeight] = useState(() =>
-    useLocalStorage("fontWeight", 700),
-  );
-  const [hue, setHue] = useState(() => useLocalStorage("hue", 303));
-  const [colorMode, setColorMode] = useState(() =>
-    useLocalStorage("colorMode", "pastel"),
-  );
-  const [darkMode, setDarkMode] = useState<boolean>(
-    () => useLocalStorage<string>("darkMode", "false") === "true",
-  );
+  const [font, setFont] = useLocalStorage("theme", fonts[0]);
+  const [fontSize, setFontSize] = useLocalStorage("fontSize", 28);
+  const [fontWeight, setFontWeight] = useLocalStorage("fontWeight", 700);
+  const [hue, setHue] = useLocalStorage("hue", 303);
+  const [colorMode, setColorMode] = useLocalStorage("colorMode", "pastel");
+  const [darkMode, setDarkMode] = useLocalStorage("darkMode", false);
   // debug override for daylight mode: null = follow real clock
   const [timeOfDay, setTimeOfDay] = useState<number | null>(null);
 
@@ -30,61 +23,30 @@ function useThemeSettings() {
     font,
     fontSize,
     fontWeight,
-    hue: Number(hue),
+    hue,
     colorMode,
     darkMode,
     timeOfDay,
     set: {
-      font: (v: string) => {
-        setFont(v);
-        localStorage.setItem("theme", v);
-      },
-      fontSize: (v: number) => {
-        setFontSize(v);
-        localStorage.setItem("fontSize", String(v));
-      },
-      fontWeight: (v: number) => {
-        setFontWeight(v);
-        localStorage.setItem("fontWeight", String(v));
-      },
-      hue: (v: number) => {
-        setHue(v);
-        localStorage.setItem("hue", String(v));
-      },
-      colorMode: (v: string) => {
-        setColorMode(v);
-        localStorage.setItem("colorMode", v);
-      },
-      darkMode: (v: boolean) => {
-        setDarkMode(v);
-        localStorage.setItem("darkMode", String(v));
-      },
+      font: setFont,
+      fontSize: setFontSize,
+      fontWeight: setFontWeight,
+      hue: setHue,
+      setColorMode,
+      setDarkMode,
       timeOfDay: setTimeOfDay,
     },
   };
 }
 
 function useChimeSettings() {
-  const [chimeType, setChimeType] = useState(() =>
-    useLocalStorage("chimeType", "chime"),
-  );
-  const [chimeInterval, setChimeInterval] = useState(() =>
-    useLocalStorage("chimeInterval", 0),
-  );
+  const [chimeType, setChimeType] = useLocalStorage("chimeType", "chime");
+  const [chimeInterval, setChimeInterval] = useLocalStorage("chimeInterval", 0);
 
   return {
     type: chimeType,
-    interval: Number(chimeInterval),
-    set: {
-      type: (v: string) => {
-        setChimeType(v);
-        localStorage.setItem("chimeType", v);
-      },
-      interval: (v: number) => {
-        setChimeInterval(v);
-        localStorage.setItem("chimeInterval", String(v));
-      },
-    },
+    interval: chimeInterval,
+    set: { type: setChimeType, interval: setChimeInterval },
   };
 }
 
@@ -159,7 +121,8 @@ function ClockPage({
       </div>
 
       {/* widgets: anchored top-right, all widgets in one flex row */}
-      <div className="absolute bottom-2 right-2 flex gap-2 pointer-events-auto">
+      {!menu && !overlayOpen && (
+        <div className="absolute bottom-2 right-2 flex gap-2 pointer-events-auto">
         <PomodoroWidget
           pomo={pomo}
           onOpen={() => {
@@ -174,7 +137,8 @@ function ClockPage({
             onOpenTracker();
           }}
         />
-      </div>
+        </div>
+      )}
 
       {!menu && !overlayOpen && (
         <button
@@ -226,8 +190,8 @@ function ClockPage({
                 setFontSize={theme.set.fontSize}
                 setFontWeight={theme.set.fontWeight}
                 setHue={theme.set.hue}
-                setColorMode={theme.set.colorMode}
-                setDarkMode={theme.set.darkMode}
+                setColorMode={theme.set.setColorMode}
+                setDarkMode={theme.set.setDarkMode}
                 onBack={() => setMenu(true)}
               />
             )
@@ -256,9 +220,16 @@ function ClockPage({
 export default function App() {
   const [page, setPage] = useState<"clock" | "pomodoro" | "tracker">("clock");
   const pomo = usePomodoro();
-  const tracker = useTracker();
+  const [reminder, setReminder] = useLocalStorage<number>(
+    "tracker-reminder",
+    30,
+  );
   const theme = useThemeSettings();
   const chime = useChimeSettings();
+  const tracker = useTracker({
+    reminderMinutes: reminder,
+    chimeType: chime.type,
+  });
   useChime(chime);
   const c = colors(theme.hue, theme.colorMode, theme.darkMode, theme.timeOfDay);
 
@@ -277,7 +248,12 @@ export default function App() {
         <PomodoroApp pomo={pomo} onClose={() => setPage("clock")} />
       )}
       {page === "tracker" && (
-        <TrackerApp tracker={tracker} onClose={() => setPage("clock")} />
+        <TrackerApp
+          tracker={tracker}
+          reminder={reminder}
+          setReminder={setReminder}
+          onClose={() => setPage("clock")}
+        />
       )}
     </main>
   );
