@@ -94,10 +94,10 @@ function ClockPage({
   const [menu, setMenu] = useState<boolean | string>(false);
 
   const menuItems = [
-    { label: "🎨 Theme", go: "theme" },
-    { label: "🔔 Chime", go: "chime" },
     { label: "🍅 Pomodoro", go: "pomodoro" },
     { label: "🪑 Tracker", go: "tracker" },
+    { label: "🎨 Theme", go: "theme" },
+    { label: "🔔 Chime", go: "chime" },
   ];
 
   const selectMenuItem = (go: string) => {

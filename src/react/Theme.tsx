@@ -109,41 +109,6 @@ export default function Theme({
         <label htmlFor="darkmode-checkbox">Swap colours</label>
       </div>
 
-      {colorMode === 'daylight' && (
-        <>
-          <div className="col-span-full mt-2">
-            <label className="flex justify-between items-center">
-              Time of day (debug)
-              <span>
-                <input
-                  type="checkbox"
-                  className="mr-1"
-                  checked={timeOfDay !== null}
-                  onChange={(e) => setTimeOfDay(e.target.checked ? 12 : null)}
-                />
-                override
-              </span>
-            </label>
-            {timeOfDay !== null && (
-              <>
-                <input
-                  type="range"
-                  min={0}
-                  max={24}
-                  step={0.25}
-                  value={timeOfDay}
-                  onChange={(e) => setTimeOfDay(Number(e.target.value))}
-                  className="w-full"
-                />
-                <p className="col-span-full text-sm opacity-80">
-                  {formatHour(timeOfDay)} → {hourToHex(timeOfDay)}
-                </p>
-              </>
-            )}
-          </div>
-        </>
-      )}
-
       <label htmlFor="colormode-select" className="flex justify-between items-center">
         Color Mode
       </label>
@@ -159,6 +124,39 @@ export default function Theme({
           </option>
         ))}
       </select>
+
+      {colorMode === 'daylight' && (
+        <div className="col-span-full mt-2">
+          <label className="flex justify-between items-center">
+            Time of day (debug)
+            <span>
+              <input
+                type="checkbox"
+                className="mr-1"
+                checked={timeOfDay !== null}
+                onChange={(e) => setTimeOfDay(e.target.checked ? 12 : null)}
+              />
+              override
+            </span>
+          </label>
+          {timeOfDay !== null && (
+            <>
+              <input
+                type="range"
+                min={0}
+                max={24}
+                step={0.25}
+                value={timeOfDay}
+                onChange={(e) => setTimeOfDay(Number(e.target.value))}
+                className="w-full"
+              />
+              <p className="col-span-full text-sm opacity-80">
+                {formatHour(timeOfDay)} → {hourToHex(timeOfDay)}
+              </p>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

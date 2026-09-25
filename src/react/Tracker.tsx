@@ -258,7 +258,6 @@ export function useTracker({
     localStorage.setItem(POS_KEY, JSON.stringify(pointsRef.current));
     const f = torsoFeatures(pointsRef.current);
     calibRef.current = f;
-    console.log("stored camera position", f);
   }, []);
 
   // counter starts when the user sits down, resets when they get up
@@ -378,39 +377,41 @@ export default function TrackerApp({
 
         <h2 className="text-2xl mb-2">Seating tracker</h2>
 
-        {isRunning && (
-          <div className="mb-2 text-lg">
-            {seated ? "🪑 At desk" : "🕳️ Not at desk"}
-          </div>
-        )}
-
-        {isRunning && (
-          <progress
-            className="mb-2 w-full"
-            max={1}
-            value={Math.floor(distance * 5) / 5}
-          ></progress>
+        {isRunning && !seated && (
+          <div className="mb-2 text-lg">🕳️ Not at desk</div>
         )}
 
         {isRunning && seated && (
-          <div className="mb-2 text-3xl tabular-nums">
-            {Math.floor(seatedMs / 60000)}m
+          <div className="mb-2 bg-white/90 px-2 py-1 rounded text-center">
+            <div className="text-4xl">🪑</div>
+            <div className="text-lg">At desk</div>
+            <div className="text-3xl tabular-nums">
+              {Math.floor(seatedMs / 60000)}
+              <span className="text-lg text-gray-500"> min</span>
+            </div>
           </div>
         )}
 
-        {tracker.overdue && (
-          <div className="mb-2 text-lg">�⏰ Time for a break!</div>
-        )}
-
         <div className="mb-2 text-lg tabular-nums">
-          Total today: {Math.floor(tracker.seatedMinutesToday / 60)}h{" "}
-          {tracker.seatedMinutesToday % 60}m
+          {tracker.seatedMinutesToday >= 60 && (
+            <>Total today: {Math.floor(tracker.seatedMinutesToday / 60)}h{" "}
+            {tracker.seatedMinutesToday % 60}m</>
+          )}
+          {tracker.seatedMinutesToday < 60 && <>Total today: {tracker.seatedMinutesToday}m</>}
         </div>
 
-        <label className="text-sm">Seating reminder</label>
+        <button
+          onClick={isRunning ? stop : start}
+          className="mb-2 px-8 py-2 rounded-lg border border-current"
+        >
+          {isRunning ? "Stop" : "Start"}
+        </button>
+
+        <label className="text-sm self-start">Seating reminder</label>
         <select
           value={reminder}
-          onChange={(e) => setReminder(Number(e.target.value))}          className="mb-2 w-full px-2 py-1 border border-gray-600 rounded-md bg-white text-black text-sm"
+          onChange={(e) => setReminder(Number(e.target.value))}
+          className="mb-2 w-full px-2 py-1 border border-gray-600 rounded-md bg-white text-black text-sm"
         >
           {reminderIntervals.map((i) => (
             <option key={i} value={i}>
@@ -419,12 +420,20 @@ export default function TrackerApp({
           ))}
         </select>
 
-        <button
-          onClick={isRunning ? stop : start}
-          className="px-8 py-2 rounded-lg border border-current"
-        >
-          {isRunning ? "Stop" : "Start"}
-        </button>
+        {tracker.overdue && (
+          <div className="mb-2 text-lg">⏰ Time for a break!</div>
+        )}
+
+        {isRunning && (
+          <>
+            <label className="text-sm self-start">Seating position</label>
+            <progress
+              className="mb-2 w-full"
+              max={1}
+              value={Math.max(0, Math.floor((1 - distance) * 5) / 5)}
+            ></progress>
+          </>
+        )}
 
         {isRunning && (
           <button

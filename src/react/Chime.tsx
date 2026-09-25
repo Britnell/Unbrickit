@@ -13,7 +13,14 @@ export const chimeIntervals = [0, 1, 5, 15, 20, 30, 60]; // 1 min only for dev t
 // file types appear as options in the type dropdown, e.g. gong1.mp3 -> 'Gong 1'
 const fileTypes = soundFiles.map((f) => ({
   value: `file:${f.name}`,
-  label: titleCase(f.name.replace(/\.[^.]+$/, '').replace(/([a-z])(\d)/, '$1 $2')),
+  label: titleCase(
+    f.name
+      // strip freesound prefix '123456__author__'
+      .replace(/^\d+__[^_]+__/, '')
+      .replace(/\.[^.]+$/, '')
+      .replace(/([a-z])(\d)/, '$1 $2')
+      .replace(/[-_]/g, ' ')
+  ),
 }));
 const chimeTypes = [
   { value: 'chime', label: 'Chime' },
