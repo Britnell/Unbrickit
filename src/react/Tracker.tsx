@@ -13,7 +13,6 @@ const MAX_CENTER_OFFSET = 0.5;
 /** current shoulder width must be at least this fraction of calibrated width */
 const MIN_SIZE_RATIO = 0.5;
 
-
 export interface Points {
   head: { x: number; y: number; z: number };
   shoulderL: { x: number; y: number; z: number };
@@ -58,15 +57,41 @@ export function torsoFeatures(p: Points): TorsoFeatures {
   return { angle, center, shoulderWidth };
 }
 
+/**
+ * Combined distance from the calibrated position, 0..1.
+ * Each factor contributes diff/threshold; the three are summed, then scaled
+ * so sum=1 (seated threshold hit) -> 0.5, sum=2 (double threshold) -> 1.
+ */
+export function seatDistance(
+  current: TorsoFeatures,
+  seated: TorsoFeatures,
+): number {
+  const angleDiff = Math.abs(current.angle - seated.angle) / MAX_ANGLE_DIFF;
+  const centerOffset =
+    (Math.abs(current.center.x - seated.center.x) +
+      Math.abs(current.center.y - seated.center.y) +
+      Math.abs(current.center.z - seated.center.z)) /
+    MAX_CENTER_OFFSET;
+  // shoulder width: 0 when matching, 1 when width dropped to MIN_SIZE_RATIO
+  const sizeDiff =
+    Math.max(0, 1 - current.shoulderWidth / seated.shoulderWidth) /
+    (1 - MIN_SIZE_RATIO);
+  return Math.min(1, (angleDiff + centerOffset + sizeDiff) / 2);
+}
+
 /** true if a frame's features roughly match the calibrated seating position */
-export function matchesSeat(current: TorsoFeatures, seated: TorsoFeatures): boolean {
+export function matchesSeat(
+  current: TorsoFeatures,
+  seated: TorsoFeatures,
+): boolean {
   if (Math.abs(current.angle - seated.angle) > MAX_ANGLE_DIFF) return false;
   const offset =
     Math.abs(current.center.x - seated.center.x) +
     Math.abs(current.center.y - seated.center.y) +
     Math.abs(current.center.z - seated.center.z);
   if (offset > MAX_CENTER_OFFSET) return false;
-  if (current.shoulderWidth < seated.shoulderWidth * MIN_SIZE_RATIO) return false;
+  if (current.shoulderWidth < seated.shoulderWidth * MIN_SIZE_RATIO)
+    return false;
   return true;
 }
 
@@ -90,7 +115,19 @@ export function useTracker() {
   // camera only ever starts from an explicit user click
   const [isRunning, setIsRunning] = useState(false);
   const pointsRef = useRef<Points | null>(null);
-  const seatedRef = useRef<TorsoFeatures | null>(null);
+  const calibRef = useRef<TorsoFeatures | null>(null);
+  // restore saved calibration so detection works right after (re)load
+  const saved = localStorage.getItem(POS_KEY);
+  if (saved) {
+    try {
+      calibRef.current = torsoFeatures(JSON.parse(saved) as Points);
+    } catch {
+      /* ignore corrupt data */
+    }
+  }
+  const [seated, setSeated] = useState(false);
+  const [distance, setDistance] = useState(0);
+  const [seatedSince, setSeatedSince] = useState<number | null>(null);
 
   const start = () => setIsRunning(true);
   const stop = () => setIsRunning(false);
@@ -129,13 +166,22 @@ export function useTracker() {
           if (video.currentTime !== lastVideoTime && landmarker) {
             lastVideoTime = video.currentTime;
             const result = landmarker.detectForVideo(video, performance.now());
-            for (const raw of result.landmarks ?? []) {
+            const landmarks = result.landmarks ?? [];
+            if (landmarks.length === 0) {
+              setSeated(false);
+              setDistance(1);
+            }
+            for (const raw of landmarks) {
               const points = extractPoints(smoother.smooth(raw));
               pointsRef.current = points;
               const f = torsoFeatures(points);
-              const s = seatedRef.current;
-              if (s) setSeated(matchesSeat(f, s));
-              else console.log("torso", f);
+              const s = calibRef.current;
+              if (s) {
+                const d = seatDistance(f, s);
+                console.log("seatDistance", d);
+                setSeated(matchesSeat(f, s));
+                setDistance(d);
+              }
             }
           }
         }
@@ -159,11 +205,35 @@ export function useTracker() {
     if (!pointsRef.current) return;
     localStorage.setItem(POS_KEY, JSON.stringify(pointsRef.current));
     const f = torsoFeatures(pointsRef.current);
-    seatedRef.current = f;
+    calibRef.current = f;
     console.log("stored camera position", f);
   }, []);
 
-  return { isRunning, start, stop, capture, seated };
+  // counter starts when the user sits down, resets when they get up
+  useEffect(() => {
+    setNow(Date.now());
+    setSeatedSince(seated ? Date.now() : null);
+  }, [seated]);
+
+  // keep the displayed counter ticking while seated
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    if (seatedSince === null) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [seatedSince]);
+  const seatedMs = seatedSince !== null ? now - seatedSince : 0;
+
+  return {
+    isRunning,
+    start,
+    stop,
+    capture,
+    seated,
+    seatedSince,
+    seatedMs,
+    distance,
+  };
 }
 
 export type Tracker = ReturnType<typeof useTracker>;
@@ -185,7 +255,7 @@ export function TrackerWidget({
       }}
       className="px-3 py-1 rounded bg-white text-black text-lg z-10"
     >
-      🪑
+      {tracker.seated ? "🪑" : "🕳️"}
     </button>
   );
 }
@@ -197,7 +267,8 @@ export default function TrackerApp({
   tracker: Tracker;
   onClose: () => void;
 }) {
-  const { isRunning, start, stop, capture, seated } = tracker;
+  const { isRunning, start, stop, capture, seated, seatedMs, distance } =
+    tracker;
 
   return (
     <div className="absolute inset-0" onClick={onClose}>
@@ -214,7 +285,26 @@ export default function TrackerApp({
 
         <h2 className="text-2xl mb-2">Seating tracker</h2>
 
-        {isRunning && <div className="mb-2 text-lg">{seated ? "At desk" : "Not at desk"}</div>}
+        {isRunning && (
+          <div className="mb-2 text-lg">
+            {seated ? "🪑 At desk" : "🕳️ Not at desk"}
+          </div>
+        )}
+
+        {isRunning && (
+          <progress
+            className="mb-2 w-full"
+            max={1}
+            value={distance}
+          ></progress>
+        )}
+
+        {isRunning && seated && (
+          <div className="mb-2 text-3xl tabular-nums">
+            {Math.floor(seatedMs / 60000)}:
+            {String(Math.floor((seatedMs % 60000) / 1000)).padStart(2, "0")}
+          </div>
+        )}
 
         <button
           onClick={isRunning ? stop : start}
