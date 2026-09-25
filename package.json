@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@cloudflare/workers-types": "^4.20260702.1",
+    "@mediapipe/tasks-vision": "^1.0.1",
     "@preact/signals-core": "^1.14.4",
     "alpinejs": "^3.17.4",
     "hono": "^4.13.9",
