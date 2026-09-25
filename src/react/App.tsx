@@ -97,7 +97,16 @@ function HelperButtons({ system }: { system: ReturnType<typeof useSystem> }) {
           system.toggleFullscreen();
         }}
       >
-        {system.fullscreen ? "exit fullscreen" : "fullscreen"}
+        {system.fullscreen ? "⤡" : "⛶"}
+      </button>
+      <button
+        className="py-3 px-5 rounded bg-white/30 grid place-items-center text-lg hover:bg-white/50"
+        onClick={(e) => {
+          e.stopPropagation();
+          window.location.reload();
+        }}
+      >
+        ⟳
       </button>
       <button
         className="py-3 px-5 rounded bg-white/30 grid place-items-center text-lg hover:bg-white/50"
@@ -106,7 +115,7 @@ function HelperButtons({ system }: { system: ReturnType<typeof useSystem> }) {
           system.toggleScreenLock();
         }}
       >
-        {system.screenLock ? "sleep" : "keep screen unlocked"}
+        {system.screenLock ? "screen 🔒︎" : "screen 🔓︎"}
       </button>
     </div>
   );
