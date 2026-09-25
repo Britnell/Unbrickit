@@ -23,6 +23,8 @@ function useThemeSettings() {
   const [darkMode, setDarkMode] = useState<boolean>(
     () => useLocalStorage<string>("darkMode", "false") === "true",
   );
+  // debug override for daylight mode: null = follow real clock
+  const [timeOfDay, setTimeOfDay] = useState<number | null>(null);
 
   return {
     font,
@@ -31,6 +33,7 @@ function useThemeSettings() {
     hue: Number(hue),
     colorMode,
     darkMode,
+    timeOfDay,
     set: {
       font: (v: string) => {
         setFont(v);
@@ -56,6 +59,7 @@ function useThemeSettings() {
         setDarkMode(v);
         localStorage.setItem("darkMode", String(v));
       },
+      timeOfDay: setTimeOfDay,
     },
   };
 }
@@ -115,6 +119,7 @@ function ClockPage({
   chime,
   onOpenPomodoro,
   onOpenTracker,
+  overlayOpen,
 }: {
   pomo: ReturnType<typeof usePomodoro>;
   tracker: ReturnType<typeof useTracker>;
@@ -122,6 +127,7 @@ function ClockPage({
   chime: ReturnType<typeof useChimeSettings>;
   onOpenPomodoro: () => void;
   onOpenTracker: () => void;
+  overlayOpen: boolean;
 }) {
   const [menu, setMenu] = useState<boolean | string>(false);
 
@@ -154,11 +160,23 @@ function ClockPage({
 
       {/* widgets: anchored top-right, all widgets in one flex row */}
       <div className="absolute bottom-2 right-2 flex gap-2 pointer-events-auto">
-        <PomodoroWidget pomo={pomo} onOpen={onOpenPomodoro} />
-        <TrackerWidget tracker={tracker} onOpen={onOpenTracker} />
+        <PomodoroWidget
+          pomo={pomo}
+          onOpen={() => {
+            setMenu(false);
+            onOpenPomodoro();
+          }}
+        />
+        <TrackerWidget
+          tracker={tracker}
+          onOpen={() => {
+            setMenu(false);
+            onOpenTracker();
+          }}
+        />
       </div>
 
-      {!menu && (
+      {!menu && !overlayOpen && (
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -202,6 +220,8 @@ function ClockPage({
                 hue={theme.hue}
                 colorMode={theme.colorMode}
                 darkMode={theme.darkMode}
+                timeOfDay={theme.timeOfDay}
+                setTimeOfDay={theme.set.timeOfDay}
                 setFont={theme.set.font}
                 setFontSize={theme.set.fontSize}
                 setFontWeight={theme.set.fontWeight}
@@ -240,7 +260,7 @@ export default function App() {
   const theme = useThemeSettings();
   const chime = useChimeSettings();
   useChime(chime);
-  const c = colors(theme.hue, theme.colorMode, theme.darkMode);
+  const c = colors(theme.hue, theme.colorMode, theme.darkMode, theme.timeOfDay);
 
   return (
     <main className="fixed inset-0" style={{ background: c.bg, color: c.text }}>
@@ -251,6 +271,7 @@ export default function App() {
         chime={chime}
         onOpenPomodoro={() => setPage("pomodoro")}
         onOpenTracker={() => setPage("tracker")}
+        overlayOpen={page !== "clock"}
       />
       {page === "pomodoro" && (
         <PomodoroApp pomo={pomo} onClose={() => setPage("clock")} />
