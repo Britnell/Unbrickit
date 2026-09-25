@@ -10,7 +10,6 @@ export default defineConfig({
       input: {
         main: 'index.html',
         app: 'app.html',
-        new: 'new.html',
         react: 'react.html',
       },
     },

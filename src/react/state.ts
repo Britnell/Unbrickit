@@ -5,6 +5,8 @@ export const fonts =
     .split(',')
     .sort();
 
+export const colorModes = ['pastel', 'colourful', 'dark', 'B&W'];
+
 export function titleCase(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
@@ -12,4 +14,26 @@ export function titleCase(s: string) {
 export function useLocalStorage<T>(key: string, initial: T) {
   const value = localStorage.getItem(key) ?? initial;
   return value as T;
+}
+
+export function colors(hue: number, colorMode: string, darkMode: boolean) {
+  const h = Number(hue);
+  let bg: string, txt: string;
+
+  if (colorMode === 'pastel') {
+    bg = `hsl(${h}, 100%, 85%)`;
+    txt = `hsl(${(h + 360 - 25) % 360}, 60%, 35%)`;
+  } else if (colorMode === 'colourful') {
+    bg = `hsl(${h}, 100%, 70%)`;
+    txt = `hsl(${(h + 360 - 55) % 360}, 60%, 35%)`;
+  } else if (colorMode === 'dark') {
+    bg = `hsl(${h}, 100%, 7%)`;
+    txt = `hsl(${h % 360}, 60%, 35%)`;
+  } else {
+    // B&W
+    bg = `hsl(${h}, 0%, 95%)`;
+    txt = `hsl(${h}, 0%, 10%)`;
+  }
+
+  return darkMode ? { bg: txt, text: bg } : { bg, text: txt };
 }

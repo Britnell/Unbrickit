@@ -6,7 +6,7 @@
   input:not([type='checkbox']):not([type='color']),
   select,
   button.button {
-    @apply w-full px-2 py-1 border border-gray-600 rounded-md bg-transparent;
+    @apply w-full px-2 py-1 border border-gray-600 rounded-md bg-white text-black;
   }
 }
 input[type='range'] {
