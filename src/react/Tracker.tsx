@@ -80,9 +80,8 @@ export function torsoFeatures(p: Points): TorsoFeatures {
 }
 
 /**
- * Combined distance from the calibrated position, 0..1.
- * Each factor contributes diff/threshold; the three are summed, then scaled
- * so sum=1 (seated threshold hit) -> 0.5, sum=2 (double threshold) -> 1.
+ * Max distance from the calibrated position, 0..1.
+ * Each factor is diff/threshold; 1 = that factor hit its threshold.
  */
 export function seatDistance(
   current: TorsoFeatures,
@@ -91,14 +90,16 @@ export function seatDistance(
   const angleDiff = Math.abs(current.angle - seated.angle) / MAX_ANGLE_DIFF;
   const centerOffset =
     (Math.abs(current.center.x - seated.center.x) +
-      Math.abs(current.center.y - seated.center.y) +
-      Math.abs(current.center.z - seated.center.z)) /
+      Math.abs(current.center.y - seated.center.y)) /
     MAX_CENTER_OFFSET;
   // shoulder width: 0 when matching, 1 when width dropped to MIN_SIZE_RATIO
   const sizeDiff =
     Math.max(0, 1 - current.shoulderWidth / seated.shoulderWidth) /
     (1 - MIN_SIZE_RATIO);
-  return Math.min(1, (angleDiff + centerOffset + sizeDiff) / 2);
+  // console.log('[seat] angleDiff:', angleDiff.toFixed(3),
+  //   'centerOffset:', centerOffset.toFixed(3),
+  //   'sizeDiff:', sizeDiff.toFixed(3));
+  return Math.max(angleDiff, centerOffset, sizeDiff);
 }
 
 /** true if a frame's features roughly match the calibrated seating position */
@@ -387,7 +388,7 @@ export default function TrackerApp({
           <progress
             className="mb-2 w-full"
             max={1}
-            value={distance}
+            value={Math.floor(distance * 5) / 5}
           ></progress>
         )}
 
