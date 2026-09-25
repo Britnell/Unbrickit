@@ -30,7 +30,7 @@ function sameDay(a: string, b: string) {
 
 // --- seat comparison tuning knobs ---
 /** max |angle difference| from calibrated angle before we call it a false positive (degrees) */
-const MAX_ANGLE_DIFF = 45;
+const MAX_ANGLE_DIFF = 55;
 /** max |x|+|y|+|z| center offset from calibrated position (all coords are 0-1) */
 const MAX_CENTER_OFFSET = 0.5;
 /** current shoulder width must be at least this fraction of calibrated width */
