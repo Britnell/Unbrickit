@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import Clock from "./Clock";
 import Theme from "./Theme";
 import PomodoroApp, { PomodoroWidget, usePomodoro } from "./Pomodoro";
@@ -40,6 +40,39 @@ function useThemeSettings() {
   };
 }
 
+function useSystem() {
+  const [fullscreen, setFullscreen] = useState(!!document.fullscreenElement);
+  const [screenLock, setScreenLock] = useState<WakeLockSentinel | null>(null);
+
+  useEffect(() => {
+    const onFs = () => setFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onFs);
+    return () => document.removeEventListener("fullscreenchange", onFs);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
+  };
+
+  const toggleScreenLock = async () => {
+    if (screenLock) {
+      await screenLock.release();
+      setScreenLock(null);
+    } else {
+      try {
+        const lock = await navigator.wakeLock.request("screen");
+        lock.onrelease = () => setScreenLock(null);
+        setScreenLock(lock);
+      } catch {
+        setScreenLock(null);
+      }
+    }
+  };
+
+  return { fullscreen, screenLock, toggleFullscreen, toggleScreenLock };
+}
+
 function useChimeSettings() {
   const [chimeType, setChimeType] = useLocalStorage("chimeType", "chime");
   const [chimeInterval, setChimeInterval] = useLocalStorage("chimeInterval", 0);
@@ -52,6 +85,32 @@ function useChimeSettings() {
 }
 
 /* --------------------------------- regions -------------------------------- */
+
+/* Helper buttons like the old app */
+function HelperButtons({ system }: { system: ReturnType<typeof useSystem> }) {
+  return (
+    <div className="absolute right-2 top-2 flex items-center gap-2 z-20">
+      <button
+        className="py-3 px-5 rounded bg-white/30 grid place-items-center text-lg hover:bg-white/50"
+        onClick={(e) => {
+          e.stopPropagation();
+          system.toggleFullscreen();
+        }}
+      >
+        {system.fullscreen ? "exit fullscreen" : "fullscreen"}
+      </button>
+      <button
+        className="py-3 px-5 rounded bg-white/30 grid place-items-center text-lg hover:bg-white/50"
+        onClick={(e) => {
+          e.stopPropagation();
+          system.toggleScreenLock();
+        }}
+      >
+        {system.screenLock ? "sleep" : "keep screen unlocked"}
+      </button>
+    </div>
+  );
+}
 
 /** Bottom sheet menu; closes when tapping outside the panel. */
 function MenuSheet({
@@ -95,6 +154,7 @@ function ClockPage({
   overlayOpen: boolean;
 }) {
   const [menu, setMenu] = useState<boolean | string>(false);
+  const system = useSystem();
 
   const menuItems = [
     { label: "🍅 Pomodoro", go: "pomodoro" },
@@ -128,6 +188,8 @@ function ClockPage({
       </div>
 
       {/* widgets: anchored top-right, all widgets in one flex row */}
+      {menu && !overlayOpen && <HelperButtons system={system} />}
+
       {!menu && !overlayOpen && (
         <div className="absolute bottom-2 right-2 flex gap-2 pointer-events-auto">
         <PomodoroWidget
@@ -153,7 +215,7 @@ function ClockPage({
             e.stopPropagation();
             setMenu(true);
           }}
-          className="absolute bottom-2 left-1/2 -translate-x-1/2 px-8 py-1"
+          className="absolute bottom-2 left-1/2 -translate-x-1/2 px-8 py-2"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -207,7 +269,7 @@ function ClockPage({
               {menuItems.map(({ label, go }) => (
                 <li key={label}>
                   <button
-                    className="w-full px-2 py-3 rounded hover:bg-gray-200"
+                    className="w-full px-2 py-4 rounded hover:bg-gray-200"
                     onClick={() => selectMenuItem(go)}
                   >
                     {label}

@@ -75,7 +75,7 @@ export default function Chime({
   return (
     <div className="grid grid-cols-2 gap-y-1 gap-x-2">
       <div className="col-span-full">
-        <button onClick={onBack} className="px-2 py-1 hover:bg-gray-200">
+        <button onClick={onBack} className="px-2 py-3 hover:bg-gray-200">
           ← 🔔 Chime
         </button>
       </div>

@@ -356,7 +356,7 @@ export function TrackerWidget({
         e.stopPropagation();
         onOpen();
       }}
-      className="px-3 py-1 rounded bg-white text-black text-lg z-10"
+      className="px-3 py-3 rounded bg-white text-black text-lg z-10"
     >
       {tracker.seated ? "🪑" : "🕳️"}{" "}
       {tracker.overdue
@@ -422,7 +422,7 @@ export default function TrackerApp({
 
         <button
           onClick={isRunning ? stop : start}
-          className="mb-2 px-8 py-2 rounded-lg border border-current"
+          className="mb-2 px-8 py-4 rounded-lg border border-current"
         >
           {isRunning ? "Stop" : "Start"}
         </button>
@@ -431,7 +431,7 @@ export default function TrackerApp({
         <select
           value={reminder}
           onChange={(e) => setReminder(Number(e.target.value))}
-          className="mb-2 w-full px-2 py-1 border border-gray-600 rounded-md bg-white text-black text-sm"
+          className="mb-2 w-full px-2 py-3 border border-gray-600 rounded-md bg-white text-black text-sm"
         >
           {reminderIntervals.map((i) => (
             <option key={i} value={i}>
@@ -458,7 +458,7 @@ export default function TrackerApp({
         {isRunning && (
           <button
             onClick={capture}
-            className="mt-2 px-4 py-1 rounded-lg border border-current text-sm"
+            className="mt-2 px-4 py-3 rounded-lg border border-current text-sm"
           >
             Set camera position
           </button>
