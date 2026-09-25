@@ -4,6 +4,7 @@ import Theme from "./Theme";
 import PomodoroApp, { PomodoroWidget, usePomodoro } from "./Pomodoro";
 import TrackerApp, { TrackerWidget, useTracker } from "./Tracker";
 import Chime, { useChime } from "./Chime";
+import ChatApp from "./Chat";
 import { colors, fonts } from "./state";
 import { useLocalStorage } from "./useLocalStorage";
 
@@ -81,6 +82,7 @@ function ClockPage({
   chime,
   onOpenPomodoro,
   onOpenTracker,
+  onOpenChat,
   overlayOpen,
 }: {
   pomo: ReturnType<typeof usePomodoro>;
@@ -89,6 +91,7 @@ function ClockPage({
   chime: ReturnType<typeof useChimeSettings>;
   onOpenPomodoro: () => void;
   onOpenTracker: () => void;
+  onOpenChat: () => void;
   overlayOpen: boolean;
 }) {
   const [menu, setMenu] = useState<boolean | string>(false);
@@ -98,6 +101,7 @@ function ClockPage({
     { label: "🪑 Tracker", go: "tracker" },
     { label: "🎨 Theme", go: "theme" },
     { label: "🔔 Chime", go: "chime" },
+    { label: "💬 Chat", go: "chat" },
   ];
 
   const selectMenuItem = (go: string) => {
@@ -107,6 +111,9 @@ function ClockPage({
     } else if (go === "tracker") {
       setMenu(false);
       onOpenTracker();
+    } else if (go === "chat") {
+      setMenu(false);
+      onOpenChat();
     } else setMenu(go);
   };
 
@@ -218,7 +225,7 @@ function ClockPage({
 /* ----------------------------------- app ---------------------------------- */
 
 export default function App() {
-  const [page, setPage] = useState<"clock" | "pomodoro" | "tracker">("clock");
+  const [page, setPage] = useState<"clock" | "pomodoro" | "tracker" | "chat">("clock");
   const pomo = usePomodoro();
   const [reminder, setReminder] = useLocalStorage<number>(
     "tracker-reminder",
@@ -242,11 +249,13 @@ export default function App() {
         chime={chime}
         onOpenPomodoro={() => setPage("pomodoro")}
         onOpenTracker={() => setPage("tracker")}
+        onOpenChat={() => setPage("chat")}
         overlayOpen={page !== "clock"}
       />
       {page === "pomodoro" && (
         <PomodoroApp pomo={pomo} onClose={() => setPage("clock")} />
       )}
+      {page === "chat" && <ChatApp onClose={() => setPage("clock")} />}
       {page === "tracker" && (
         <TrackerApp
           tracker={tracker}

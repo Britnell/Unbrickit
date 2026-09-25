@@ -102,7 +102,10 @@ export default function Chime({
       <select
         id="chime-type"
         value={type}
-        onChange={(e) => setType(e.target.value)}
+        onChange={(e) => {
+          setType(e.target.value);
+          playChimeType(e.target.value);
+        }}
         className="w-full px-2 py-1 border border-gray-600 rounded-md bg-white text-black"
       >
         {chimeTypes.map((t) => (
@@ -111,12 +114,6 @@ export default function Chime({
           </option>
         ))}
       </select>
-
-      <div className="col-span-full">
-        <button onClick={() => playChimeType(type)} className="w-full px-2 py-1 rounded hover:bg-gray-200">
-          ▶ Test
-        </button>
-      </div>
     </div>
   );
 }
