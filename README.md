@@ -18,6 +18,8 @@
 - [ ] debug on ios
 - [ ] dont show voices dropdown when no voices to select
 - [ ] tiny desk? https://www.youtube.com/watch?v=kfUcI82SZv4&list=PL1B627337ED6F55F0
+- [ ] start over
+
 
 **auth**
 Hono + better auth
