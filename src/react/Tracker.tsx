@@ -7,6 +7,7 @@ import type { PoseLandmarker } from "@mediapipe/tasks-vision";
 
 const POS_KEY = "tracker-position";
 const HOURS_KEY = "tracker-hours";
+const RUNNING_KEY = "tracker-running";
 
 interface HoursData {
   /** date string, e.g. 2025-01-31; if not today, data is from a previous day */
@@ -182,8 +183,27 @@ export function useTracker({
     );
   }, [setHoursData]);
 
-  const start = () => setIsRunning(true);
-  const stop = () => setIsRunning(false);
+  const start = () => {
+    setIsRunning(true);
+    sessionStorage.setItem(RUNNING_KEY, "1");
+  };
+  const stop = () => {
+    setIsRunning(false);
+    sessionStorage.removeItem(RUNNING_KEY);
+  };
+
+  // restart after reload if the user had it running and camera permission persists
+  useEffect(() => {
+    if (!sessionStorage.getItem(RUNNING_KEY)) return;
+    navigator.permissions
+      .query({ name: "camera" as PermissionName })
+      .then((p) => {
+        if (p.state === "granted") setIsRunning(true);
+      })
+      .catch(() => {
+        /* permissions API unsupported: don't auto-start */
+      });
+  }, []);
 
   // camera + pose landmark detection, extracts + filters our 5 torso points
   useEffect(() => {
