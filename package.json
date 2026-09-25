@@ -15,18 +15,23 @@
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.2.3",
-    "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.4",
-    "tailwindcss": "3",
+    "@cloudflare/vite-plugin": "^1.60.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "autoprefixer": "^10.6.1",
+    "postcss": "^8.5.28",
+    "tailwindcss": "^3.4.19",
     "typescript": "~5.8.3",
-    "vite": "^6.3.5",
-    "wrangler": "^4.19.1"
+    "vite": "^6.4.3",
+    "wrangler": "^4.140.0"
   },
   "dependencies": {
-    "@cloudflare/workers-types": "^4.20250607.0",
-    "@preact/signals-core": "^1.12.1",
-    "alpinejs": "^3.14.9",
-    "hono": "^4.7.11"
+    "@cloudflare/workers-types": "^4.20260702.1",
+    "@preact/signals-core": "^1.14.4",
+    "alpinejs": "^3.17.4",
+    "hono": "^4.13.9",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
   }
 }
