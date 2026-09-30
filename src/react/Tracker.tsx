@@ -413,7 +413,11 @@ export default function TrackerApp({
               <div className="text-4xl">🪑</div>
               <div className="text-lg">At desk</div>
               <div className="text-3xl tabular-nums">
-                {Math.floor(seatedMs / 60000)}
+                {Math.floor(seatedMs / 60000)}:
+                {String(Math.floor((seatedMs % 60000) / 1000)).padStart(
+                  2,
+                  "0",
+                )}
                 <span className="text-lg text-gray-500"> min</span>
               </div>
             </div>
