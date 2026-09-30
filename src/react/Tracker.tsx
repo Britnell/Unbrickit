@@ -433,7 +433,7 @@ export default function TrackerPage({
           <select
             value={reminder}
             onChange={(e) => setReminder(Number(e.target.value))}
-            className="mb-2 px-2 py-3 border border-gray-600 rounded-md bg-white text-black text-sm"
+            className="mb-2 w-full text-sm"
           >
             {reminderIntervals.map((i) => (
               <option key={i} value={i}>

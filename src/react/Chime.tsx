@@ -79,7 +79,7 @@ export default function Chime({
         id="chime-interval"
         value={interval}
         onChange={(e) => setInterval_(Number(e.target.value))}
-        className="w-full px-2 py-1 border border-gray-600 rounded-md bg-white text-black"
+        className="w-full"
       >
         {chimeIntervals.map((i) => (
           <option key={i} value={i}>
@@ -98,7 +98,7 @@ export default function Chime({
           setType(e.target.value);
           playChimeType(e.target.value);
         }}
-        className="w-full px-2 py-1 border border-gray-600 rounded-md bg-white text-black"
+        className="w-full"
       >
         {chimeTypes.map((t) => (
           <option key={t.value} value={t.value}>

@@ -60,7 +60,7 @@ export default function ChatApp({ onClose }: { onClose: () => void }) {
         </button>
         <div className="flex w-full gap-2">
           <input
-            className="w-full rounded px-3 py-2 bg-white text-black outline-none"
+            className="w-full"
             placeholder="Type a message…"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}

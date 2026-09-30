@@ -14,12 +14,16 @@
   }
 }
 
-@layer components {
-  input:not([type='checkbox']):not([type='color']),
+@layer base {
+  input[type='text'],
+  input[type='number'],
+  input[type='time'],
+  input[type='password'],
   select {
-    @apply w-full px-2 py-1 border border-gray-600 rounded-md bg-white text-black;
+    @apply px-2 py-[0.5rem] rounded-md bg-white text-black focus:outline-none focus:ring-1 focus:ring-black;
   }
 }
+
 input[type='range'] {
     /*-webkit-appearance: none;
     appearance: none;*/

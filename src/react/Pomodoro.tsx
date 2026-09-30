@@ -114,7 +114,7 @@ export default function PomodoroPage({ pomo }: { pomo: Pomodoro }) {
               value={focusMin}
               disabled={isRunning && mode === 'focus'}
               onChange={(e) => setFocusMin(Math.max(1, Number(e.target.value) || 0))}
-              className="w-16 px-2 py-1 rounded bg-white text-black text-center"
+              className="w-16 text-center"
             />
             min
           </label>
@@ -125,7 +125,7 @@ export default function PomodoroPage({ pomo }: { pomo: Pomodoro }) {
               value={breakMin}
               disabled={isRunning && mode === 'break'}
               onChange={(e) => setBreakMin(Math.max(1, Number(e.target.value) || 0))}
-              className="w-16 px-2 py-1 rounded bg-white text-black text-center"
+              className="w-16 text-center"
             />
             min
           </label>

@@ -60,7 +60,7 @@ export default function Theme() {
         id="font-select"
         value={font}
         onChange={(e) => set.font(e.target.value)}
-        className="w-full px-2 py-1 border border-gray-600 rounded-md bg-white text-black"
+        className="w-full"
       >
         {fonts.map((f) => (
           <option key={f} value={f}>
@@ -91,7 +91,7 @@ export default function Theme() {
         id="colormode-select"
         value={colorMode}
         onChange={(e) => set.colorMode(e.target.value)}
-        className="w-full px-2 py-1 border border-gray-600 rounded-md bg-white text-black"
+        className="w-full"
       >
         {colorModes.map((cm) => (
           <option key={cm} value={cm}>
