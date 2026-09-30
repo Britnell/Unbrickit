@@ -23,6 +23,7 @@
     "@preact/signals-core": "^1.14.4",
     "alpinejs": "^3.17.4",
     "hono": "^4.13.9",
+    "jotai": "^3.0.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   }

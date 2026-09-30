@@ -1,3 +1,5 @@
+import { useAtom } from 'jotai';
+import { themeAtom, timeOfDayAtom } from './atoms';
 import { colorModes, fonts, formatHour, hourToHex, titleCase } from './state';
 
 function Slider({
@@ -37,39 +39,18 @@ function Slider({
   );
 }
 
-export default function Theme({
-  font,
-  setFont,
-  fontSize,
-  setFontSize,
-  fontWeight,
-  setFontWeight,
-  hue,
-  setHue,
-  colorMode,
-  setColorMode,
-  darkMode,
-  setDarkMode,
-  timeOfDay,
-  setTimeOfDay,
-  onBack,
-}: {
-  font: string;
-  setFont: (f: string) => void;
-  fontSize: number;
-  setFontSize: (v: number) => void;
-  fontWeight: number;
-  setFontWeight: (v: number) => void;
-  hue: number;
-  setHue: (v: number) => void;
-  colorMode: string;
-  setColorMode: (v: string) => void;
-  darkMode: boolean;
-  setDarkMode: (v: boolean) => void;
-  timeOfDay: number | null;
-  setTimeOfDay: (v: number | null) => void;
-  onBack: () => void;
-}) {
+export default function Theme({ onBack }: { onBack: () => void }) {
+  const [theme, setTheme] = useAtom(themeAtom);
+  const [timeOfDay, setTimeOfDay] = useAtom(timeOfDayAtom);
+  const { font, fontSize, fontWeight, hue, colorMode, darkMode } = theme;
+  const set = {
+    font: (v: string) => setTheme((t) => ({ ...t, font: v })),
+    fontSize: (v: number) => setTheme((t) => ({ ...t, fontSize: v })),
+    fontWeight: (v: number) => setTheme((t) => ({ ...t, fontWeight: v })),
+    hue: (v: number) => setTheme((t) => ({ ...t, hue: v })),
+    colorMode: (v: string) => setTheme((t) => ({ ...t, colorMode: v })),
+    setDarkMode: (v: boolean) => setTheme((t) => ({ ...t, darkMode: v })),
+  };
   return (
     <div className="grid grid-cols-2 gap-y-1 gap-x-2">
       <div className="col-span-full">
@@ -84,7 +65,7 @@ export default function Theme({
       <select
         id="font-select"
         value={font}
-        onChange={(e) => setFont(e.target.value)}
+        onChange={(e) => set.font(e.target.value)}
         className="w-full px-2 py-1 border border-gray-600 rounded-md bg-white text-black"
       >
         {fonts.map((f) => (
@@ -94,16 +75,16 @@ export default function Theme({
         ))}
       </select>
 
-      <Slider label="Size" value={fontSize} min={25} max={35} step={1} suffix="vw" onChange={setFontSize} />
-      <Slider label="Weight" value={fontWeight} min={100} max={900} step={100} onChange={setFontWeight} />
-      <Slider label="Hue" value={hue} min={0} max={360} step={1} suffix="°" onChange={setHue} />
+      <Slider label="Size" value={fontSize} min={25} max={35} step={1} suffix="vw" onChange={set.fontSize} />
+      <Slider label="Weight" value={fontWeight} min={100} max={900} step={100} onChange={set.fontWeight} />
+      <Slider label="Hue" value={hue} min={0} max={360} step={1} suffix="°" onChange={set.hue} />
 
       <div className="col-span-full flex items-center">
         <input
           type="checkbox"
           id="darkmode-checkbox"
           checked={darkMode}
-          onChange={(e) => setDarkMode(e.target.checked)}
+          onChange={(e) => set.setDarkMode(e.target.checked)}
           className="mr-2"
         />
         <label htmlFor="darkmode-checkbox">Swap colours</label>
@@ -115,7 +96,7 @@ export default function Theme({
       <select
         id="colormode-select"
         value={colorMode}
-        onChange={(e) => setColorMode(e.target.value)}
+        onChange={(e) => set.colorMode(e.target.value)}
         className="w-full px-2 py-1 border border-gray-600 rounded-md bg-white text-black"
       >
         {colorModes.map((cm) => (

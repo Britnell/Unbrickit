@@ -1,44 +1,15 @@
 import { useEffect, useState } from "react";
+import { useAtomValue } from "jotai";
 import Clock from "./Clock";
 import Theme from "./Theme";
 import PomodoroApp, { PomodoroWidget, usePomodoro } from "./Pomodoro";
 import TrackerApp, { TrackerWidget, useTracker } from "./Tracker";
 import Chime, { useChime } from "./Chime";
 import ChatApp from "./Chat";
-import { colors, fonts } from "./state";
+import { paletteAtom } from "./atoms";
 import { useLocalStorage } from "./useLocalStorage";
 
 /* ---------------------------------- state --------------------------------- */
-
-function useThemeSettings() {
-  const [font, setFont] = useLocalStorage("theme", fonts[0]);
-  const [fontSize, setFontSize] = useLocalStorage("fontSize", 28);
-  const [fontWeight, setFontWeight] = useLocalStorage("fontWeight", 700);
-  const [hue, setHue] = useLocalStorage("hue", 303);
-  const [colorMode, setColorMode] = useLocalStorage("colorMode", "pastel");
-  const [darkMode, setDarkMode] = useLocalStorage("darkMode", false);
-  // debug override for daylight mode: null = follow real clock
-  const [timeOfDay, setTimeOfDay] = useState<number | null>(null);
-
-  return {
-    font,
-    fontSize,
-    fontWeight,
-    hue,
-    colorMode,
-    darkMode,
-    timeOfDay,
-    set: {
-      font: setFont,
-      fontSize: setFontSize,
-      fontWeight: setFontWeight,
-      hue: setHue,
-      setColorMode,
-      setDarkMode,
-      timeOfDay: setTimeOfDay,
-    },
-  };
-}
 
 function useSystem() {
   const [fullscreen, setFullscreen] = useState(!!document.fullscreenElement);
@@ -127,7 +98,6 @@ function HelperButtons({ system }: { system: ReturnType<typeof useSystem> }) {
 function ClockPage({
   pomo,
   tracker,
-  theme,
   chime,
   onOpenPomodoro,
   onOpenTracker,
@@ -136,7 +106,6 @@ function ClockPage({
 }: {
   pomo: ReturnType<typeof usePomodoro>;
   tracker: ReturnType<typeof useTracker>;
-  theme: ReturnType<typeof useThemeSettings>;
   chime: ReturnType<typeof useChimeSettings>;
   onOpenPomodoro: () => void;
   onOpenTracker: () => void;
@@ -170,11 +139,7 @@ function ClockPage({
   return (
     <>
       <div className="absolute inset-0" onClick={() => setMenu(!menu)}>
-        <Clock
-          font={theme.font}
-          fontSize={theme.fontSize}
-          fontWeight={theme.fontWeight}
-        />
+        <Clock />
       </div>
 
       {/* widgets: anchored top-right, all widgets in one flex row */}
@@ -240,23 +205,7 @@ function ClockPage({
                 onBack={() => setMenu(true)}
               />
             ) : (
-              <Theme
-                font={theme.font}
-                fontSize={theme.fontSize}
-                fontWeight={theme.fontWeight}
-                hue={theme.hue}
-                colorMode={theme.colorMode}
-                darkMode={theme.darkMode}
-                timeOfDay={theme.timeOfDay}
-                setTimeOfDay={theme.set.timeOfDay}
-                setFont={theme.set.font}
-                setFontSize={theme.set.fontSize}
-                setFontWeight={theme.set.fontWeight}
-                setHue={theme.set.hue}
-                setColorMode={theme.set.setColorMode}
-                setDarkMode={theme.set.setDarkMode}
-                onBack={() => setMenu(true)}
-              />
+              <Theme onBack={() => setMenu(true)} />
             )
           ) : (
             <ul className="grid grid-cols-2 gap-2">
@@ -287,21 +236,19 @@ export default function App() {
     "tracker-reminder",
     30,
   );
-  const theme = useThemeSettings();
   const chime = useChimeSettings();
   const tracker = useTracker({
     reminderMinutes: reminder,
     chimeType: chime.type,
   });
   useChime(chime);
-  const c = colors(theme.hue, theme.colorMode, theme.darkMode, theme.timeOfDay);
+  const c = useAtomValue(paletteAtom);
 
   return (
     <main className="fixed inset-0" style={{ background: c.bg, color: c.text }}>
       <ClockPage
         pomo={pomo}
         tracker={tracker}
-        theme={theme}
         chime={chime}
         onOpenPomodoro={() => setPage("pomodoro")}
         onOpenTracker={() => setPage("tracker")}

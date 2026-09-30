@@ -1,14 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useAtomValue } from 'jotai';
+import { themeAtom } from './atoms';
 
-export default function Clock({
-  font,
-  fontSize,
-  fontWeight,
-}: {
-  font: string;
-  fontSize: number;
-  fontWeight: number;
-}) {
+export default function Clock() {
+  const { font, fontSize, fontWeight } = useAtomValue(themeAtom);
   const [time, setTime] = useState(() => formatTime());
 
   useEffect(() => {
