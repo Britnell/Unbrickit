@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { FaceLandmarker } from "@mediapipe/tasks-vision";
 import { createFaceLandmarker, headPose, FaceDriftMeter } from "./face";
+import { acquireCamera, releaseCamera } from "./camera";
 
 type HeadPose = { roll: number; pitch: number; yaw: number };
 
@@ -23,11 +24,11 @@ export default function PosturePage() {
     }
     let cancelled = false;
     let landmarker: FaceLandmarker | null = null;
-    let stream: MediaStream | null = null;
+    let ownsCamera = false;
     let raf = 0;
-    const video = document.createElement("video");
-    video.playsInline = true;
+    let video: HTMLVideoElement;
     let lastVideoTime = -1;
+    let frame = 0;
     const drift = new FaceDriftMeter();
     let slouchStart: number | null = null;
     let isSlouching = false;
@@ -36,13 +37,12 @@ export default function PosturePage() {
       try {
         landmarker = await createFaceLandmarker();
         if (cancelled) return;
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video = await acquireCamera();
+        ownsCamera = true;
         if (cancelled) {
-          stream.getTracks().forEach((t) => t.stop());
+          releaseCamera();
           return;
         }
-        video.srcObject = stream;
-        await video.play();
       } catch (err) {
         console.error("face camera/model failed:", err);
         setRunning(false);
@@ -50,7 +50,8 @@ export default function PosturePage() {
       }
       const loop = () => {
         if (cancelled) return;
-        if (video.currentTime !== lastVideoTime && landmarker) {
+        // sample every 10th frame (~6Hz): plenty for drift detection
+        if (frame++ % 10 === 0 && video.currentTime !== lastVideoTime && landmarker) {
           lastVideoTime = video.currentTime;
           const face = landmarker.detectForVideo(video, performance.now());
           const p = face.faceLandmarks?.[0] ? headPose(face) : null;
@@ -85,8 +86,7 @@ export default function PosturePage() {
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
-      stream?.getTracks().forEach((t) => t.stop());
-      video.srcObject = null;
+      if (ownsCamera) releaseCamera();
       landmarker?.close();
     };
   }, [running]);

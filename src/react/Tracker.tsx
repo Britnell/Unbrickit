@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { createLandmarker } from "./poseLandmarker";
+import { acquireCamera, releaseCamera } from "./camera";
 import { LandmarkOneEuro } from "./filter";
 import { playChimeType } from "./Chime";
 import type { PoseLandmarker } from "@mediapipe/tasks-vision";
@@ -262,10 +263,9 @@ export function useTrackerEngine() {
     if (!isRunning) return;
     let cancelled = false;
     let landmarker: PoseLandmarker | null = null;
-    let stream: MediaStream | null = null;
+    let ownsCamera = false;
     let raf = 0;
-    const video = document.createElement("video");
-    video.playsInline = true;
+    let video: HTMLVideoElement;
     const smoother = new LandmarkOneEuro();
     let lastVideoTime = -1;
     let frame = 0;
@@ -274,13 +274,12 @@ export function useTrackerEngine() {
       try {
         landmarker = await createLandmarker("lite");
         if (cancelled) return;
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video = await acquireCamera();
+        ownsCamera = true;
         if (cancelled) {
-          stream.getTracks().forEach((t) => t.stop());
+          releaseCamera();
           return;
         }
-        video.srcObject = stream;
-        await video.play();
       } catch (err) {
         console.error("tracker camera/model failed:", err);
         return;
@@ -318,8 +317,7 @@ export function useTrackerEngine() {
       cancelled = true;
       cancelAnimationFrame(raf);
       smoother.reset();
-      stream?.getTracks().forEach((t) => t.stop());
-      video.srcObject = null;
+      if (ownsCamera) releaseCamera();
       landmarker?.close();
     };
   }, [isRunning]);
