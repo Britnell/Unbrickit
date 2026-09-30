@@ -90,15 +90,7 @@ function useChimeSettings() {
 function HelperButtons({ system }: { system: ReturnType<typeof useSystem> }) {
   return (
     <div className="absolute right-2 top-2 flex items-center gap-2 z-20">
-      <button
-        className="py-3 px-5 rounded bg-white/30 grid place-items-center text-lg hover:bg-white/50"
-        onClick={(e) => {
-          e.stopPropagation();
-          system.toggleFullscreen();
-        }}
-      >
-        {system.fullscreen ? "⤡" : "⛶"}
-      </button>
+
       <button
         className="py-3 px-5 rounded bg-white/30 grid place-items-center text-lg hover:bg-white/50"
         onClick={(e) => {
@@ -107,6 +99,15 @@ function HelperButtons({ system }: { system: ReturnType<typeof useSystem> }) {
         }}
       >
         ⟳
+      </button>
+      <button
+        className="py-3 px-5 rounded bg-white/30 grid place-items-center text-lg hover:bg-white/50"
+        onClick={(e) => {
+          e.stopPropagation();
+          system.toggleFullscreen();
+        }}
+      >
+        {system.fullscreen ? "⤡" : "⛶"}
       </button>
       <button
         className="py-3 px-5 rounded bg-white/30 grid place-items-center text-lg hover:bg-white/50"

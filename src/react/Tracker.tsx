@@ -385,84 +385,88 @@ export default function TrackerApp({
   return (
     <div className="absolute inset-0" onClick={onClose}>
       <div
-        className="absolute w-[300px] left-1/2 -translate-x-1/2 bottom-2 p-4 bg-white/50 text-black rounded z-10 flex flex-col items-center"
+        className="absolute w-fit max-w-full left-1/2 -translate-x-1/2 bottom-2 p-4 bg-white/50 text-black rounded z-10 flex flex-col flex-wrap gap-x-6 max-h-screen"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="self-end py-1 px-2 text-2xl hover:opacity-70"
+          className="absolute top-2 right-2 py-1 px-2 text-2xl hover:opacity-70"
         >
           ×
         </button>
 
-        <h2 className="text-2xl mb-2">Seating tracker</h2>
+        <div className="flex flex-col min-w-[200px]">
+          <h2 className="text-2xl mb-2">Seating tracker</h2>
 
-        {isRunning && !seated && (
-          <div className="mb-2 text-lg">🕳️ Not at desk</div>
-        )}
-
-        {isRunning && seated && (
-          <div className="mb-2 bg-white/90 px-2 py-1 rounded text-center">
-            <div className="text-4xl">🪑</div>
-            <div className="text-lg">At desk</div>
-            <div className="text-3xl tabular-nums">
-              {Math.floor(seatedMs / 60000)}
-              <span className="text-lg text-gray-500"> min</span>
-            </div>
-          </div>
-        )}
-
-        <div className="mb-2 text-lg tabular-nums">
-          {tracker.seatedMinutesToday >= 60 && (
-            <>Total today: {Math.floor(tracker.seatedMinutesToday / 60)}h{" "}
-            {tracker.seatedMinutesToday % 60}m</>
+          {isRunning && !seated && (
+            <div className="mb-2 text-lg">🕳️ Not at desk</div>
           )}
-          {tracker.seatedMinutesToday < 60 && <>Total today: {tracker.seatedMinutesToday}m</>}
+
+          {isRunning && seated && (
+            <div className="mb-2 bg-white/90 px-2 py-1 rounded text-center">
+              <div className="text-4xl">🪑</div>
+              <div className="text-lg">At desk</div>
+              <div className="text-3xl tabular-nums">
+                {Math.floor(seatedMs / 60000)}
+                <span className="text-lg text-gray-500"> min</span>
+              </div>
+            </div>
+          )}
+
+          <div className="mb-2 text-lg tabular-nums">
+            {tracker.seatedMinutesToday >= 60 && (
+              <>Total today: {Math.floor(tracker.seatedMinutesToday / 60)}h{" "}
+              {tracker.seatedMinutesToday % 60}m</>
+            )}
+            {tracker.seatedMinutesToday < 60 && <>Total today: {tracker.seatedMinutesToday}m</>}
+          </div>
+
+          <button
+            onClick={isRunning ? stop : start}
+            className="mb-2 px-8 py-4 rounded-lg border border-current"
+          >
+            {isRunning ? "Stop" : "Start"}
+          </button>
+
+          {tracker.overdue && (
+            <div className="mb-2 text-lg">⏰ Time for a break!</div>
+          )}
         </div>
 
-        <button
-          onClick={isRunning ? stop : start}
-          className="mb-2 px-8 py-4 rounded-lg border border-current"
-        >
-          {isRunning ? "Stop" : "Start"}
-        </button>
-
-        <label className="text-sm self-start">Seating reminder</label>
-        <select
-          value={reminder}
-          onChange={(e) => setReminder(Number(e.target.value))}
-          className="mb-2 w-full px-2 py-3 border border-gray-600 rounded-md bg-white text-black text-sm"
-        >
-          {reminderIntervals.map((i) => (
-            <option key={i} value={i}>
-              {i === 0 ? "Off" : `${i} min`}
-            </option>
-          ))}
-        </select>
-
-        {tracker.overdue && (
-          <div className="mb-2 text-lg">⏰ Time for a break!</div>
-        )}
-
-        {isRunning && (
-          <>
-            <label className="text-sm self-start">Seating position</label>
-            <progress
-              className="mb-2 w-full"
-              max={1}
-              value={Math.max(0, Math.floor((1 - distance) * 5) / 5)}
-            ></progress>
-          </>
-        )}
-
-        {isRunning && (
-          <button
-            onClick={capture}
-            className="mt-2 px-4 py-3 rounded-lg border border-current text-sm"
+        <div className="flex flex-col min-w-[200px] p-2">
+          <label className="text-sm self-start">Seating reminder</label>
+          <select
+            value={reminder}
+            onChange={(e) => setReminder(Number(e.target.value))}
+            className="mb-2 px-2 py-3 border border-gray-600 rounded-md bg-white text-black text-sm"
           >
-            Set camera position
-          </button>
-        )}
+            {reminderIntervals.map((i) => (
+              <option key={i} value={i}>
+                {i === 0 ? "Off" : `${i} min`}
+              </option>
+            ))}
+          </select>
+
+          {isRunning && (
+            <>
+              <label className="text-sm self-start">Seating position</label>
+              <progress
+                className="mb-2"
+                max={1}
+                value={Math.max(0, Math.floor((1 - distance) * 5) / 5)}
+              ></progress>
+            </>
+          )}
+
+          {isRunning && (
+            <button
+              onClick={capture}
+              className="mt-2 px-4 py-3 rounded-lg border border-current text-sm"
+            >
+              Set camera position
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
