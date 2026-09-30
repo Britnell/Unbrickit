@@ -31,3 +31,6 @@ export const paletteAtom = atom((get) =>
     get(timeOfDayAtom),
   ),
 );
+
+/** chime sound type, global setting used by the chime timer (not the tracker) */
+export const chimeTypeAtom = atomWithStorage<string>("chimeType", "chime");

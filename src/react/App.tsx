@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useAtom } from "jotai";
 import Clock from "./Clock";
 import Theme from "./Theme";
 import PomodoroPage, { PomodoroWidget, usePomodoro } from "./Pomodoro";
-import TrackerPage, { TrackerWidget, useTracker } from "./Tracker";
+import TrackerPage, { TrackerWidget, useTrackerEngine } from "./Tracker";
 import Chime, { useChime } from "./Chime";
 import ChatApp from "./Chat";
-import { paletteAtom } from "./atoms";
+import { paletteAtom, chimeTypeAtom } from "./atoms";
 import { useLocalStorage } from "./useLocalStorage";
 
 /* ---------------------------------- state --------------------------------- */
@@ -45,7 +45,7 @@ function useSystem() {
 }
 
 function useChimeSettings() {
-  const [chimeType, setChimeType] = useLocalStorage("chimeType", "chime");
+  const [chimeType, setChimeType] = useAtom(chimeTypeAtom);
   const [chimeInterval, setChimeInterval] = useLocalStorage("chimeInterval", 0);
 
   return {
@@ -109,18 +109,12 @@ function MenuView({
   view,
   onBack,
   pomo,
-  tracker,
   chime,
-  reminder,
-  setReminder,
 }: {
   view: MenuViewName;
   onBack: () => void;
   pomo: ReturnType<typeof usePomodoro>;
-  tracker: ReturnType<typeof useTracker>;
   chime: ReturnType<typeof useChimeSettings>;
-  reminder: number;
-  setReminder: (v: number) => void;
 }) {
   return (
     <>
@@ -138,9 +132,7 @@ function MenuView({
         </div>
 
         {view === "pomodoro" && <PomodoroPage pomo={pomo} />}
-        {view === "tracker" && (
-          <TrackerPage tracker={tracker} reminder={reminder} setReminder={setReminder} />
-        )}
+        {view === "tracker" && <TrackerPage />}
         {view === "theme" && <Theme />}
         {view === "chime" && (
           <Chime
@@ -156,19 +148,13 @@ function MenuView({
 
 function ClockPage({
   pomo,
-  tracker,
   chime,
-  reminder,
-  setReminder,
   overlayOpen,
   menu,
   setMenu,
 }: {
   pomo: ReturnType<typeof usePomodoro>;
-  tracker: ReturnType<typeof useTracker>;
   chime: ReturnType<typeof useChimeSettings>;
-  reminder: number;
-  setReminder: (v: number) => void;
   overlayOpen: boolean;
   menu: boolean | MenuViewName;
   setMenu: (m: boolean | MenuViewName) => void;
@@ -200,10 +186,7 @@ function ClockPage({
           pomo={pomo}
           onOpen={() => setMenu("pomodoro")}
         />
-        <TrackerWidget
-          tracker={tracker}
-          onOpen={() => setMenu("tracker")}
-        />
+        <TrackerWidget onOpen={() => setMenu("tracker")} />
         </div>
       )}
 
@@ -245,11 +228,8 @@ function ClockPage({
               <MenuView
                 view={menu}
                 onBack={() => setMenu(true)}
-                    pomo={pomo}
-                tracker={tracker}
+                pomo={pomo}
                 chime={chime}
-                reminder={reminder}
-                setReminder={setReminder}
               />
             ) : (
               <ul className="grid grid-cols-2 gap-2">
@@ -281,15 +261,8 @@ export default function App() {
   const [menu, setMenu] = useState<boolean | MenuViewName>(false);
 
   const pomo = usePomodoro();
-  const [reminder, setReminder] = useLocalStorage<number>(
-    "tracker-reminder",
-    30,
-  );
   const chime = useChimeSettings();
-  const tracker = useTracker({
-    reminderMinutes: reminder,
-    chimeType: chime.type,
-  });
+  useTrackerEngine();
   useChime(chime);
   const c = useAtomValue(paletteAtom);
 
@@ -297,10 +270,7 @@ export default function App() {
     <main className="fixed inset-0" style={{ background: c.bg, color: c.text }}>
       <ClockPage
         pomo={pomo}
-        tracker={tracker}
         chime={chime}
-        reminder={reminder}
-        setReminder={setReminder}
         overlayOpen={page !== "clock"}
         menu={menu}
         setMenu={setMenu}

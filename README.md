@@ -1,7 +1,8 @@
 # Unbrick-it
 
 ## TODO list
--[ ] store if tracking, auto-start if permission still granted
+-[ ] posture app
+-[ ] jotai for pomodoro, tracker + chime
 -[ ] one clock tick per app, not 3 / use jotai or so atomic
 -[x] PWA
 

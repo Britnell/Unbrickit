@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
 import { createLandmarker } from "./poseLandmarker";
 import { LandmarkOneEuro } from "./filter";
-import { useLocalStorage } from "./useLocalStorage";
 import { playChimeType } from "./Chime";
 import type { PoseLandmarker } from "@mediapipe/tasks-vision";
 
@@ -97,9 +98,6 @@ export function seatDistance(
   const sizeDiff =
     Math.max(0, 1 - current.shoulderWidth / seated.shoulderWidth) /
     (1 - MIN_SIZE_RATIO);
-  // console.log('[seat] angleDiff:', angleDiff.toFixed(3),
-  //   'centerOffset:', centerOffset.toFixed(3),
-  //   'sizeDiff:', sizeDiff.toFixed(3));
   return Math.max(angleDiff, centerOffset, sizeDiff);
 }
 
@@ -138,36 +136,88 @@ function extractPoints(lm: { x: number; y: number; z: number }[]): Points {
 // in minutes
 export const reminderIntervals = [0, 30, 45, 60];
 
-export function useTracker({
-  reminderMinutes,
-  chimeType,
-}: {
-  reminderMinutes: number;
-  chimeType: string;
-}) {
-  // camera only ever starts from an explicit user click
-  const [isRunning, setIsRunning] = useState(false);
-  const pointsRef = useRef<Points | null>(null);
-  const calibRef = useRef<TorsoFeatures | null>(null);
+/* --------------------------------- atoms ---------------------------------- */
+// Only genuinely shared/persisted tracker state lives in atoms. Everything
+// else (isRunning, seated, distance, ...) is local useState in the engine.
+
+/** minutes seated per hour, persisted */
+export const hoursAtom = atomWithStorage<HoursData>(HOURS_KEY, freshHours());
+/** seating reminder interval in minutes, persisted */
+export const reminderAtom = atomWithStorage<number>("tracker-reminder", 30);
+
+export const seatedMinutesTodayAtom = atom((get) =>
+  get(hoursAtom).hours.reduce((a, b) => a + b, 0),
+);
+
+/** display snapshot the page/widget read; engine is the only writer */
+export interface TrackerUi {
+  isRunning: boolean;
+  seated: boolean;
+  distance: number;
+  seatedMs: number;
+  overdue: boolean;
+}
+export const trackerUiAtom = atom<TrackerUi>({
+  isRunning: false,
+  seated: false,
+  distance: 0,
+  seatedMs: 0,
+  overdue: false,
+});
+
+// start/stop actions: just flip isRunning in the snapshot, the engine reacts
+export const startTrackerAtom = atom(null, (_get, set) => {
+  set(trackerUiAtom, (ui) => ({ ...ui, isRunning: true }));
+  sessionStorage.setItem(RUNNING_KEY, "1");
+});
+export const stopTrackerAtom = atom(null, (_get, set) => {
+  set(trackerUiAtom, (ui) => ({ ...ui, isRunning: false }));
+  sessionStorage.removeItem(RUNNING_KEY);
+});
+
+// shared between engine and capture so the page can calibrate
+// plain module singletons (NOT useRef — that's a hook and can't run at module scope)
+const livePointsRef: { current: Points | null } = { current: null };
+const calibRefGlobal: { current: TorsoFeatures | null } = { current: null };
+
+/** store current 5 points as the calibrated camera position */
+export function useCaptureSeat() {
+  return useCallback(() => {
+    if (!livePointsRef.current) return;
+    localStorage.setItem(POS_KEY, JSON.stringify(livePointsRef.current));
+    calibRefGlobal.current = torsoFeatures(livePointsRef.current);
+  }, []);
+}
+
+/* --------------------------------- engine --------------------------------- */
+
+/**
+ * Mount once (App). Owns the camera loop + timers; keeps per-frame state as
+ * local useState and publishes only the display snapshot into trackerUiAtom.
+ */
+export function useTrackerEngine() {
+  const setHoursData = useSetAtom(hoursAtom);
+  const isRunning = useAtomValue(trackerUiAtom).isRunning; // toggled by page buttons
+  const setUi = useSetAtom(trackerUiAtom);
+  const reminderMinutes = useAtomValue(reminderAtom);
+
+  // local state: only consumed here + mirrored into the UI snapshot
+  const [seated, setSeated] = useState(false);
+  const [distance, setDistance] = useState(0);
+  const [seatedSince, setSeatedSince] = useState<number | null>(null);
+  const [now, setNow] = useState(Date.now());
+
+  const pointsRef = livePointsRef;
+  const calibRef = calibRefGlobal;
   // restore saved calibration so detection works right after (re)load
   const saved = localStorage.getItem(POS_KEY);
-  if (saved) {
+  if (saved && !calibRef.current) {
     try {
       calibRef.current = torsoFeatures(JSON.parse(saved) as Points);
     } catch {
       /* ignore corrupt data */
     }
   }
-  const [seated, setSeated] = useState(false);
-  const [distance, setDistance] = useState(0);
-  const [seatedSince, setSeatedSince] = useState<number | null>(null);
-
-  // minutes seated per hour of the current day, persisted in localStorage
-  const [hoursData, setHoursData] = useLocalStorage<HoursData>(
-    HOURS_KEY,
-    freshHours(),
-  );
-  if (!sameDay(hoursData.date, todayStr())) setHoursData(freshHours());
 
   // add one seated-minute to the current hour bucket
   const addSeatedMinute = useCallback(() => {
@@ -183,27 +233,18 @@ export function useTracker({
     );
   }, [setHoursData]);
 
-  const start = () => {
-    setIsRunning(true);
-    sessionStorage.setItem(RUNNING_KEY, "1");
-  };
-  const stop = () => {
-    setIsRunning(false);
-    sessionStorage.removeItem(RUNNING_KEY);
-  };
-
   // restart after reload if the user had it running and camera permission persists
   useEffect(() => {
     if (!sessionStorage.getItem(RUNNING_KEY)) return;
     navigator.permissions
       .query({ name: "camera" as PermissionName })
       .then((p) => {
-        if (p.state === "granted") setIsRunning(true);
+        if (p.state === "granted") setUi((ui) => ({ ...ui, isRunning: true }));
       })
       .catch(() => {
         /* permissions API unsupported: don't auto-start */
       });
-  }, []);
+  }, [setUi]);
 
   // camera + pose landmark detection, extracts + filters our 5 torso points
   useEffect(() => {
@@ -272,14 +313,6 @@ export function useTracker({
     };
   }, [isRunning]);
 
-  // store current 5 points as the calibrated camera position
-  const capture = useCallback(() => {
-    if (!pointsRef.current) return;
-    localStorage.setItem(POS_KEY, JSON.stringify(pointsRef.current));
-    const f = torsoFeatures(pointsRef.current);
-    calibRef.current = f;
-  }, []);
-
   // counter starts when the user sits down, resets when they get up
   useEffect(() => {
     setNow(Date.now());
@@ -287,7 +320,6 @@ export function useTracker({
   }, [seated]);
 
   // keep the displayed counter ticking while seated, +1 minute per hour bucket
-  const [now, setNow] = useState(Date.now());
   const countedMinutesRef = useRef(0);
   useEffect(() => {
     if (seatedSince === null) {
@@ -305,9 +337,8 @@ export function useTracker({
     }, 1000);
     return () => clearInterval(id);
   }, [seatedSince, addSeatedMinute]);
-  const seatedMs = seatedSince !== null ? now - seatedSince : 0;
 
-  const seatedMinutesToday = hoursData.hours.reduce((a, b) => a + b, 0);
+  const seatedMs = seatedSince !== null ? now - seatedSince : 0;
 
   // seating reminder: derived state + one-time chime
   const overdue =
@@ -320,36 +351,30 @@ export function useTracker({
     }
     if (chimedForRef.current !== seatedSince) {
       chimedForRef.current = seatedSince;
-      playChimeType(chimeType);
+      playChimeType("chime");
     }
-  }, [overdue, seatedSince, chimeType]);
+  }, [overdue, seatedSince]);
 
-  return {
-    isRunning,
-    start,
-    stop,
-    capture,
-    seated,
-    seatedSince,
-    seatedMs,
-    distance,
-    hours: hoursData.hours,
-    seatedMinutesToday,
-    overdue,
-  };
+  // publish display snapshot for the page/widget
+  useEffect(() => {
+    setUi((ui) =>
+      ui.seated === seated &&
+      ui.distance === distance &&
+      ui.seatedMs === seatedMs &&
+      ui.overdue === overdue
+        ? ui
+        : { isRunning: ui.isRunning, seated, distance, seatedMs, overdue },
+    );
+  }, [seated, distance, seatedMs, overdue, setUi]);
 }
 
-export type Tracker = ReturnType<typeof useTracker>;
+/* --------------------------------- views ---------------------------------- */
 
 /** corner widget shown on clock page while tracker is active */
-export function TrackerWidget({
-  tracker,
-  onOpen,
-}: {
-  tracker: Tracker;
-  onOpen: () => void;
-}) {
-  if (!tracker.isRunning) return null;
+export function TrackerWidget({ onOpen }: { onOpen: () => void }) {
+  const { isRunning, seated, overdue, seatedMs } =
+    useAtomValue(trackerUiAtom);
+  if (!isRunning) return null;
   return (
     <button
       onClick={(e) => {
@@ -358,27 +383,24 @@ export function TrackerWidget({
       }}
       className="button text-lg z-10"
     >
-      {tracker.seated ? "🪑" : "🕳️"}{" "}
-      {tracker.overdue
+      {seated ? "🪑" : "🕳️"}{" "}
+      {overdue
         ? "!"
-        : tracker.seated
-          ? Math.floor(tracker.seatedMs / 60000) + "m"
+        : seated
+          ? Math.floor(seatedMs / 60000) + "m"
           : ""}
     </button>
   );
 }
 
-export default function TrackerPage({
-  tracker,
-  reminder,
-  setReminder,
-}: {
-  tracker: Tracker;
-  reminder: number;
-  setReminder: (v: number) => void;
-}) {
-  const { isRunning, start, stop, capture, seated, seatedMs, distance } =
-    tracker;
+export default function TrackerPage() {
+  const { isRunning, seated, seatedMs, distance, overdue } =
+    useAtomValue(trackerUiAtom);
+  const start = useSetAtom(startTrackerAtom);
+  const stop = useSetAtom(stopTrackerAtom);
+  const capture = useCaptureSeat();
+  const [reminder, setReminder] = useAtom(reminderAtom);
+  const seatedMinutesToday = useAtomValue(seatedMinutesTodayAtom);
 
   return (
     <>
@@ -409,11 +431,11 @@ export default function TrackerPage({
           )}
 
           <div className="mb-2 text-lg tabular-nums">
-            {tracker.seatedMinutesToday >= 60 && (
-              <>Total today: {Math.floor(tracker.seatedMinutesToday / 60)}h{" "}
-              {tracker.seatedMinutesToday % 60}m</>
+            {seatedMinutesToday >= 60 && (
+              <>Total today: {Math.floor(seatedMinutesToday / 60)}h{" "}
+              {seatedMinutesToday % 60}m</>
             )}
-            {tracker.seatedMinutesToday < 60 && <>Total today: {tracker.seatedMinutesToday}m</>}
+            {seatedMinutesToday < 60 && <>Total today: {seatedMinutesToday}m</>}
           </div>
 
           <button
@@ -423,7 +445,7 @@ export default function TrackerPage({
             {isRunning ? "Stop" : "Start"}
           </button>
 
-          {tracker.overdue && (
+          {overdue && (
             <div className="mb-2 text-lg">⏰ Time for a break!</div>
           )}
         </div>
