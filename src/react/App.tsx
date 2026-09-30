@@ -5,6 +5,7 @@ import Theme from "./Theme";
 import PomodoroPage, { PomodoroWidget, usePomodoro } from "./Pomodoro";
 import TrackerPage, { TrackerWidget, useTrackerEngine } from "./Tracker";
 import Chime, { useChime } from "./Chime";
+import PosturePage from "./Posture";
 import ChatApp from "./Chat";
 import { paletteAtom, chimeTypeAtom } from "./atoms";
 import { useLocalStorage } from "./useLocalStorage";
@@ -99,6 +100,7 @@ function HelperButtons({ system }: { system: ReturnType<typeof useSystem> }) {
 const menuTitles = {
   pomodoro: "🍅 Pomodoro",
   tracker: "🪑 Tracker",
+  posture: "🧍 Posture",
   theme: "🎨 Theme",
   chime: "🔔 Chime",
 } as const;
@@ -142,6 +144,7 @@ function MenuView({
             setInterval_={chime.set.interval}
           />
         )}
+        {view === "posture" && <PosturePage />}
     </>
   );
 }
@@ -163,6 +166,7 @@ function ClockPage({
 
   const menuItems = {
     pomodoro: "🍅 Pomodoro",
+    posture: "🧍 Posture",
     tracker: "🪑 Tracker",
     theme: "🎨 Theme",
     chime: "🔔 Chime",
