@@ -356,7 +356,7 @@ export function TrackerWidget({
         e.stopPropagation();
         onOpen();
       }}
-      className="px-3 py-3 rounded bg-white text-black text-lg z-10"
+      className="button text-lg z-10"
     >
       {tracker.seated ? "🪑" : "🕳️"}{" "}
       {tracker.overdue
@@ -390,7 +390,7 @@ export default function TrackerApp({
       >
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 py-1 px-2 text-2xl hover:opacity-70"
+          className="button absolute top-2 right-2 text-2xl hover:bg-gray-200"
         >
           ×
         </button>
@@ -433,7 +433,7 @@ export default function TrackerApp({
 
           <button
             onClick={isRunning ? stop : start}
-            className="mb-2 px-8 py-4 rounded-lg border border-current"
+            className="button mb-2 w-full"
           >
             {isRunning ? "Stop" : "Start"}
           </button>
@@ -471,7 +471,7 @@ export default function TrackerApp({
           {isRunning && (
             <button
               onClick={capture}
-              className="mt-2 px-4 py-3 rounded-lg border border-current text-sm"
+              className="button mt-2 w-full text-sm"
             >
               Set camera position
             </button>

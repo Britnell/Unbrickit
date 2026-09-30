@@ -92,7 +92,7 @@ function HelperButtons({ system }: { system: ReturnType<typeof useSystem> }) {
     <div className="absolute right-2 top-2 flex items-center gap-2 z-20">
 
       <button
-        className="py-3 px-5 rounded bg-white/30 grid place-items-center text-lg hover:bg-white/50"
+        className="button grid place-items-center text-lg hover:bg-gray-200"
         onClick={(e) => {
           e.stopPropagation();
           window.location.reload();
@@ -101,7 +101,7 @@ function HelperButtons({ system }: { system: ReturnType<typeof useSystem> }) {
         ⟳
       </button>
       <button
-        className="py-3 px-5 rounded bg-white/30 grid place-items-center text-lg hover:bg-white/50"
+        className="button grid place-items-center text-lg hover:bg-gray-200"
         onClick={(e) => {
           e.stopPropagation();
           system.toggleFullscreen();
@@ -110,7 +110,7 @@ function HelperButtons({ system }: { system: ReturnType<typeof useSystem> }) {
         {system.fullscreen ? "⤡" : "⛶"}
       </button>
       <button
-        className="py-3 px-5 rounded bg-white/30 grid place-items-center text-lg hover:bg-white/50"
+        className="button grid place-items-center text-lg hover:bg-gray-200"
         onClick={(e) => {
           e.stopPropagation();
           system.toggleScreenLock();
@@ -133,7 +133,7 @@ function MenuSheet({
   return (
     <div className="absolute inset-0" onClick={onClose}>
       <div
-        className="absolute bottom-2 left-1/2 -translate-x-1/2 w-[300px] max-h-[calc(100svh-1rem)] overflow-auto rounded bg-white/50 text-black p-1 z-10 animate-menu-in"
+        className="absolute bottom-2 left-1/2 -translate-x-1/2 w-[300px] max-h-[calc(100svh-1rem)] overflow-auto rounded bg-white/50 text-black p-2 z-10 animate-menu-in "
         onClick={(e) => e.stopPropagation()}
       >
         {children}
@@ -225,7 +225,7 @@ function ClockPage({
             e.stopPropagation();
             setMenu(true);
           }}
-          className="absolute bottom-2 left-1/2 -translate-x-1/2 px-8 py-2"
+          className="button absolute bottom-2 left-1/2 -translate-x-1/2 !bg-transparent"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -275,13 +275,12 @@ function ClockPage({
               />
             )
           ) : (
-            <ul className="grid grid-cols-2">
+            <ul className="grid grid-cols-2 gap-2">
               {menuItems.map(({ label, go }) => (
                 <li key={label}>
                   <button
-                    className="w-full px-2 py-4 rounded hover:bg-gray-200"
-                    onClick={() => selectMenuItem(go)}
-                  >
+            className="button w-full hover:bg-gray-200"
+            onClick={() => selectMenuItem(go)}                  >
                     {label}
                   </button>
                 </li>

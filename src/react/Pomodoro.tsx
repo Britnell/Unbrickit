@@ -89,7 +89,7 @@ export function PomodoroWidget({ pomo, onOpen }: { pomo: Pomodoro; onOpen: () =>
   return (
     <button
       onClick={(e) => { e.stopPropagation(); onOpen(); }}
-      className="px-3 py-3 rounded bg-white text-black text-lg z-10"
+      className="button text-lg z-10"
     >
       🍅 {minutes}m
     </button>
@@ -105,7 +105,7 @@ export default function PomodoroApp({ pomo, onClose }: { pomo: Pomodoro; onClose
         className="absolute w-[300px] left-1/2 -translate-x-1/2 bottom-2 p-4 bg-white/50 text-black rounded z-10 flex flex-col items-center"
         onClick={(e) => e.stopPropagation()}
       >
-        <button onClick={onClose} className="self-end py-1 px-2 text-2xl hover:opacity-70">×</button>
+        <button onClick={onClose} className="button self-end text-2xl hover:bg-gray-200">×</button>
 
         <h2 className="text-2xl mb-2">{mode === 'focus' ? 'Work' : 'Break'}</h2>
 
@@ -139,7 +139,7 @@ export default function PomodoroApp({ pomo, onClose }: { pomo: Pomodoro; onClose
         )}
 
         <button onClick={isRunning ? stop : start}
-          className="px-8 py-4 rounded-lg border border-current text-lg">
+          className="button w-full text-lg">
           {isRunning ? 'Stop' : 'Start'}
         </button>
       </div>
