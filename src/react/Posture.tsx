@@ -1,24 +1,24 @@
 import { useEffect, useState } from "react";
 import type { FaceLandmarker } from "@mediapipe/tasks-vision";
-import { createFaceLandmarker, headPose, FaceDriftMeter } from "./face";
+import { createFaceLandmarker, headPose } from "./face";
+import { SlouchDetector } from "./postureDetect";
 import { acquireCamera, releaseCamera } from "./camera";
 
 type HeadPose = { roll: number; pitch: number; yaw: number };
 
-const SLOUCH_THRESHOLD = 10; // deg-like, above this = slouching
-const SLOUCH_PERIOD = 3; // seconds of slouch before alerting
+const HYST_FACTOR = 0.5; // clears slouch only below thresh * this
 
 export default function PosturePage() {
   const [running, setRunning] = useState(false);
   const [pose, setPose] = useState<HeadPose | null>(null);
-  const [fused, setFused] = useState(0);
+  const [integral, setIntegral] = useState(0);
   const [slouching, setSlouching] = useState(false);
 
   // face landmark camera loop -> roll/pitch/yaw -> drift-based slouch
   useEffect(() => {
     if (!running) {
       setPose(null);
-      setFused(0);
+      setIntegral(0);
       setSlouching(false);
       return;
     }
@@ -29,8 +29,7 @@ export default function PosturePage() {
     let video: HTMLVideoElement;
     let lastVideoTime = -1;
     let frame = 0;
-    const drift = new FaceDriftMeter();
-    let slouchStart: number | null = null;
+    const detector = new SlouchDetector();
     let isSlouching = false;
 
     (async () => {
@@ -57,25 +56,19 @@ export default function PosturePage() {
           const p = face.faceLandmarks?.[0] ? headPose(face) : null;
           setPose(p);
           if (p) {
-            const noseY = face.faceLandmarks[0][1].y;
-            const { fused } = drift.value(p, noseY);
-            setFused(fused);
-            const now = performance.now();
-            if (fused <= SLOUCH_THRESHOLD) {
-              slouchStart = null;
-              if (isSlouching) {
-                isSlouching = false;
-                setSlouching(false);
-              }
-            } else {
-              if (slouchStart === null) slouchStart = now;
-              if (!isSlouching && now - slouchStart >= SLOUCH_PERIOD * 1000) {
-                isSlouching = true;
-                setSlouching(true);
-              }
+            const r = detector.sample(p, performance.now());
+            // max integral across params (pitch, noseY), with hysteresis
+            const peak = Math.max(...r.integral);
+            setIntegral(peak);
+            if (!isSlouching && peak > detector.slouchThresh) {
+              isSlouching = true;
+              setSlouching(true);
+            } else if (isSlouching && peak < detector.slouchThresh * HYST_FACTOR) {
+              isSlouching = false;
+              setSlouching(false);
             }
           } else {
-            drift.reset();
+            detector.reset();
           }
         }
         raf = requestAnimationFrame(loop);
@@ -108,7 +101,7 @@ export default function PosturePage() {
           {fmt(pose?.yaw)}°
         </span>
         <span className={slouching ? "text-red-500 font-bold" : "opacity-60"}>
-          {slouching ? "SLOUCHING" : "ok"} (drift {fused.toFixed(1)}°)
+          {slouching ? "SLOUCHING" : "ok"} (integral {integral.toFixed(1)}°·s)
         </span>
         {running && !pose && <span className="opacity-60">no face</span>}
       </div>
