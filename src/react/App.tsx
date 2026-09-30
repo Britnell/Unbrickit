@@ -5,7 +5,7 @@ import Theme from "./Theme";
 import PomodoroPage, { PomodoroWidget, usePomodoro } from "./Pomodoro";
 import TrackerPage, { TrackerWidget, useTrackerEngine } from "./Tracker";
 import Chime, { useChime } from "./Chime";
-import PosturePage from "./Posture";
+import PosturePage, { PostureWidget, usePostureEngine } from "./Posture";
 import ChatApp from "./Chat";
 import { paletteAtom, chimeTypeAtom } from "./atoms";
 import { useLocalStorage } from "./useLocalStorage";
@@ -191,6 +191,7 @@ function ClockPage({
           onOpen={() => setMenu("pomodoro")}
         />
         <TrackerWidget onOpen={() => setMenu("tracker")} />
+        <PostureWidget onOpen={() => setMenu("posture")} />
         </div>
       )}
 
@@ -267,6 +268,7 @@ export default function App() {
   const pomo = usePomodoro();
   const chime = useChimeSettings();
   useTrackerEngine();
+  usePostureEngine();
   useChime(chime);
   const c = useAtomValue(paletteAtom);
 

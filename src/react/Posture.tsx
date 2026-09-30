@@ -1,25 +1,76 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { atom, useAtomValue, useSetAtom } from "jotai";
 import type { FaceLandmarker } from "@mediapipe/tasks-vision";
 import { createFaceLandmarker, headPose } from "./face";
 import { SlouchDetector } from "./postureDetect";
 import { acquireCamera, releaseCamera } from "./camera";
 
-type HeadPose = { roll: number; pitch: number; yaw: number };
-
 const HYST_FACTOR = 0.5; // clears slouch only below thresh * this
+const RUNNING_KEY = "posture-running";
 
-export default function PosturePage() {
-  const [running, setRunning] = useState(false);
-  const [pose, setPose] = useState<HeadPose | null>(null);
-  const [integral, setIntegral] = useState(0);
-  const [slouching, setSlouching] = useState(false);
+export type PostureLevel = "ok" | "slouch";
 
-  // face landmark camera loop -> roll/pitch/yaw -> drift-based slouch
+/* --------------------------------- atoms ---------------------------------- */
+
+/** display snapshot the page/widget read; engine is the only writer */
+export interface PostureUi {
+  isRunning: boolean;
+  level: PostureLevel;
+  hasFace: boolean;
+  /** debug readouts for the posture page */
+  pose: { roll: number; pitch: number; yaw: number } | null;
+  integral: number;
+}
+export const postureUiAtom = atom<PostureUi>({
+  isRunning: false,
+  level: "ok",
+  hasFace: false,
+  pose: null,
+  integral: 0,
+});
+
+export const startPostureAtom = atom(null, (_get, set) => {
+  set(postureUiAtom, (ui) => ({ ...ui, isRunning: true }));
+  sessionStorage.setItem(RUNNING_KEY, "1");
+});
+export const stopPostureAtom = atom(null, (_get, set) => {
+  set(postureUiAtom, (ui) => ({
+    ...ui,
+    isRunning: false,
+    hasFace: false,
+    pose: null,
+    integral: 0,
+  }));
+  sessionStorage.removeItem(RUNNING_KEY);
+});
+
+/* --------------------------------- engine --------------------------------- */
+
+/** Mount once (App). Owns the face camera loop, publishes level into postureUiAtom. */
+export function usePostureEngine() {
+  const isRunning = useAtomValue(postureUiAtom).isRunning;
+  const setUi = useSetAtom(postureUiAtom);
+
+  // restart after reload if the user had it running and camera permission persists
   useEffect(() => {
-    if (!running) {
-      setPose(null);
-      setIntegral(0);
-      setSlouching(false);
+    if (!sessionStorage.getItem(RUNNING_KEY)) return;
+    navigator.permissions
+      .query({ name: "camera" as PermissionName })
+      .then((p) => {
+        if (p.state === "granted") setUi((ui) => ({ ...ui, isRunning: true }));
+      })
+      .catch(() => {});
+  }, [setUi]);
+
+  useEffect(() => {
+    if (!isRunning) {
+      setUi((ui) => ({
+        ...ui,
+        level: "ok",
+        hasFace: false,
+        pose: null,
+        integral: 0,
+      }));
       return;
     }
     let cancelled = false;
@@ -31,6 +82,7 @@ export default function PosturePage() {
     let frame = 0;
     const detector = new SlouchDetector();
     let isSlouching = false;
+    let integralVal = 0; // local mirror of integral (state is stale in this closure)
 
     (async () => {
       try {
@@ -44,7 +96,7 @@ export default function PosturePage() {
         }
       } catch (err) {
         console.error("face camera/model failed:", err);
-        setRunning(false);
+        setUi((ui) => ({ ...ui, isRunning: false }));
         return;
       }
       const loop = () => {
@@ -54,22 +106,35 @@ export default function PosturePage() {
           lastVideoTime = video.currentTime;
           const face = landmarker.detectForVideo(video, performance.now());
           const p = face.faceLandmarks?.[0] ? headPose(face) : null;
-          setPose(p);
           if (p) {
             const r = detector.sample(p, performance.now());
             // max integral across params (pitch, noseY), with hysteresis
             const peak = Math.max(...r.integral);
-            setIntegral(peak);
+            integralVal = peak;
             if (!isSlouching && peak > detector.slouchThresh) {
               isSlouching = true;
-              setSlouching(true);
             } else if (isSlouching && peak < detector.slouchThresh * HYST_FACTOR) {
               isSlouching = false;
-              setSlouching(false);
             }
           } else {
             detector.reset();
+            integralVal = 0;
           }
+          const level: PostureLevel = isSlouching ? "slouch" : "ok";
+          setUi((ui) =>
+            ui.level === level &&
+            ui.hasFace === !!p &&
+            ui.pose === p &&
+            ui.integral === integralVal
+              ? ui
+              : {
+                  ...ui,
+                  level,
+                  hasFace: !!p,
+                  pose: p,
+                  integral: integralVal,
+                },
+          );
         }
         raf = requestAnimationFrame(loop);
       };
@@ -82,17 +147,45 @@ export default function PosturePage() {
       if (ownsCamera) releaseCamera();
       landmarker?.close();
     };
-  }, [running]);
+  }, [isRunning, setUi]);
+}
+
+/* --------------------------------- views ---------------------------------- */
+
+
+/** corner widget shown on clock page while posture monitoring is active */
+export function PostureWidget({ onOpen }: { onOpen: () => void }) {
+  const { isRunning, level } = useAtomValue(postureUiAtom);
+  if (!isRunning) return null;
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onOpen();
+      }}
+      className="button text-lg z-10 grid place-items-center w-12 h-10"
+    >
+      {level === "slouch" ? "🥀" : "🌹"}
+    </button>
+  );
+}
+
+export default function PosturePage() {
+  const { isRunning, level, hasFace, pose } = useAtomValue(postureUiAtom);const start = useSetAtom(startPostureAtom);
+  const stop = useSetAtom(stopPostureAtom);
 
   const fmt = (v?: number) => (v === undefined ? "--" : v.toFixed(1));
+
+  const label = level === "slouch" ? "🥀 SLOUCHING" : "🌹 OK";
+  const textColor = level === "slouch" ? "text-red-500" : "text-green-500";
 
   return (
     <div className="text-center py-8 flex flex-col gap-4">
       <button
-        className="mx-auto px-4 py-2 rounded bg-sky-600 text-white"
-        onClick={() => setRunning((r) => !r)}
+        className="mx-auto button"
+        onClick={() => (isRunning ? stop() : start())}
       >
-        {running ? "Stop" : "Start Camera"}
+        {isRunning ? "Stop" : "Start Camera"}
       </button>
 
       <div className="flex flex-col gap-1 tabular-nums">
@@ -100,10 +193,9 @@ export default function PosturePage() {
           roll: {fmt(pose?.roll)}° pitch: {fmt(pose?.pitch)}° yaw:{" "}
           {fmt(pose?.yaw)}°
         </span>
-        <span className={slouching ? "text-red-500 font-bold" : "opacity-60"}>
-          {slouching ? "SLOUCHING" : "ok"} (integral {integral.toFixed(1)}°·s)
+        <span className={`font-bold ${textColor}`}>
+          {label}{hasFace ? "" : " (no face)"}
         </span>
-        {running && !pose && <span className="opacity-60">no face</span>}
       </div>
     </div>
   );
