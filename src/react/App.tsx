@@ -155,22 +155,24 @@ function ClockPage({
   overlayOpen,
   menu,
   setMenu,
+  onOpenChat,
 }: {
   pomo: ReturnType<typeof usePomodoro>;
   chime: ReturnType<typeof useChimeSettings>;
   overlayOpen: boolean;
   menu: boolean | MenuViewName;
   setMenu: (m: boolean | MenuViewName) => void;
+  onOpenChat: () => void;
 }) {
   const system = useSystem();
 
   const menuItems = {
-    pomodoro: "🍅 Pomodoro",
     posture: "🧍 Posture",
     seating: "🪑 Seating",
+    pomodoro: "🍅 Pomodoro",
+    chat: "💬 Chat",
     theme: "🎨 Theme",
     chime: "🔔 Chime",
-    // chat: "💬 Chat",
   } as const;
 
   const selectMenuItem = (go: MenuViewName) => setMenu(go);
@@ -238,12 +240,14 @@ function ClockPage({
               />
             ) : (
               <ul className="grid grid-cols-2 gap-2">
-                {(Object.entries(menuItems) as [MenuViewName, string][]).map(
+                {(Object.entries(menuItems) as [string, string][]).map(
                   ([go, label]) => (
                     <li key={label}>
                       <button
                         className="button w-full"
-                        onClick={() => selectMenuItem(go)}
+                        onClick={() =>
+                          go === "chat" ? onOpenChat() : selectMenuItem(go as MenuViewName)
+                        }
                       >
                         {label}
                       </button>
@@ -280,6 +284,7 @@ export default function App() {
         overlayOpen={page !== "clock"}
         menu={menu}
         setMenu={setMenu}
+        onOpenChat={() => setPage("chat")}
       />
       {page === "chat" && <ChatApp onClose={() => setPage("clock")} />}
     </main>

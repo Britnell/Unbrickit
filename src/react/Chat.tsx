@@ -1,9 +1,64 @@
 import { useEffect, useRef, useState } from "react";
+import { HotwordDetector } from "./hotword";
 
 export default function ChatApp({ onClose }: { onClose: () => void }) {
   const [prompt, setPrompt] = useState("");
   const [listening, setListening] = useState(false);
+    const [micActive, setMicActive] = useState(false);
+  const streamRef = useRef<MediaStream | null>(null);
   const recRef = useRef<any>(null);
+  const hwRef = useRef<HotwordDetector | null>(null);
+  const [hotwordOn, setHotwordOn] = useState(false);
+  const [confidence, setConfidence] = useState(0);
+
+  const toggleHotword = async () => {
+    if (hotwordOn) {
+      hwRef.current?.stop();
+      setHotwordOn(false);
+      setConfidence(0);
+      console.log("hotword stopped");
+      return;
+    }
+    try {
+      if (!hwRef.current) {
+        hwRef.current = new HotwordDetector({
+          hotword: "alexa",
+          threshold: 0.7,
+          onConfidence: setConfidence,
+          onDetected: (word, c) =>
+            console.log(`hotword detected: ${word} (${c.toFixed(3)})`),
+        });
+      }
+      await hwRef.current.start();
+      setHotwordOn(true);
+      console.log("hotword listening for 'alexa'");
+    } catch (err) {
+      console.error("hotword error:", err);
+      alert("Hotword detection failed: " + err);
+    }
+  };
+
+  const toggleMicStream = async () => {
+    if (micActive) {
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+      setMicActive(false);
+      console.log("mic stopped");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      setMicActive(true);
+      console.log(
+        "mic started:",
+        stream.getAudioTracks().map((t) => t.label)
+      );
+    } catch (err) {
+      console.error("mic error:", err);
+      alert("Could not access microphone: " + err);
+    }
+  };
 
   const toggleMic = () => {
     const SR =
@@ -46,7 +101,11 @@ export default function ChatApp({ onClose }: { onClose: () => void }) {
   };
 
   useEffect(() => {
-    return () => recRef.current?.stop();
+    return () => {
+      recRef.current?.stop();
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      hwRef.current?.stop();
+    };
   }, []);
 
   return (
@@ -55,8 +114,14 @@ export default function ChatApp({ onClose }: { onClose: () => void }) {
         className="absolute w-[300px] left-1/2 -translate-x-1/2 bottom-2 p-4 bg-white/50 text-black rounded z-10 flex flex-col items-center"
         onClick={(e) => e.stopPropagation()}
       >
+        <button onClick={toggleMicStream} className="button self-start">
+          {micActive ? "Stop" : "Start"}
+        </button>
         <button onClick={onClose} className="button self-end text-2xl">
           ×
+        </button>
+        <button onClick={toggleHotword} className="button self-start">
+          {hotwordOn ? "Hotword " + (confidence * 100).toFixed(0) + "%" : "Wake word"}
         </button>
         <div className="flex w-full gap-2">
           <input
