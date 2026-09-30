@@ -144,7 +144,7 @@ export const reminderIntervals = [0, 30, 45, 60];
 /** minutes seated per hour, persisted */
 export const hoursAtom = atomWithStorage<HoursData>(HOURS_KEY, freshHours());
 /** seating reminder interval in minutes, persisted */
-export const reminderAtom = atomWithStorage<number>("seating-reminder", 30);
+export const reminderAtom = atomWithStorage<number>("seating-reminder", 45);
 
 export const seatedMinutesTodayAtom = atom((get) =>
   get(hoursAtom).hours.reduce((a, b) => a + b, 0),
@@ -360,7 +360,7 @@ export function useSeatingEngine() {
     }
     if (chimedForRef.current !== seatedSince) {
       chimedForRef.current = seatedSince;
-      playChimeType("chime");
+      playChimeType("file:gong-3.mp3");
     }
   }, [overdue, seatedSince]);
 

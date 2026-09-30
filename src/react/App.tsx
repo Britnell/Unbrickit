@@ -226,7 +226,7 @@ function ClockPage({
            animate-menu-in animation only plays on the initial open. */
         <div className="absolute inset-0" onClick={() => setMenu(false)}>
           <div
-            className="absolute bottom-2 left-1/2 -translate-x-1/2 min-w-[300px] max-w-full max-h-[calc(100svh-1rem)] overflow-auto rounded bg-white/50 text-black p-2 z-10 animate-menu-in"
+            className="absolute bottom-2 left-1/2 -translate-x-1/2 min-w-[300px] max-w-full max-h-[calc(100svh-1rem)] rounded bg-white/50 text-black p-2 z-10 animate-menu-in"
             onClick={(e) => e.stopPropagation()}
           >
             {typeof menu === "string" ? (

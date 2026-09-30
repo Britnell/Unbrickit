@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { playTimerBeep } from '../lib/tone';
+import { playChimeType } from './Chime';
+
+const gongWorkEnd = 'file:gong-6.mp3';
+const gongCycleDone = 'file:gong-heavy.mp3';
 
 type Mode = 'focus' | 'break';
 
@@ -42,18 +46,16 @@ export function usePomodoro() {
       tick((t) => t + 1);
       if (startTime !== null && Date.now() - startTime >= state.duration && !beepedRef.current) {
         beepedRef.current = true;
-        playTimerBeep();
-        // interval finished: advance work -> break -> work
-        setState((s) => {
-          const mode: Mode = s.mode === 'focus' ? 'break' : 'focus';
-          return { ...s, mode, duration: mode === 'focus' ? s.focusMin * 60000 : s.breakMin * 60000, startTime: Date.now() };
-        });
+        if (state.mode === 'focus') playChimeType(gongWorkEnd);
+        else playTimerBeep();
+        // interval finished: keep counting into the negative until the user advances
       }
     }, 1000);
     return () => clearInterval(id);
   }, [isRunning, startTime, state.duration]);
 
   const remaining = isRunning && startTime !== null ? state.duration - (Date.now() - startTime) : state.duration;
+  const isOvertime = isRunning && remaining < 0;
 
   const start = () => setState((s) => ({
     ...s,
@@ -63,13 +65,22 @@ export function usePomodoro() {
   }));
   const stop = () => setState((s) => ({ ...s, mode: 'focus' as Mode, duration: s.focusMin * 60000, startTime: null }));
 
+  // user confirms the finished interval: work -> break, break -> idle work
+  const advance = () => setState((s) => {
+    if (s.mode === 'focus') {
+      return { ...s, mode: 'break' as Mode, duration: s.breakMin * 60000, startTime: Date.now() };
+    }
+    playChimeType(gongCycleDone);
+    return { ...s, mode: 'focus' as Mode, duration: s.focusMin * 60000, startTime: null };
+  });
+
   const setFocusMin = (m: number) =>
     setState((s) => ({ ...s, focusMin: m, duration: s.mode === 'focus' ? m * 60000 : s.duration, startTime: s.mode === 'focus' ? null : s.startTime }));
 
   const setBreakMin = (m: number) =>
     setState((s) => ({ ...s, breakMin: m, duration: s.mode === 'break' ? m * 60000 : s.duration, startTime: s.mode === 'break' ? null : s.startTime }));
 
-  return { isRunning, remaining, mode: state.mode, focusMin: state.focusMin, breakMin: state.breakMin, start, stop, setFocusMin, setBreakMin };
+  return { isRunning, remaining, isOvertime, mode: state.mode, focusMin: state.focusMin, breakMin: state.breakMin, start, stop, advance, setFocusMin, setBreakMin };
 }
 
 export type Pomodoro = ReturnType<typeof usePomodoro>;
@@ -91,13 +102,13 @@ export function PomodoroWidget({ pomo, onOpen }: { pomo: Pomodoro; onOpen: () =>
       onClick={(e) => { e.stopPropagation(); onOpen(); }}
       className="button text-lg z-10"
     >
-      🍅 {minutes}m
+      🍅 {pomo.remaining < 0 ? `+${minutes}m` : `${minutes}m`}
     </button>
   );
 }
 
 export default function PomodoroPage({ pomo }: { pomo: Pomodoro }) {
-  const { isRunning, remaining, mode, focusMin, breakMin, start, stop, setFocusMin, setBreakMin } = pomo;
+  const { isRunning, remaining, isOvertime, mode, focusMin, breakMin, start, stop, advance, setFocusMin, setBreakMin } = pomo;
 
   return (
     <>
@@ -132,9 +143,9 @@ export default function PomodoroPage({ pomo }: { pomo: Pomodoro }) {
           </div>
         )}
 
-        <button onClick={isRunning ? stop : start}
+        <button onClick={isOvertime ? advance : isRunning ? stop : start}
           className="button w-full text-lg">
-          {isRunning ? 'Stop' : 'Start'}
+          {isOvertime ? (mode === 'focus' ? 'Start break' : 'Finish') : isRunning ? 'Stop' : 'Start'}
         </button>
     </>
   );
