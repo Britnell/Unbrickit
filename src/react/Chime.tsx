@@ -64,22 +64,14 @@ export default function Chime({
   setType,
   interval,
   setInterval_,
-  onBack,
 }: {
   type: string;
   setType: (v: string) => void;
   interval: number;
   setInterval_: (v: number) => void;
-  onBack: () => void;
 }) {
   return (
     <div className="grid grid-cols-2 gap-y-1 gap-x-2">
-      <div className="col-span-full">
-        <button onClick={onBack} className="button w-full hover:bg-gray-200">
-          ← 🔔 Chime
-        </button>
-      </div>
-
       <label htmlFor="chime-interval" className="flex justify-between items-center">
         Interval
       </label>

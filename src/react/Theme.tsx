@@ -39,7 +39,7 @@ function Slider({
   );
 }
 
-export default function Theme({ onBack }: { onBack: () => void }) {
+export default function Theme() {
   const [theme, setTheme] = useAtom(themeAtom);
   const [timeOfDay, setTimeOfDay] = useAtom(timeOfDayAtom);
   const { font, fontSize, fontWeight, hue, colorMode, darkMode } = theme;
@@ -53,12 +53,6 @@ export default function Theme({ onBack }: { onBack: () => void }) {
   };
   return (
     <div className="grid grid-cols-2 gap-y-1 gap-x-2">
-      <div className="col-span-full">
-        <button onClick={onBack} className="button w-full hover:bg-gray-200">
-          ← 🎨 Theme
-        </button>
-      </div>
-
       <label htmlFor="font-select" className="flex justify-between items-center">
         Font
       </label>
