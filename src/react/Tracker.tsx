@@ -399,7 +399,13 @@ export default function TrackerApp({
           <h2 className="text-2xl mb-2">Seating tracker</h2>
 
           {isRunning && !seated && (
-            <div className="mb-2 text-lg">🕳️ Not at desk</div>
+            <div className="mb-2 bg-white/90 px-2 py-1 rounded text-center">
+              <div className="text-4xl">🕳️</div>
+              <div className="text-lg">Not at desk</div>
+              <div className="text-3xl tabular-nums">
+                0<span className="text-lg text-gray-500"> min</span>
+              </div>
+            </div>
           )}
 
           {isRunning && seated && (
