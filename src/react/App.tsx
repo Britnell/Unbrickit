@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Clock from "./Clock";
 import Theme from "./Theme";
 import PomodoroApp, { PomodoroWidget, usePomodoro } from "./Pomodoro";
@@ -122,26 +122,6 @@ function HelperButtons({ system }: { system: ReturnType<typeof useSystem> }) {
   );
 }
 
-/** Bottom sheet menu; closes when tapping outside the panel. */
-function MenuSheet({
-  onClose,
-  children,
-}: {
-  onClose: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <div className="absolute inset-0" onClick={onClose}>
-      <div
-        className="absolute bottom-2 left-1/2 -translate-x-1/2 w-[300px] max-h-[calc(100svh-1rem)] overflow-auto rounded bg-white/50 text-black p-2 z-10 animate-menu-in "
-        onClick={(e) => e.stopPropagation()}
-      >
-        {children}
-      </div>
-    </div>
-  );
-}
-
 /* ----------------------------------- pages -------------------------------- */
 
 function ClockPage({
@@ -245,7 +225,11 @@ function ClockPage({
       )}
 
       {menu && (
-        <MenuSheet onClose={() => setMenu(false)}>
+        <div className="absolute inset-0" onClick={() => setMenu(false)}>
+          <div
+            className="absolute bottom-2 left-1/2 -translate-x-1/2 w-[300px] max-h-[calc(100svh-1rem)] overflow-auto rounded bg-white/50 text-black p-2 z-10 animate-menu-in "
+            onClick={(e) => e.stopPropagation()}
+          >
           {typeof menu === "string" ? (
             menu === "chime" ? (
               <Chime
@@ -287,7 +271,8 @@ function ClockPage({
               ))}
             </ul>
           )}
-        </MenuSheet>
+          </div>
+        </div>
       )}
     </>
   );
