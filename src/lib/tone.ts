@@ -27,6 +27,16 @@ export interface Note {
   duration?: number;
 }
 
+let sharedCtx: AudioContext | null = null;
+
+export function getAudioContext(): AudioContext {
+  if (!sharedCtx) {
+    sharedCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+  }
+  if (sharedCtx.state === 'suspended') void sharedCtx.resume();
+  return sharedCtx;
+}
+
 export function noteToFrequency(note: string): number {
   const match = note.toUpperCase().match(/^([A-G][#B]?)(\d+)$/);
   if (!match) return 0;
@@ -38,7 +48,7 @@ export function noteToFrequency(note: string): number {
 }
 
 export function playNotes(notes: Note[], staggerDelay = 0.1): void {
-  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+  const audioContext = getAudioContext();
 
   let cumulativeTime = 0;
 
@@ -96,6 +106,26 @@ export function playChime(): void {
     ],
     0.2,
   );
+}
+
+export function notify(): void {
+  const audioContext = getAudioContext();
+  const beep = (startTime: number) => {
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    osc.connect(gain);
+    gain.connect(audioContext.destination);
+    osc.type = 'sine';
+    osc.frequency.value = noteToFrequency('A4');
+    const volume = 0.4;
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(volume, startTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.15);
+    osc.start(startTime);
+    osc.stop(startTime + 0.15);
+  };
+  beep(audioContext.currentTime + 0.01);
+  beep(audioContext.currentTime + 0.01 + 0.3);
 }
 
 export function playTimerBeep() {

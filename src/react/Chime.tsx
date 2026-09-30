@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { playChime, randomChord } from '../lib/tone';
+import { notify, playChime, randomChord } from '../lib/tone';
 import { titleCase } from './state';
 
 // custom sound files: drop .mp3/.ogg/.wav/.m4a files into public/sounds/
@@ -106,6 +106,11 @@ export default function Chime({
           </option>
         ))}
       </select>
+
+      {/* debug */}
+      <button onClick={() => notify()} className="col-span-2 mt-1">
+        Test notify
+      </button>
     </div>
   );
 }

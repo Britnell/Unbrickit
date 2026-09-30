@@ -4,6 +4,7 @@ import type { FaceLandmarker } from "@mediapipe/tasks-vision";
 import { createFaceLandmarker, headPose } from "./face";
 import { SlouchDetector } from "./postureDetect";
 import { acquireCamera, releaseCamera } from "./camera";
+import { notify } from "../lib/tone";
 
 const HYST_FACTOR = 0.5; // clears slouch only below thresh * this
 const RUNNING_KEY = "posture-running";
@@ -113,6 +114,7 @@ export function usePostureEngine() {
             integralVal = peak;
             if (!isSlouching && peak > detector.slouchThresh) {
               isSlouching = true;
+              notify();
             } else if (isSlouching && peak < detector.slouchThresh * HYST_FACTOR) {
               isSlouching = false;
             }
