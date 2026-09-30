@@ -415,7 +415,7 @@ export default function SeatingPage() {
     <>
     <div className="flex flex-col min-w-[200px]">
                     {isRunning && !seated && (
-            <div className="mb-2 bg-white/90 px-2 py-1 rounded text-center">
+            <div className="mb-2 bg-white/30 px-2 py-1 rounded text-center">
               <div className="text-4xl">🕳️</div>
               <div className="text-lg">Not at desk</div>
               <div className="text-3xl tabular-nums">
@@ -425,7 +425,7 @@ export default function SeatingPage() {
           )}
 
           {isRunning && seated && (
-            <div className="mb-2 bg-white/90 px-2 py-1 rounded text-center">
+            <div className="mb-2 bg-white/30 px-2 py-1 rounded text-center">
               <div className="text-4xl">🪑</div>
               <div className="text-lg">At desk</div>
               <div className="text-3xl tabular-nums">

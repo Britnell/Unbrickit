@@ -55,7 +55,7 @@ export default function ChatApp({ onClose }: { onClose: () => void }) {
         className="absolute w-[300px] left-1/2 -translate-x-1/2 bottom-2 p-4 bg-white/50 text-black rounded z-10 flex flex-col items-center"
         onClick={(e) => e.stopPropagation()}
       >
-        <button onClick={onClose} className="button self-end text-2xl hover:bg-gray-200">
+        <button onClick={onClose} className="button self-end text-2xl">
           ×
         </button>
         <div className="flex w-full gap-2">
@@ -70,7 +70,7 @@ export default function ChatApp({ onClose }: { onClose: () => void }) {
             title="Dictate"
             className={
               "button text-xl " +
-              (listening ? "bg-red-500 text-white animate-pulse" : "hover:bg-gray-100")
+              (listening ? "bg-red-500 text-white animate-pulse" : "")
             }
           >
             🎤

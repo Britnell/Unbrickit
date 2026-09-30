@@ -64,7 +64,7 @@ function HelperButtons({ system }: { system: ReturnType<typeof useSystem> }) {
     <div className="absolute right-2 top-2 flex items-center gap-2 z-20">
 
       <button
-        className="button grid place-items-center text-lg hover:bg-gray-200"
+        className="button grid place-items-center text-lg"
         onClick={(e) => {
           e.stopPropagation();
           window.location.reload();
@@ -73,7 +73,7 @@ function HelperButtons({ system }: { system: ReturnType<typeof useSystem> }) {
         ⟳
       </button>
       <button
-        className="button grid place-items-center text-lg hover:bg-gray-200"
+        className="button grid place-items-center text-lg"
         onClick={(e) => {
           e.stopPropagation();
           system.toggleFullscreen();
@@ -82,7 +82,7 @@ function HelperButtons({ system }: { system: ReturnType<typeof useSystem> }) {
         {system.fullscreen ? "⤡" : "⛶"}
       </button>
       <button
-        className="button grid place-items-center text-lg hover:bg-gray-200"
+        className="button grid place-items-center text-lg"
         onClick={(e) => {
           e.stopPropagation();
           system.toggleScreenLock();
@@ -124,7 +124,7 @@ function MenuView({
         <div className="flex items-center justify-between mb-2">
           <button
             onClick={onBack}
-            className="button grid place-items-center hover:bg-gray-200"
+            className="button grid place-items-center"
             aria-label="Back"
           >
             ←
@@ -242,7 +242,7 @@ function ClockPage({
                   ([go, label]) => (
                     <li key={label}>
                       <button
-                        className="button w-full hover:bg-gray-200"
+                        className="button w-full"
                         onClick={() => selectMenuItem(go)}
                       >
                         {label}

@@ -163,7 +163,7 @@ export function PostureWidget({ onOpen }: { onOpen: () => void }) {
         e.stopPropagation();
         onOpen();
       }}
-      className="button text-lg z-10 grid place-items-center w-12 h-10"
+      className="button text-lg z-10"
     >
       {level === "slouch" ? "🥀" : "🌹"}
     </button>
@@ -171,32 +171,28 @@ export function PostureWidget({ onOpen }: { onOpen: () => void }) {
 }
 
 export default function PosturePage() {
-  const { isRunning, level, hasFace, pose } = useAtomValue(postureUiAtom);const start = useSetAtom(startPostureAtom);
+  const { isRunning, level, hasFace } = useAtomValue(postureUiAtom);
+  const start = useSetAtom(startPostureAtom);
   const stop = useSetAtom(stopPostureAtom);
 
-  const fmt = (v?: number) => (v === undefined ? "--" : v.toFixed(1));
-
-  const label = level === "slouch" ? "🥀 SLOUCHING" : "🌹 OK";
-  const textColor = level === "slouch" ? "text-red-500" : "text-green-500";
 
   return (
     <div className="text-center py-8 flex flex-col gap-4">
-      <button
-        className="mx-auto button"
-        onClick={() => (isRunning ? stop() : start())}
-      >
-        {isRunning ? "Stop" : "Start Camera"}
-      </button>
+        {isRunning && (
+          <div className="flex flex-col items-center gap-2 mx-auto w-48 py-4 rounded bg-white/30">
+            <span className="text-6xl">{level === "slouch" ? "🥀" : "🌹"}</span>
+            <span className="text-2xl font-bold tracking-wider">
+              {level === "slouch" ? "SLOUCHING" : "OK"}
+              {hasFace ? "" : " (no face)"}
+            </span>
+          </div>
+        )}
 
-      <div className="flex flex-col gap-1 tabular-nums">
-        <span>
-          roll: {fmt(pose?.roll)}° pitch: {fmt(pose?.pitch)}° yaw:{" "}
-          {fmt(pose?.yaw)}°
-        </span>
-        <span className={`font-bold ${textColor}`}>
-          {label}{hasFace ? "" : " (no face)"}
-        </span>
-      </div>
-    </div>
+        <button
+          className="mx-auto button"
+          onClick={() => (isRunning ? stop() : start())}
+        >
+          {isRunning ? "Stop" : "Start Camera"}
+        </button>    </div>
   );
 }
