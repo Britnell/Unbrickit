@@ -199,7 +199,18 @@ export function useTrackerEngine() {
   const setHoursData = useSetAtom(hoursAtom);
   const isRunning = useAtomValue(trackerUiAtom).isRunning; // toggled by page buttons
   const setUi = useSetAtom(trackerUiAtom);
+  const hoursDate = useAtomValue(hoursAtom).date;
   const reminderMinutes = useAtomValue(reminderAtom);
+
+  // reset stored hours when the day changes (checked on mount + every minute)
+  useEffect(() => {
+    const check = () => {
+      if (!sameDay(hoursDate, todayStr())) setHoursData(freshHours());
+    };
+    check();
+    const id = setInterval(check, 60_000);
+    return () => clearInterval(id);
+  }, [hoursDate, setHoursData]);
 
   // local state: only consumed here + mirrored into the UI snapshot
   const [seated, setSeated] = useState(false);
