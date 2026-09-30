@@ -7,9 +7,9 @@ import { LandmarkOneEuro } from "./filter";
 import { playChimeType } from "./Chime";
 import type { PoseLandmarker } from "@mediapipe/tasks-vision";
 
-const POS_KEY = "tracker-position";
-const HOURS_KEY = "tracker-hours";
-const RUNNING_KEY = "tracker-running";
+const POS_KEY = "seating-position";
+const HOURS_KEY = "seating-hours";
+const RUNNING_KEY = "seating-running";
 
 interface HoursData {
   /** date string, e.g. 2025-01-31; if not today, data is from a previous day */
@@ -138,27 +138,27 @@ function extractPoints(lm: { x: number; y: number; z: number }[]): Points {
 export const reminderIntervals = [0, 30, 45, 60];
 
 /* --------------------------------- atoms ---------------------------------- */
-// Only genuinely shared/persisted tracker state lives in atoms. Everything
+// Only genuinely shared/persisted seating state lives in atoms. Everything
 // else (isRunning, seated, distance, ...) is local useState in the engine.
 
 /** minutes seated per hour, persisted */
 export const hoursAtom = atomWithStorage<HoursData>(HOURS_KEY, freshHours());
 /** seating reminder interval in minutes, persisted */
-export const reminderAtom = atomWithStorage<number>("tracker-reminder", 30);
+export const reminderAtom = atomWithStorage<number>("seating-reminder", 30);
 
 export const seatedMinutesTodayAtom = atom((get) =>
   get(hoursAtom).hours.reduce((a, b) => a + b, 0),
 );
 
 /** display snapshot the page/widget read; engine is the only writer */
-export interface TrackerUi {
+export interface SeatingUi {
   isRunning: boolean;
   seated: boolean;
   distance: number;
   seatedMs: number;
   overdue: boolean;
 }
-export const trackerUiAtom = atom<TrackerUi>({
+export const seatingUiAtom = atom<SeatingUi>({
   isRunning: false,
   seated: false,
   distance: 0,
@@ -167,12 +167,12 @@ export const trackerUiAtom = atom<TrackerUi>({
 });
 
 // start/stop actions: just flip isRunning in the snapshot, the engine reacts
-export const startTrackerAtom = atom(null, (_get, set) => {
-  set(trackerUiAtom, (ui) => ({ ...ui, isRunning: true }));
+export const startSeatingAtom = atom(null, (_get, set) => {
+  set(seatingUiAtom, (ui) => ({ ...ui, isRunning: true }));
   sessionStorage.setItem(RUNNING_KEY, "1");
 });
-export const stopTrackerAtom = atom(null, (_get, set) => {
-  set(trackerUiAtom, (ui) => ({ ...ui, isRunning: false }));
+export const stopSeatingAtom = atom(null, (_get, set) => {
+  set(seatingUiAtom, (ui) => ({ ...ui, isRunning: false }));
   sessionStorage.removeItem(RUNNING_KEY);
 });
 
@@ -194,12 +194,12 @@ export function useCaptureSeat() {
 
 /**
  * Mount once (App). Owns the camera loop + timers; keeps per-frame state as
- * local useState and publishes only the display snapshot into trackerUiAtom.
+ * local useState and publishes only the display snapshot into seatingUiAtom.
  */
-export function useTrackerEngine() {
+export function useSeatingEngine() {
   const setHoursData = useSetAtom(hoursAtom);
-  const isRunning = useAtomValue(trackerUiAtom).isRunning; // toggled by page buttons
-  const setUi = useSetAtom(trackerUiAtom);
+  const isRunning = useAtomValue(seatingUiAtom).isRunning; // toggled by page buttons
+  const setUi = useSetAtom(seatingUiAtom);
   const hoursDate = useAtomValue(hoursAtom).date;
   const reminderMinutes = useAtomValue(reminderAtom);
 
@@ -281,7 +281,7 @@ export function useTrackerEngine() {
           return;
         }
       } catch (err) {
-        console.error("tracker camera/model failed:", err);
+        console.error("seating camera/model failed:", err);
         return;
       }
       const loop = () => {
@@ -379,10 +379,10 @@ export function useTrackerEngine() {
 
 /* --------------------------------- views ---------------------------------- */
 
-/** corner widget shown on clock page while tracker is active */
-export function TrackerWidget({ onOpen }: { onOpen: () => void }) {
+/** corner widget shown on clock page while seating is active */
+export function SeatingWidget({ onOpen }: { onOpen: () => void }) {
   const { isRunning, seated, overdue, seatedMs } =
-    useAtomValue(trackerUiAtom);
+    useAtomValue(seatingUiAtom);
   if (!isRunning) return null;
   return (
     <button
@@ -402,11 +402,11 @@ export function TrackerWidget({ onOpen }: { onOpen: () => void }) {
   );
 }
 
-export default function TrackerPage() {
+export default function SeatingPage() {
   const { isRunning, seated, seatedMs, distance, overdue } =
-    useAtomValue(trackerUiAtom);
-  const start = useSetAtom(startTrackerAtom);
-  const stop = useSetAtom(stopTrackerAtom);
+    useAtomValue(seatingUiAtom);
+  const start = useSetAtom(startSeatingAtom);
+  const stop = useSetAtom(stopSeatingAtom);
   const capture = useCaptureSeat();
   const [reminder, setReminder] = useAtom(reminderAtom);
   const seatedMinutesToday = useAtomValue(seatedMinutesTodayAtom);

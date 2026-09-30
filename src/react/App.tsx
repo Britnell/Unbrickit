@@ -3,7 +3,7 @@ import { useAtomValue, useAtom } from "jotai";
 import Clock from "./Clock";
 import Theme from "./Theme";
 import PomodoroPage, { PomodoroWidget, usePomodoro } from "./Pomodoro";
-import TrackerPage, { TrackerWidget, useTrackerEngine } from "./Tracker";
+import SeatingPage, { SeatingWidget, useSeatingEngine } from "./Seating";
 import Chime, { useChime } from "./Chime";
 import PosturePage, { PostureWidget, usePostureEngine } from "./Posture";
 import ChatApp from "./Chat";
@@ -99,7 +99,7 @@ function HelperButtons({ system }: { system: ReturnType<typeof useSystem> }) {
 /* All sub-pages of the menu: header title + content. Rendered in ONE place below. */
 const menuTitles = {
   pomodoro: "🍅 Pomodoro",
-  tracker: "🪑 Tracker",
+  seating: "🪑 Seating",
   posture: "🧍 Posture",
   theme: "🎨 Theme",
   chime: "🔔 Chime",
@@ -134,7 +134,7 @@ function MenuView({
         </div>
 
         {view === "pomodoro" && <PomodoroPage pomo={pomo} />}
-        {view === "tracker" && <TrackerPage />}
+        {view === "seating" && <SeatingPage />}
         {view === "theme" && <Theme />}
         {view === "chime" && (
           <Chime
@@ -167,7 +167,7 @@ function ClockPage({
   const menuItems = {
     pomodoro: "🍅 Pomodoro",
     posture: "🧍 Posture",
-    tracker: "🪑 Tracker",
+    seating: "🪑 Seating",
     theme: "🎨 Theme",
     chime: "🔔 Chime",
     // chat: "💬 Chat",
@@ -190,7 +190,7 @@ function ClockPage({
           pomo={pomo}
           onOpen={() => setMenu("pomodoro")}
         />
-        <TrackerWidget onOpen={() => setMenu("tracker")} />
+        <SeatingWidget onOpen={() => setMenu("seating")} />
         <PostureWidget onOpen={() => setMenu("posture")} />
         </div>
       )}
@@ -267,7 +267,7 @@ export default function App() {
 
   const pomo = usePomodoro();
   const chime = useChimeSettings();
-  useTrackerEngine();
+  useSeatingEngine();
   usePostureEngine();
   useChime(chime);
   const c = useAtomValue(paletteAtom);

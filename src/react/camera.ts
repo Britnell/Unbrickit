@@ -1,4 +1,4 @@
-// refcounted shared camera: Posture + Tracker reuse one getUserMedia stream
+// refcounted shared camera: Posture + Seating reuse one getUserMedia stream
 // and one <video> element instead of each decoding the camera separately
 let stream: MediaStream | null = null;
 let video: HTMLVideoElement | null = null;
