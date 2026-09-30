@@ -368,28 +368,21 @@ export function TrackerWidget({
   );
 }
 
-import { MenuPanel, MenuHeader } from './App';
-
-export default function TrackerApp({
+export default function TrackerPage({
   tracker,
   reminder,
   setReminder,
-  onClose,
 }: {
   tracker: Tracker;
   reminder: number;
   setReminder: (v: number) => void;
-  onClose: () => void;
 }) {
   const { isRunning, start, stop, capture, seated, seatedMs, distance } =
     tracker;
 
   return (
-    <div className="absolute inset-0" onClick={onClose}>
-      <MenuPanel>
-        <MenuHeader title="🪑 Tracker" onBack={onClose} />
-
-        <div className="flex flex-col min-w-[200px]">
+    <>
+    <div className="flex flex-col min-w-[200px]">
                     {isRunning && !seated && (
             <div className="mb-2 bg-white/90 px-2 py-1 rounded text-center">
               <div className="text-4xl">🕳️</div>
@@ -469,7 +462,6 @@ export default function TrackerApp({
             </button>
           )}
         </div>
-      </MenuPanel>
-    </div>
+    </>
   );
 }

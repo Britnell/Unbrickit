@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useAtomValue } from "jotai";
 import Clock from "./Clock";
 import Theme from "./Theme";
-import PomodoroApp, { PomodoroWidget, usePomodoro } from "./Pomodoro";
-import TrackerApp, { TrackerWidget, useTracker } from "./Tracker";
+import PomodoroPage, { PomodoroWidget, usePomodoro } from "./Pomodoro";
+import TrackerPage, { TrackerWidget, useTracker } from "./Tracker";
 import Chime, { useChime } from "./Chime";
 import ChatApp from "./Chat";
 import { paletteAtom } from "./atoms";
@@ -93,61 +93,73 @@ function HelperButtons({ system }: { system: ReturnType<typeof useSystem> }) {
   );
 }
 
-/* ------------------------------ menu chrome ------------------------------- */
+/* ------------------------------ menu views -------------------------------- */
 
-/* ----------------------------------- pages -------------------------------- */
-
-/* ------------------------------ menu chrome ------------------------------- */
-
-/* The ONE place that renders the menu panel: position, white bg, rounded, min width */
-export function MenuPanel({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      className="absolute bottom-2 left-1/2 -translate-x-1/2 min-w-[300px] max-w-full max-h-[calc(100svh-1rem)] overflow-auto rounded bg-white/50 text-black p-2 z-10 animate-menu-in"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {children}
-    </div>
-  );
-}
-
-/* Shared header for submenu views: back arrow (button) on the left, title centered, no X */
-export function MenuHeader({ title, onBack }: { title: string; onBack: () => void }) {
-  return (
-    <div className="flex items-center justify-between mb-2">
-      <button
-        onClick={onBack}
-        className="button grid place-items-center hover:bg-gray-200"
-        aria-label="Back"
-      >
-        ←
-      </button>
-      <span className="flex-1 text-center">{title}</span>
-      <span className="w-8" />
-    </div>
-  );
-}
-
-const menuViews = {
-  theme: { title: "🎨 Theme", render: () => <Theme /> },
-  chime: {
-    title: "🔔 Chime",
-    render: (chime: ReturnType<typeof useChimeSettings>) => (
-      <Chime
-        type={chime.type}
-        interval={chime.interval}
-        setType={chime.set.type}
-        setInterval_={chime.set.interval}
-      />
-    ),
-  },
+/* All sub-pages of the menu: header title + content. Rendered in ONE place below. */
+const menuTitles = {
+  pomodoro: "🍅 Pomodoro",
+  tracker: "🪑 Tracker",
+  theme: "🎨 Theme",
+  chime: "🔔 Chime",
 } as const;
+
+type MenuViewName = keyof typeof menuTitles;
+
+function MenuView({
+  view,
+  onBack,
+  pomo,
+  tracker,
+  chime,
+  reminder,
+  setReminder,
+}: {
+  view: MenuViewName;
+  onBack: () => void;
+  pomo: ReturnType<typeof usePomodoro>;
+  tracker: ReturnType<typeof useTracker>;
+  chime: ReturnType<typeof useChimeSettings>;
+  reminder: number;
+  setReminder: (v: number) => void;
+}) {
+  return (
+    <>
+      {/* header: back arrow on the left, title centered */}
+        <div className="flex items-center justify-between mb-2">
+          <button
+            onClick={onBack}
+            className="button grid place-items-center hover:bg-gray-200"
+            aria-label="Back"
+          >
+            ←
+          </button>
+          <span className="flex-1 text-center">{menuTitles[view]}</span>
+          <span className="w-8" />
+        </div>
+
+        {view === "pomodoro" && <PomodoroPage pomo={pomo} />}
+        {view === "tracker" && (
+          <TrackerPage tracker={tracker} reminder={reminder} setReminder={setReminder} />
+        )}
+        {view === "theme" && <Theme />}
+        {view === "chime" && (
+          <Chime
+            type={chime.type}
+            interval={chime.interval}
+            setType={chime.set.type}
+            setInterval_={chime.set.interval}
+          />
+        )}
+    </>
+  );
+}
 
 function ClockPage({
   pomo,
   tracker,
   chime,
-  onOpen,
+  reminder,
+  setReminder,
   overlayOpen,
   menu,
   setMenu,
@@ -155,27 +167,23 @@ function ClockPage({
   pomo: ReturnType<typeof usePomodoro>;
   tracker: ReturnType<typeof useTracker>;
   chime: ReturnType<typeof useChimeSettings>;
-  onOpen: (page: "pomodoro" | "tracker" | "chat", from: "menu" | "clock") => void;
+  reminder: number;
+  setReminder: (v: number) => void;
   overlayOpen: boolean;
-  menu: boolean | string;
-  setMenu: (m: boolean | string) => void;
+  menu: boolean | MenuViewName;
+  setMenu: (m: boolean | MenuViewName) => void;
 }) {
   const system = useSystem();
 
-  const menuItems = [
-    // { label: "💬 Chat", go: "chat" },
-    { label: "🍅 Pomodoro", go: "pomodoro" },
-    { label: "🪑 Tracker", go: "tracker" },
-    { label: "🎨 Theme", go: "theme" },
-    { label: "🔔 Chime", go: "chime" },
-  ];
+  const menuItems = {
+    pomodoro: "🍅 Pomodoro",
+    tracker: "🪑 Tracker",
+    theme: "🎨 Theme",
+    chime: "🔔 Chime",
+    // chat: "💬 Chat",
+  } as const;
 
-  const selectMenuItem = (go: string) => {
-    if (go === "pomodoro" || go === "tracker" || go === "chat") {
-      setMenu(false);
-      onOpen(go, "menu");
-    } else setMenu(go);
-  };
+  const selectMenuItem = (go: MenuViewName) => setMenu(go);
 
   return (
     <>
@@ -190,17 +198,11 @@ function ClockPage({
         <div className="absolute bottom-2 right-2 flex gap-2 pointer-events-auto">
         <PomodoroWidget
           pomo={pomo}
-          onOpen={() => {
-            setMenu(false);
-            onOpen("pomodoro", "clock");
-          }}
+          onOpen={() => setMenu("pomodoro")}
         />
         <TrackerWidget
           tracker={tracker}
-          onOpen={() => {
-            setMenu(false);
-            onOpen("tracker", "clock");
-          }}
+          onOpen={() => setMenu("tracker")}
         />
         </div>
       )}
@@ -231,21 +233,28 @@ function ClockPage({
       )}
 
       {menu && (
+        /* This whole block mounts once when the menu opens (false -> truthy)
+           and stays mounted while navigating between views, so the
+           animate-menu-in animation only plays on the initial open. */
         <div className="absolute inset-0" onClick={() => setMenu(false)}>
-          <MenuPanel>
-              {typeof menu === "string" ? (
-                <>
-                  <MenuHeader
-                    title={menuViews[menu as keyof typeof menuViews].title}
-                    onBack={() => setMenu(true)}
-                  />
-                  {menu === "chime"
-                    ? menuViews.chime.render(chime)
-                    : menuViews.theme.render()}
-                </>
-              ) : (
-                <ul className="grid grid-cols-2 gap-2">
-                  {menuItems.map(({ label, go }) => (
+          <div
+            className="absolute bottom-2 left-1/2 -translate-x-1/2 min-w-[300px] max-w-full max-h-[calc(100svh-1rem)] overflow-auto rounded bg-white/50 text-black p-2 z-10 animate-menu-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {typeof menu === "string" ? (
+              <MenuView
+                view={menu}
+                onBack={() => setMenu(true)}
+                    pomo={pomo}
+                tracker={tracker}
+                chime={chime}
+                reminder={reminder}
+                setReminder={setReminder}
+              />
+            ) : (
+              <ul className="grid grid-cols-2 gap-2">
+                {(Object.entries(menuItems) as [MenuViewName, string][]).map(
+                  ([go, label]) => (
                     <li key={label}>
                       <button
                         className="button w-full hover:bg-gray-200"
@@ -254,10 +263,11 @@ function ClockPage({
                         {label}
                       </button>
                     </li>
-                  ))}
-                </ul>
-              )}
-          </MenuPanel>
+                  ),
+                )}
+              </ul>
+            )}
+          </div>
         </div>
       )}
     </>
@@ -267,20 +277,9 @@ function ClockPage({
 /* ----------------------------------- app ---------------------------------- */
 
 export default function App() {
-  const [page, setPage] = useState<"clock" | "pomodoro" | "tracker" | "chat">("clock");
-  const [menu, setMenu] = useState<boolean | string>(false);
-  // simple history: where to go back to after an overlay page
-  const [prevPage, setPrevPage] = useState<"clock" | "menu">("clock");
+  const [page, setPage] = useState<"clock" | "chat">("clock");
+  const [menu, setMenu] = useState<boolean | MenuViewName>(false);
 
-  const openPage = (p: "pomodoro" | "tracker" | "chat", from: "menu" | "clock") => {
-    setPrevPage(from);
-    setPage(p);
-  };
-
-  const closePage = () => {
-    setPage("clock");
-    setMenu(prevPage === "menu");
-  };
   const pomo = usePomodoro();
   const [reminder, setReminder] = useLocalStorage<number>(
     "tracker-reminder",
@@ -300,23 +299,13 @@ export default function App() {
         pomo={pomo}
         tracker={tracker}
         chime={chime}
-        onOpen={openPage}
+        reminder={reminder}
+        setReminder={setReminder}
         overlayOpen={page !== "clock"}
         menu={menu}
         setMenu={setMenu}
       />
-      {page === "pomodoro" && (
-        <PomodoroApp pomo={pomo} onClose={closePage} />
-      )}
-      {page === "chat" && <ChatApp onClose={closePage} />}
-      {page === "tracker" && (
-        <TrackerApp
-          tracker={tracker}
-          reminder={reminder}
-          setReminder={setReminder}
-          onClose={closePage}
-        />
-      )}
+      {page === "chat" && <ChatApp onClose={() => setPage("clock")} />}
     </main>
   );
 }

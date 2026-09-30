@@ -96,17 +96,12 @@ export function PomodoroWidget({ pomo, onOpen }: { pomo: Pomodoro; onOpen: () =>
   );
 }
 
-import { MenuPanel, MenuHeader } from './App';
-
-export default function PomodoroApp({ pomo, onClose }: { pomo: Pomodoro; onClose: () => void }) {
+export default function PomodoroPage({ pomo }: { pomo: Pomodoro }) {
   const { isRunning, remaining, mode, focusMin, breakMin, start, stop, setFocusMin, setBreakMin } = pomo;
 
   return (
-    <div className="absolute inset-0" onClick={onClose}>
-      <MenuPanel>
-        <MenuHeader title="🍅 Pomodoro" onBack={onClose} />
-
-        <h2 className="text-2xl mb-2 text-center">{mode === 'focus' ? 'Work' : 'Break'}</h2>
+    <>
+      <h2 className="text-2xl mb-2 text-center">{mode === 'focus' ? 'Work' : 'Break'}</h2>
 
         <span className="text-6xl font-bold tracking-wider mb-4">{formatMs(remaining)}</span>
 
@@ -141,7 +136,6 @@ export default function PomodoroApp({ pomo, onClose }: { pomo: Pomodoro; onClose
           className="button w-full text-lg">
           {isRunning ? 'Stop' : 'Start'}
         </button>
-      </MenuPanel>
-    </div>
+    </>
   );
 }
