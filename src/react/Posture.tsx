@@ -281,11 +281,6 @@ export default function PosturePage() {
           </span>
         </div>
       )}
-      {isRunning && drift && (
-        <div className="text-sm font-mono opacity-80">
-          drift dy {drift.dy.toFixed(3)} int {drift.integ.toFixed(2)}
-        </div>
-      )}
       <button
         className="mx-auto button"
         onClick={() => (isRunning ? stop() : start())}
