@@ -13,7 +13,7 @@ const DRIFT_LOOKBACK_S = 3;
 // drift magnitude integrated over this window
 const DRIFT_WINDOW_S = 4;
 // drift-based slouch: integrated downward drift must exceed this
-const DRIFT_SLOUCH_THRESH = 1.65;
+const DRIFT_SLOUCH_THRESH = 2.1;
 
 export type PostureLevel = "ok" | "slouch";
 
@@ -102,7 +102,8 @@ export function usePostureEngine() {
     let magHist: { t: number; m: number }[] = [];
     // low-pass (EMA) on the diff vector, smooths both mag and angle
     const ALPHA = 0.25;
-    let smDy = 0, smInit = false;
+    let smDy = 0,
+      smInit = false;
 
     (async () => {
       try {
@@ -122,7 +123,11 @@ export function usePostureEngine() {
       const loop = () => {
         if (cancelled) return;
         // sample every 10th frame (~6Hz): plenty for drift detection
-        if (frame++ % 10 === 0 && video.currentTime !== lastVideoTime && landmarker) {
+        if (
+          frame++ % 10 === 0 &&
+          video.currentTime !== lastVideoTime &&
+          landmarker
+        ) {
           lastVideoTime = video.currentTime;
           const face = landmarker.detectForVideo(video, performance.now());
           const lm = face.faceLandmarks?.[0];
@@ -131,9 +136,18 @@ export function usePostureEngine() {
             // region sample points: forehead / cheeks / jaw, far apart per region
             const now = performance.now();
             const POINT_IDS = [
-              107, 336, 105, 334, // forehead inner + outer
-              50, 280, 116, 345, // cheekbone + lower cheeks
-              172, 397, 149, 378, // jaw + jawline
+              107,
+              336,
+              105,
+              334, // forehead inner + outer
+              50,
+              280,
+              116,
+              345, // cheekbone + lower cheeks
+              172,
+              397,
+              149,
+              378, // jaw + jawline
             ];
             // y only: net vertical drop of the 6 points (positive = down)
             const vals = POINT_IDS.map((i) => lm[i].y);
@@ -142,23 +156,31 @@ export function usePostureEngine() {
             const cutoff = now - DRIFT_LOOKBACK_S * 1000;
             let past: number[] | null = null;
             for (let j = history.length - 1; j >= 0; j--) {
-              if (history[j].t <= cutoff) { past = history[j].vals; break; }
+              if (history[j].t <= cutoff) {
+                past = history[j].vals;
+                break;
+              }
             }
-            while (history.length > 1 && history[0].t < cutoff - 2000) history.shift();
+            while (history.length > 1 && history[0].t < cutoff - 2000)
+              history.shift();
             if (past) {
               // sum of per-point y diffs to lookback ago: max when all points
               // move down together, cancels out when they move oppositely (rotation)
               const dy = vals.reduce((s, v, k) => s + (v - past[k]), 0);
-              if (!smInit) { smDy = dy; smInit = true; }
-              else smDy += ALPHA * (dy - smDy);
+              if (!smInit) {
+                smDy = dy;
+                smInit = true;
+              } else smDy += ALPHA * (dy - smDy);
               driftVal = { dy: smDy, integ: smDy };
               // integrate dy over window
               magHist.push({ t: now, m: smDy });
               const winStart = now - DRIFT_WINDOW_S * 1000;
-              while (magHist.length > 1 && magHist[0].t < winStart) magHist.shift();
+              while (magHist.length > 1 && magHist[0].t < winStart)
+                magHist.shift();
               let integ = 0;
               for (let i = 1; i < magHist.length; i++) {
-                const a = magHist[i - 1], b = magHist[i];
+                const a = magHist[i - 1],
+                  b = magHist[i];
                 integ += ((a.m + b.m) / 2) * ((b.t - a.t) / 1000);
               }
               driftVal = { ...driftVal, integ };
@@ -226,7 +248,6 @@ export function usePostureEngine() {
 
 /* --------------------------------- views ---------------------------------- */
 
-
 /** corner widget shown on clock page while posture monitoring is active */
 export function PostureWidget({ onOpen }: { onOpen: () => void }) {
   const { isRunning, level } = useAtomValue(postureUiAtom);
@@ -249,30 +270,28 @@ export default function PosturePage() {
   const start = useSetAtom(startPostureAtom);
   const stop = useSetAtom(stopPostureAtom);
 
-
   return (
     <div className="text-center py-8 flex flex-col gap-4">
-        {isRunning && (
-          <div className="flex flex-col items-center gap-2 mx-auto w-48 py-4 rounded bg-white/30">
-            <span className="text-6xl">{level === "slouch" ? "🥀" : "🌹"}</span>
-            <span className="text-2xl font-bold tracking-wider">
-              {level === "slouch" ? "SLOUCHING" : "OK"}
-              {hasFace ? "" : " (no face)"}
-            </span>
-          </div>
-        )}
-
-        {isRunning && drift && (
-          <div className="text-sm font-mono opacity-80">
-            drift dy {drift.dy.toFixed(3)} int {drift.integ.toFixed(2)}
-          </div>
-        )}
-
-        <button
-          className="mx-auto button"
-          onClick={() => (isRunning ? stop() : start())}
-        >
-          {isRunning ? "Stop" : "Start Camera"}
-        </button>    </div>
+      {isRunning && (
+        <div className="flex flex-col items-center gap-2 mx-auto w-48 py-4 rounded bg-white/30">
+          <span className="text-6xl">{level === "slouch" ? "🥀" : "🌹"}</span>
+          <span className="text-2xl font-bold tracking-wider">
+            {level === "slouch" ? "SLOUCHING" : "OK"}
+            {hasFace ? "" : " (no face)"}
+          </span>
+        </div>
+      )}
+      {isRunning && drift && (
+        <div className="text-sm font-mono opacity-80">
+          drift dy {drift.dy.toFixed(3)} int {drift.integ.toFixed(2)}
+        </div>
+      )}
+      <button
+        className="mx-auto button"
+        onClick={() => (isRunning ? stop() : start())}
+      >
+        {isRunning ? "Stop" : "Start Camera"}
+      </button>{" "}
+    </div>
   );
 }
