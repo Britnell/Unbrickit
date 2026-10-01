@@ -22,10 +22,8 @@
     "@mediapipe/tasks-vision": "^1.0.1",
     "@preact/signals-core": "^1.14.4",
     "alpinejs": "^3.17.4",
-    "fft.js": "^4.0.4",
     "hono": "^4.13.9",
     "jotai": "^3.0.1",
-    "onnxruntime-web": "^1.30.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   }
