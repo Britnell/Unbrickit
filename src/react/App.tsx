@@ -6,7 +6,7 @@ import PomodoroPage, { PomodoroWidget, usePomodoro } from "./Pomodoro";
 import SeatingPage, { SeatingWidget, useSeatingEngine } from "./Seating";
 import Chime, { useChime } from "./Chime";
 import PosturePage, { PostureWidget, usePostureEngine } from "./Posture";
-import ChatApp from "./Chat";
+import ChatApp, { ChatWidget } from "./Chat";
 import { paletteAtom, chimeTypeAtom } from "./atoms";
 import { useLocalStorage } from "./useLocalStorage";
 
@@ -23,7 +23,8 @@ function useSystem() {
   }, []);
 
   const toggleFullscreen = () => {
-    if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+    if (!document.fullscreenElement)
+      document.documentElement.requestFullscreen();
     else document.exitFullscreen();
   };
 
@@ -62,7 +63,6 @@ function useChimeSettings() {
 function HelperButtons({ system }: { system: ReturnType<typeof useSystem> }) {
   return (
     <div className="absolute right-2 top-2 flex items-center gap-2 z-20">
-
       <button
         className="button grid place-items-center text-lg"
         onClick={(e) => {
@@ -103,6 +103,7 @@ const menuTitles = {
   posture: "🧍 Posture",
   theme: "🎨 Theme",
   chime: "🔔 Chime",
+  chat: "💬 Chat",
 } as const;
 
 type MenuViewName = keyof typeof menuTitles;
@@ -121,30 +122,30 @@ function MenuView({
   return (
     <>
       {/* header: back arrow on the left, title centered */}
-        <div className="flex items-center justify-between mb-2">
-          <button
-            onClick={onBack}
-            className="button grid place-items-center"
-            aria-label="Back"
-          >
-            ←
-          </button>
-          <span className="flex-1 text-center">{menuTitles[view]}</span>
-          <span className="w-8" />
-        </div>
+      <div className="flex items-center justify-between mb-2">
+        <button
+          onClick={onBack}
+          className="button grid place-items-center"
+          aria-label="Back"
+        >
+          ←
+        </button>
+        <span className="flex-1 text-center">{menuTitles[view]}</span>
+        <span className="w-8" />
+      </div>
 
-        {view === "pomodoro" && <PomodoroPage pomo={pomo} />}
-        {view === "seating" && <SeatingPage />}
-        {view === "theme" && <Theme />}
-        {view === "chime" && (
-          <Chime
-            type={chime.type}
-            interval={chime.interval}
-            setType={chime.set.type}
-            setInterval_={chime.set.interval}
-          />
-        )}
-        {view === "posture" && <PosturePage />}
+      {view === "pomodoro" && <PomodoroPage pomo={pomo} />}
+      {view === "seating" && <SeatingPage />}
+      {view === "theme" && <Theme />}
+      {view === "chime" && (
+        <Chime
+          type={chime.type}
+          interval={chime.interval}
+          setType={chime.set.type}
+          setInterval_={chime.set.interval}
+        />
+      )}
+      {view === "posture" && <PosturePage />}
     </>
   );
 }
@@ -166,11 +167,11 @@ function ClockPage({
 
   const menuItems = {
     pomodoro: "🍅 Pomodoro",
+    chat: "💬 Chat",
     posture: "🧍 Posture",
     seating: "🪑 Seating",
     theme: "🎨 Theme",
     chime: "🔔 Chime",
-    // chat: "💬 Chat",
   } as const;
 
   const selectMenuItem = (go: MenuViewName) => setMenu(go);
@@ -186,12 +187,10 @@ function ClockPage({
 
       {!menu && !overlayOpen && (
         <div className="absolute bottom-2 right-2 flex gap-2 pointer-events-auto">
-        <PomodoroWidget
-          pomo={pomo}
-          onOpen={() => setMenu("pomodoro")}
-        />
-        <SeatingWidget onOpen={() => setMenu("seating")} />
-        <PostureWidget onOpen={() => setMenu("posture")} />
+          <PomodoroWidget pomo={pomo} onOpen={() => setMenu("pomodoro")} />
+          <SeatingWidget onOpen={() => setMenu("seating")} />
+          <PostureWidget onOpen={() => setMenu("posture")} />
+          <ChatWidget onOpen={() => setMenu("chat")} />
         </div>
       )}
 
@@ -220,7 +219,7 @@ function ClockPage({
         </button>
       )}
 
-      {menu && (
+      {menu && menu !== "chat" && (
         /* This whole block mounts once when the menu opens (false -> truthy)
            and stays mounted while navigating between views, so the
            animate-menu-in animation only plays on the initial open. */
@@ -282,6 +281,7 @@ export default function App() {
         setMenu={setMenu}
       />
       {page === "chat" && <ChatApp onClose={() => setPage("clock")} />}
+      {menu === "chat" && <ChatApp onClose={() => setMenu(false)} />}
     </main>
   );
 }

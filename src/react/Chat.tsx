@@ -1,9 +1,41 @@
 import { useEffect, useRef, useState } from "react";
+import { getChatReply } from "./chat.functions";
+
+export function ChatWidget({ onOpen }: { onOpen: () => void }) {
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onOpen();
+      }}
+      className="button text-lg z-10"
+    >
+      💬
+    </button>
+  );
+}
 
 export default function ChatApp({ onClose }: { onClose: () => void }) {
   const [prompt, setPrompt] = useState("");
   const [listening, setListening] = useState(false);
   const recRef = useRef<any>(null);
+
+  const [reply, setReply] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
+
+  const submit = async () => {
+    if (!prompt.trim() || sending) return;
+    setSending(true);
+    try {
+      const res = await getChatReply({ data: { prompt } });
+      console.log(res);
+    } catch (err) {
+      console.error(err);
+      setReply("Something went wrong.");
+    } finally {
+      setSending(false);
+    }
+  };
 
   const toggleMic = () => {
     const SR =
@@ -64,7 +96,16 @@ export default function ChatApp({ onClose }: { onClose: () => void }) {
             placeholder="Type a message…"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                submit();
+              }
+            }}
           />
+          <button onClick={submit} disabled={sending} className="button">
+            ➤
+          </button>
           <button
             onClick={toggleMic}
             title="Dictate"
@@ -76,6 +117,7 @@ export default function ChatApp({ onClose }: { onClose: () => void }) {
             🎤
           </button>
         </div>
+        {reply && <div className="mt-2 text-sm">{reply}</div>}
       </div>
     </div>
   );
