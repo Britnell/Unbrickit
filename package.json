@@ -21,6 +21,8 @@
   "dependencies": {
     "@mediapipe/tasks-vision": "^1.0.1",
     "@preact/signals-core": "^1.14.4",
+    "@tanstack/react-router": "^1.170.41",
+    "@tanstack/react-start": "^1.168.60",
     "alpinejs": "^3.17.4",
     "hono": "^4.13.9",
     "jotai": "^3.0.1",

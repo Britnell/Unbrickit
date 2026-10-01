@@ -1,19 +1,4 @@
-<!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
-
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Unbrick_it!">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Unbrick_it! - Retro Tech Revival</title>
-  <script type="module" src="/src/index.js"></script>
-</head>
-
-<body class="font-mono bg-retro-dark text-retro-green min-h-screen">
+export const landingHtml = `
 
   <!-- Sticky Header -->
   <header class="sticky top-0 z-50 bg-black/90 text-white backdrop-blur-sm border-b-2 border-retro-green">
@@ -198,6 +183,4 @@
       <span>[_]</span>
     </div>
   </footer>
-</body>
-
-</html>
+`;
