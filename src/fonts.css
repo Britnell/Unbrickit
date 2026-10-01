@@ -82,7 +82,7 @@
   font-weight: 700;
   src: url('/font/Silkscreen-700.woff2') format('woff2');
 }
-/* 
+/*
  */
 @font-face {
   font-family: 'Pirata One';
@@ -227,7 +227,7 @@
 
 /* ---------------------- */
 
-.font-system {
+.font-helvetica {
   font-family: system-ui, sans-serif;
 }
 .font-transitional {
