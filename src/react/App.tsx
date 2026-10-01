@@ -262,7 +262,9 @@ function ClockPage({
 
 export default function App() {
   const [page, setPage] = useState<"clock" | "chat">("clock");
-  const [menu, setMenu] = useState<boolean | MenuViewName>(false);
+  const [menu, setMenu] = useState<boolean | MenuViewName>(
+    import.meta.env.DEV ? "chat" : false,
+  );
 
   const pomo = usePomodoro();
   const chime = useChimeSettings();
