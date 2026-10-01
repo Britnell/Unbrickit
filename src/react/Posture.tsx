@@ -21,6 +21,8 @@ export interface PostureUi {
   /** debug readouts for the posture page */
   pose: { roll: number; pitch: number; yaw: number } | null;
   integral: number;
+  /** summed 6-point movement vector since N frames ago */
+  drift: { ang: number; mag: number; integ: number } | null;
 }
 export const postureUiAtom = atom<PostureUi>({
   isRunning: false,
@@ -28,6 +30,7 @@ export const postureUiAtom = atom<PostureUi>({
   hasFace: false,
   pose: null,
   integral: 0,
+  drift: null,
 });
 
 export const startPostureAtom = atom(null, (_get, set) => {
@@ -41,6 +44,7 @@ export const stopPostureAtom = atom(null, (_get, set) => {
     hasFace: false,
     pose: null,
     integral: 0,
+    drift: null,
   }));
   sessionStorage.removeItem(RUNNING_KEY);
 });
@@ -71,6 +75,7 @@ export function usePostureEngine() {
         hasFace: false,
         pose: null,
         integral: 0,
+        drift: null,
       }));
       return;
     }
@@ -84,6 +89,17 @@ export function usePostureEngine() {
     const detector = new SlouchDetector();
     let isSlouching = false;
     let integralVal = 0; // local mirror of integral (state is stale in this closure)
+    // history of 6-point samples for drift vector: [x,y,z] * 6 points
+    const DRIFT_LOOKBACK_S = 5; // same as slouch detector
+    const POINT_IDS = [107, 336, 50, 280, 172, 397];
+    let history: { t: number; vals: number[] }[] = [];
+    let driftVal: PostureUi["drift"] = null;
+    // trapezoidal integral of drift magnitude over DRIFT_WINDOW_S
+    const DRIFT_WINDOW_S = 5;
+    let magHist: { t: number; m: number }[] = [];
+    // low-pass (EMA) on the diff vector, smooths both mag and angle
+    const ALPHA = 0.25;
+    let smX = 0, smY = 0, smInit = false;
 
     (async () => {
       try {
@@ -106,7 +122,56 @@ export function usePostureEngine() {
         if (frame++ % 10 === 0 && video.currentTime !== lastVideoTime && landmarker) {
           lastVideoTime = video.currentTime;
           const face = landmarker.detectForVideo(video, performance.now());
-          const p = face.faceLandmarks?.[0] ? headPose(face) : null;
+          const lm = face.faceLandmarks?.[0];
+          const p = lm ? headPose(face) : null;
+          if (lm) {
+            // region sample points: forehead / cheeks / jaw, far apart per region
+            const now = performance.now();
+            const vals = POINT_IDS.map((i) => [lm[i].x, lm[i].y, lm[i].z]).flat();
+            history.push({ t: now, vals });
+            // newest sample at or before cutoff (null if none), like slouch detector
+            const cutoff = now - DRIFT_LOOKBACK_S * 1000;
+            let past: number[] | null = null;
+            for (let j = history.length - 1; j >= 0; j--) {
+              if (history[j].t <= cutoff) { past = history[j].vals; break; }
+            }
+            while (history.length > 1 && history[0].t < cutoff - 2000) history.shift();
+            if (past) {
+              // per-point diff to ~5s ago, summed into one vector
+              const dx = [0, 0, 0];
+              for (let k = 0; k < vals.length; k++) {
+                dx[k % 3] += vals[k] - past[k];
+              }
+              const mag = Math.hypot(dx[0], dx[1]);
+              // low-pass only the angle (on unit components, avoids ±180° wrap)
+              if (!smInit || mag < 1e-6) { smX = dx[0]; smY = dx[1]; smInit = true; }
+              else {
+                smX += ALPHA * (dx[0] / mag - smX);
+                smY += ALPHA * (dx[1] / mag - smY);
+              }
+              driftVal = {
+                ang: (Math.atan2(smY, smX) * 180) / Math.PI,
+                mag,
+              };
+              // integrate magnitude over window
+              magHist.push({ t: now, m: driftVal.mag });
+              const winStart = now - DRIFT_WINDOW_S * 1000;
+              while (magHist.length > 1 && magHist[0].t < winStart) magHist.shift();
+              let integ = 0;
+              for (let i = 1; i < magHist.length; i++) {
+                const a = magHist[i - 1], b = magHist[i];
+                integ += ((a.m + b.m) / 2) * ((b.t - a.t) / 1000);
+              }
+              driftVal = { ...driftVal, integ };
+            } else {
+              driftVal = null;
+            }
+          } else {
+            history = [];
+            driftVal = null;
+            magHist = [];
+            smInit = false;
+          }
           if (p) {
             const r = detector.sample(p, performance.now());
             // max integral across params (pitch, noseY), with hysteresis
@@ -127,7 +192,8 @@ export function usePostureEngine() {
             ui.level === level &&
             ui.hasFace === !!p &&
             ui.pose === p &&
-            ui.integral === integralVal
+            ui.integral === integralVal &&
+            ui.drift === driftVal
               ? ui
               : {
                   ...ui,
@@ -135,6 +201,7 @@ export function usePostureEngine() {
                   hasFace: !!p,
                   pose: p,
                   integral: integralVal,
+                  drift: driftVal,
                 },
           );
         }
@@ -173,7 +240,7 @@ export function PostureWidget({ onOpen }: { onOpen: () => void }) {
 }
 
 export default function PosturePage() {
-  const { isRunning, level, hasFace } = useAtomValue(postureUiAtom);
+  const { isRunning, level, hasFace, drift } = useAtomValue(postureUiAtom);
   const start = useSetAtom(startPostureAtom);
   const stop = useSetAtom(stopPostureAtom);
 
@@ -187,6 +254,12 @@ export default function PosturePage() {
               {level === "slouch" ? "SLOUCHING" : "OK"}
               {hasFace ? "" : " (no face)"}
             </span>
+          </div>
+        )}
+
+        {isRunning && drift && (
+          <div className="text-sm font-mono opacity-80">
+            drift {drift.mag.toFixed(3)} @ {drift.ang.toFixed(0)}°
           </div>
         )}
 
