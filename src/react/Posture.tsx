@@ -9,14 +9,11 @@ import { notify } from "../lib/tone";
 const HYST_FACTOR = 0.5; // clears slouch only below thresh * this
 const RUNNING_KEY = "posture-running";
 // drift diff: current 6-point sample vs this many seconds ago
-const DRIFT_LOOKBACK_S = 4;
+const DRIFT_LOOKBACK_S = 3;
 // drift magnitude integrated over this window
 const DRIFT_WINDOW_S = 4;
-// drift-based slouch: integrated drift magnitude must exceed this,
-// and drift angle must be within tolerance of target (head sinking down)
+// drift-based slouch: integrated downward drift must exceed this
 const DRIFT_SLOUCH_THRESH = 1.65;
-const DRIFT_ANG_TARGET = 90;
-const DRIFT_ANG_TOL = 10;
 
 export type PostureLevel = "ok" | "slouch";
 
@@ -31,7 +28,7 @@ export interface PostureUi {
   pose: { roll: number; pitch: number; yaw: number } | null;
   integral: number;
   /** summed 6-point movement vector since N frames ago */
-  drift: { ang: number; mag: number; integ: number } | null;
+  drift: { dy: number; integ: number } | null;
 }
 export const postureUiAtom = atom<PostureUi>({
   isRunning: false,
@@ -105,7 +102,7 @@ export function usePostureEngine() {
     let magHist: { t: number; m: number }[] = [];
     // low-pass (EMA) on the diff vector, smooths both mag and angle
     const ALPHA = 0.25;
-    let smX = 0, smY = 0, smInit = false;
+    let smDy = 0, smInit = false;
 
     (async () => {
       try {
@@ -133,8 +130,13 @@ export function usePostureEngine() {
           if (lm) {
             // region sample points: forehead / cheeks / jaw, far apart per region
             const now = performance.now();
-            const POINT_IDS = [107, 336, 50, 280, 172, 397]; // forehead / cheeks / jaw
-            const vals = POINT_IDS.map((i) => [lm[i].x, lm[i].y, lm[i].z]).flat();
+            const POINT_IDS = [
+              107, 336, 105, 334, // forehead inner + outer
+              50, 280, 116, 345, // cheekbone + lower cheeks
+              172, 397, 149, 378, // jaw + jawline
+            ];
+            // y only: net vertical drop of the 6 points (positive = down)
+            const vals = POINT_IDS.map((i) => lm[i].y);
             history.push({ t: now, vals });
             // newest sample at or before cutoff (null if none), like slouch detector
             const cutoff = now - DRIFT_LOOKBACK_S * 1000;
@@ -144,24 +146,14 @@ export function usePostureEngine() {
             }
             while (history.length > 1 && history[0].t < cutoff - 2000) history.shift();
             if (past) {
-              // per-point diff to ~5s ago, summed into one vector
-              const dx = [0, 0, 0];
-              for (let k = 0; k < vals.length; k++) {
-                dx[k % 3] += vals[k] - past[k];
-              }
-              const mag = Math.hypot(dx[0], dx[1]);
-              // low-pass only the angle (on unit components, avoids ±180° wrap)
-              if (!smInit || mag < 1e-6) { smX = dx[0]; smY = dx[1]; smInit = true; }
-              else {
-                smX += ALPHA * (dx[0] / mag - smX);
-                smY += ALPHA * (dx[1] / mag - smY);
-              }
-              driftVal = {
-                ang: (Math.atan2(smY, smX) * 180) / Math.PI,
-                mag,
-              };
-              // integrate magnitude over window
-              magHist.push({ t: now, m: driftVal.mag });
+              // sum of per-point y diffs to lookback ago: max when all points
+              // move down together, cancels out when they move oppositely (rotation)
+              const dy = vals.reduce((s, v, k) => s + (v - past[k]), 0);
+              if (!smInit) { smDy = dy; smInit = true; }
+              else smDy += ALPHA * (dy - smDy);
+              driftVal = { dy: smDy, integ: smDy };
+              // integrate dy over window
+              magHist.push({ t: now, m: smDy });
               const winStart = now - DRIFT_WINDOW_S * 1000;
               while (magHist.length > 1 && magHist[0].t < winStart) magHist.shift();
               let integ = 0;
@@ -184,10 +176,8 @@ export function usePostureEngine() {
             // max integral across params (pitch, noseY), with hysteresis
             const peak = Math.max(...r.integral);
             integralVal = peak;
-            // drift slouch: enough downward drift, in the downward direction
-            const driftHit = !!driftVal &&
-              driftVal.integ > DRIFT_SLOUCH_THRESH &&
-              Math.abs(driftVal.ang - DRIFT_ANG_TARGET) < DRIFT_ANG_TOL;
+            // drift slouch: enough sustained downward drift
+            const driftHit = !!driftVal && driftVal.integ > DRIFT_SLOUCH_THRESH;
             if (!isSlouching && (peak > detector.slouchThresh || driftHit)) {
               isSlouching = true;
               notify();
@@ -274,7 +264,7 @@ export default function PosturePage() {
 
         {isRunning && drift && (
           <div className="text-sm font-mono opacity-80">
-            drift int {drift.integ.toFixed(2)} @ {drift.ang.toFixed(0)}°
+            drift dy {drift.dy.toFixed(3)} int {drift.integ.toFixed(2)}
           </div>
         )}
 
