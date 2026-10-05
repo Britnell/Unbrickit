@@ -7,7 +7,7 @@ import PomodoroPage, { PomodoroWidget, usePomodoro } from "./Pomodoro";
 import SeatingPage, { SeatingWidget, useSeatingEngine } from "./Seating";
 import Chime, { useChime } from "./Chime";
 import PosturePage, { PostureWidget, usePostureEngine } from "./Posture";
-import PodcastPage from "./Podcast";
+import PodcastPage, { PodcastWidget } from "./Podcast";
 import ChatApp, { ChatWidget } from "./Chat";
 import { paletteAtom, chimeTypeAtom } from "./atoms";
 import { useLocalStorage } from "./useLocalStorage";
@@ -186,13 +186,14 @@ function ClockPage({
       </div>
 
       {/* widgets: anchored top-right, all widgets in one flex row */}
-      {menu && !overlayOpen && <HelperButtons system={system} />}
+      {menu === true && !overlayOpen && <HelperButtons system={system} />}
 
       {!menu && !overlayOpen && (
         <div className="absolute bottom-2 left-2 flex gap-2 pointer-events-auto">
           <PomodoroWidget pomo={pomo} onOpen={() => setMenu("pomodoro")} />
           <SeatingWidget onOpen={() => setMenu("seating")} />
           <PostureWidget onOpen={() => setMenu("posture")} />
+          <PodcastWidget onOpen={() => setMenu("podcast")} />
         </div>
       )}
 

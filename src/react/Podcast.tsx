@@ -1,4 +1,6 @@
+import { getDefaultStore, useAtom, useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
+import { playingPodcastAtom, playingPodcastPausedAtom } from "./atoms";
 import { useLocalStorage } from "./useLocalStorage";
 
 export type Podcast = {
@@ -22,6 +24,17 @@ export type Episode = {
   audioUrl: string | null;
   img: string | null;
 };
+
+/** itunes:duration is either seconds ("229") or h:mm:ss / mm:ss */
+function formatDuration(d: string | null): string | null {
+  if (!d) return null;
+  if (!/^\d+$/.test(d)) return d; // already mm:ss / h:mm:ss
+  const s = parseInt(d);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  return `${h ? h + ":" : ""}${m}:${sec}`;
+}
 
 const CACHE_KEY = "podcast-episode-cache";
 
@@ -120,6 +133,9 @@ function useAllEpisodes(podcasts: Podcast[]) {
 export default function PodcastPage() {
   const [podcasts, setPodcasts] = useLocalStorage<Podcast[]>("podcasts", []);
   const [view, setView] = useState<"episodes" | "manage" | "add">("episodes");
+  const [playing] = useAtom(playingPodcastAtom);
+
+  if (playing) return <EpisodePlayer />;
 
   if (view === "add")
     return (
@@ -146,6 +162,137 @@ export default function PodcastPage() {
   return <AllEpisodes podcasts={podcasts} onManage={() => setView("manage")} />;
 }
 
+function PlayIcon({ size = 24 }: { size?: number }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor">
+      <path d="M6 3.5v17a1 1 0 0 0 1.53.85l13-8.5a1 1 0 0 0 0-1.7l-13-8.5A1 1 0 0 0 6 3.5Z" />
+    </svg>
+  );
+}
+
+function PauseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+      <path d="M7 4h4v16H7zM13 4h4v16h-4z" />
+    </svg>
+  );
+}
+
+function StopIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+      <rect x="5" y="5" width="14" height="14" rx="2" />
+    </svg>
+  );
+}
+
+/** single global audio element so playback survives menu close */
+function formatSeconds(s: number): string {
+  if (!isFinite(s)) return "0:0";
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = Math.floor(s % 60);
+  return `${h ? h + ":" : ""}${m}:${sec}`;
+}
+
+/** single global audio element so playback survives menu close.
+ *  kept on window so Vite HMR reuses the same element instead of
+ *  creating a second one and replaying from the start. */
+const globalAudio = window as typeof window & {
+  __podcastAudio?: HTMLAudioElement;
+};
+const audio = (globalAudio.__podcastAudio ??= new Audio());
+audio.preload = "none";
+
+const store = getDefaultStore();
+audio.addEventListener("play", () =>
+  store.set(playingPodcastPausedAtom, false),
+);
+audio.addEventListener("pause", () =>
+  store.set(playingPodcastPausedAtom, true),
+);
+audio.addEventListener("ended", () => store.set(playingPodcastAtom, null));
+
+function EpisodePlayer() {
+  const [episode, setEpisode] = useAtom(playingPodcastAtom);
+  const paused = useAtomValue(playingPodcastPausedAtom);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
+
+  useEffect(() => {
+    const onTime = () => setCurrentTime(audio.currentTime);
+    const onMeta = () => setAudioDuration(audio.duration || 0);
+    audio.addEventListener("timeupdate", onTime);
+    audio.addEventListener("loadedmetadata", onMeta);
+    return () => {
+      audio.removeEventListener("timeupdate", onTime);
+      audio.removeEventListener("loadedmetadata", onMeta);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!episode?.audioUrl) return;
+    const url = new URL(episode.audioUrl, location.href).href;
+    if (audio.src !== url) {
+      audio.src = url;
+      setCurrentTime(0);
+      setAudioDuration(0);
+      audio.play().catch(() => {});
+    }
+  }, [episode?.audioUrl]);
+
+  if (!episode) return null;
+
+  const toggle = () => {
+    if (audio.paused) audio.play().catch(() => {});
+    else audio.pause();
+  };
+
+  const setEpisodeStopped = () => {
+    audio.pause();
+    setEpisode(null);
+  };
+
+  const skip = (s: number) => {
+    audio.currentTime = Math.max(0, audio.currentTime + s);
+  };
+
+  return (
+    <div className="flex flex-col items-center gap-4 py-4">
+      {episode.img && (
+        <img src={episode.img} alt="" className="w-32 h-32 rounded-lg" />
+      )}
+      <div className="text-center px-2">
+        <div className="font-bold">{episode.title}</div>
+        <div className="text-sm opacity-60">{episode.podcastName}</div>
+        {/*{episode.duration && (
+          <div className="text-xs opacity-60">{formatDuration(episode.duration)}</div>
+        )}*/}
+      </div>
+      <div className="flex gap-4">
+        <button className="button" onClick={toggle} title="Play / pause">
+          {paused ? <PlayIcon /> : <PauseIcon />}
+        </button>
+        <button className="button" onClick={setEpisodeStopped} title="Stop">
+          <StopIcon />
+        </button>
+      </div>
+      <div className="flex items-center gap-3">
+        <button className="button" onClick={() => skip(-30)} title="Back 30s">
+          ↺30
+        </button>
+        <span className="tabular-nums">
+          {formatSeconds(currentTime)}
+          {audioDuration ? ` / ${formatSeconds(audioDuration)}` : ""}
+        </span>
+        <button className="button" onClick={() => skip(30)} title="Forward 30s">
+          ↻30
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function AllEpisodes({
   podcasts,
   onManage,
@@ -154,6 +301,7 @@ function AllEpisodes({
   onManage: () => void;
 }) {
   const { episodes, loading } = useAllEpisodes(podcasts);
+  const [, setEpisode] = useAtom(playingPodcastAtom);
 
   return (
     <div>
@@ -169,7 +317,25 @@ function AllEpisodes({
 
       <ul className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto">
         {episodes.map((ep, i) => (
-          <li key={i} className="rounded bg-black/5 p-2 text-sm flex gap-2">
+          <li
+            key={i}
+            className="rounded bg-black/5 p-2 text-sm flex gap-2 items-center"
+          >
+            <button
+              className="button shrink-0"
+              title="Play"
+              onClick={() =>
+                setEpisode({
+                  title: ep.title,
+                  audioUrl: ep.audioUrl,
+                  img: ep.img,
+                  duration: ep.duration,
+                  podcastName: ep.podcastName,
+                })
+              }
+            >
+              <PlayIcon />
+            </button>
             {ep.img && (
               <img src={ep.img} alt="" className="w-10 h-10 rounded shrink-0" />
             )}
@@ -316,5 +482,23 @@ function AddPodcast({
         ← Back
       </button>
     </div>
+  );
+}
+
+/** little widget shown while a podcast is playing; opens podcast menu */
+export function PodcastWidget({ onOpen }: { onOpen: () => void }) {
+  const episode = useAtomValue(playingPodcastAtom);
+  if (!episode) return null;
+  return (
+    <button
+      className="button flex items-center gap-1"
+      onClick={onOpen}
+      title={episode.title ?? "Podcast"}
+    >
+      🎙️
+      <span className="text-xs">
+        <PlayIcon size={12} />
+      </span>
+    </button>
   );
 }
