@@ -7,6 +7,7 @@ import PomodoroPage, { PomodoroWidget, usePomodoro } from "./Pomodoro";
 import SeatingPage, { SeatingWidget, useSeatingEngine } from "./Seating";
 import Chime, { useChime } from "./Chime";
 import PosturePage, { PostureWidget, usePostureEngine } from "./Posture";
+import PodcastPage from "./Podcast";
 import ChatApp, { ChatWidget } from "./Chat";
 import { paletteAtom, chimeTypeAtom } from "./atoms";
 import { useLocalStorage } from "./useLocalStorage";
@@ -104,6 +105,7 @@ const menuTitles = {
   posture: "🧍 Posture",
   theme: "🎨 Theme",
   chime: "🔔 Chime",
+  podcast: "🎙️ Podcasts",
 } as const;
 
 type MenuViewName = keyof typeof menuTitles;
@@ -146,6 +148,7 @@ function MenuView({
         />
       )}
       {view === "posture" && <PosturePage />}
+      {view === "podcast" && <PodcastPage />}
     </>
   );
 }
@@ -167,6 +170,7 @@ function ClockPage({
 
   const menuItems = {
     pomodoro: "🍅 Pomodoro",
+    podcast: "🎙️ Podcasts",
     posture: "🧍 Posture",
     seating: "🪑 Seating",
     theme: "🎨 Theme",
