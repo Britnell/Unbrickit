@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { createLandmarker } from "./poseLandmarker";
@@ -362,6 +363,7 @@ export function useSeatingEngine() {
     if (chimedForRef.current !== seatedSince) {
       chimedForRef.current = seatedSince;
       playNotif();
+      toast(`You've been seated for ${reminderMinutes} min — time to move! 🪑`);
     }
   }, [overdue, seatedSince, playNotif]);
 

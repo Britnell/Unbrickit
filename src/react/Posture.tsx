@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { toast } from "sonner";
 import { atom, useAtomValue, useSetAtom } from "jotai";
 import type { FaceLandmarker } from "@mediapipe/tasks-vision";
 import { createFaceLandmarker, headPose } from "./face";
@@ -6,7 +7,10 @@ import { SlouchDetector } from "./postureDetect";
 import { acquireCamera, releaseCamera } from "./camera";
 import { useNotificationSound } from "./Chime";
 
-const HYST_FACTOR = 0.5; // clears slouch only below thresh * this
+// slouch triggers above detector.slouchThresh (45); it only clears once the
+// integral settles back below these lower values (debounce/hysteresis)
+const SLOUCH_CLEAR = 15;
+const DRIFT_CLEAR = 0.7; // ~1/3 of DRIFT_SLOUCH_THRESH
 const RUNNING_KEY = "posture-running";
 // drift diff: current 6-point sample vs this many seconds ago
 const DRIFT_LOOKBACK_S = 3;
@@ -14,6 +18,8 @@ const DRIFT_LOOKBACK_S = 3;
 const DRIFT_WINDOW_S = 4;
 // drift-based slouch: integrated downward drift must exceed this
 const DRIFT_SLOUCH_THRESH = 2.1;
+// don't notify (sound/toast) more often than this, even on real slouches
+const MIN_NOTIFY_INTERVAL_S = 60;
 
 export type PostureLevel = "ok" | "slouch";
 
@@ -39,6 +45,10 @@ export const postureUiAtom = atom<PostureUi>({
   drift: null,
 });
 
+/** engine subscribes to this only — postureUiAtom updates at ~6Hz from the
+ *  detection loop, and re-rendering on each write would churn the effect below */
+const isRunningAtom = atom((get) => get(postureUiAtom).isRunning);
+
 export const startPostureAtom = atom(null, (_get, set) => {
   set(postureUiAtom, (ui) => ({ ...ui, isRunning: true }));
   sessionStorage.setItem(RUNNING_KEY, "1");
@@ -59,7 +69,7 @@ export const stopPostureAtom = atom(null, (_get, set) => {
 
 /** Mount once (App). Owns the face camera loop, publishes level into postureUiAtom. */
 export function usePostureEngine() {
-  const isRunning = useAtomValue(postureUiAtom).isRunning;
+  const isRunning = useAtomValue(isRunningAtom);
   const setUi = useSetAtom(postureUiAtom);
   const playNotif = useNotificationSound();
 
@@ -95,6 +105,7 @@ export function usePostureEngine() {
     let frame = 0;
     const detector = new SlouchDetector();
     let isSlouching = false;
+    let lastNotifAt = 0;
     let integralVal = 0; // local mirror of integral (state is stale in this closure)
     // history of 6-point samples for drift vector: [x,y,z] * 6 points
     let history: { t: number; vals: number[] }[] = [];
@@ -203,13 +214,22 @@ export function usePostureEngine() {
             const driftHit = !!driftVal && driftVal.integ > DRIFT_SLOUCH_THRESH;
             if (!isSlouching && (peak > detector.slouchThresh || driftHit)) {
               isSlouching = true;
-              playNotif();
+              const now = performance.now();
+              if (now - lastNotifAt >= MIN_NOTIFY_INTERVAL_S * 1000) {
+                lastNotifAt = now;
+                console.log("[posture] slouch triggered (notifying)", { peak, drift: driftVal?.integ, thresh: detector.slouchThresh, driftThresh: DRIFT_SLOUCH_THRESH });
+                playNotif();
+                toast("Bad posture detected — sit up straight! 🧍");
+              } else {
+                console.log("[posture] slouch triggered (notify suppressed, within cooldown)", { peak, sinceLastNotifS: (now - lastNotifAt) / 1000 });
+              }
             } else if (
               isSlouching &&
-              peak < detector.slouchThresh * HYST_FACTOR &&
-              (!driftVal || driftVal.integ < DRIFT_SLOUCH_THRESH * HYST_FACTOR)
+              peak < SLOUCH_CLEAR &&
+              (!driftVal || driftVal.integ < DRIFT_CLEAR)
             ) {
               isSlouching = false;
+              console.log("[posture] slouch cleared", { peak, drift: driftVal?.integ });
             }
           } else {
             detector.reset();

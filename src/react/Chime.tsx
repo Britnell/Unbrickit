@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useAtom, useAtomValue } from 'jotai';
 import { playChime, randomChord } from '../lib/tone';
 import { notificationSoundAtom } from './atoms';
@@ -43,7 +43,8 @@ export function playChimeType(type: string) {
 /** play the global notification sound (pomodoro, seating reminder, posture) */
 export function useNotificationSound() {
   const type = useAtomValue(notificationSoundAtom);
-  return () => playChimeType(type);
+  // stable identity: Posture engine effect depends on this callback
+  return useCallback(() => playChimeType(type), [type]);
 }
 
 export function useChime({ type, interval }: { type: string; interval: number }) {

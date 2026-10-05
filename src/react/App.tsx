@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Toaster } from "sonner";
 import { useAtomValue, useAtom } from "jotai";
 import Clock from "./Clock";
 import Theme from "./Theme";
@@ -186,7 +187,7 @@ function ClockPage({
       {menu && !overlayOpen && <HelperButtons system={system} />}
 
       {!menu && !overlayOpen && (
-        <div className="absolute bottom-2 right-2 flex gap-2 pointer-events-auto">
+        <div className="absolute bottom-2 left-2 flex gap-2 pointer-events-auto">
           <PomodoroWidget pomo={pomo} onOpen={() => setMenu("pomodoro")} />
           <SeatingWidget onOpen={() => setMenu("seating")} />
           <PostureWidget onOpen={() => setMenu("posture")} />
@@ -284,6 +285,7 @@ export default function App() {
       />
       {page === "chat" && <ChatApp onClose={() => setPage("clock")} />}
       {menu === "chat" && <ChatApp onClose={() => setMenu(false)} />}
+      <Toaster duration={6000} position="bottom-right" closeButton />
     </main>
   );
 }
