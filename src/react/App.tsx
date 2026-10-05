@@ -285,7 +285,7 @@ export default function App() {
       />
       {page === "chat" && <ChatApp onClose={() => setPage("clock")} />}
       {menu === "chat" && <ChatApp onClose={() => setMenu(false)} />}
-      <Toaster duration={6000} position="bottom-right" closeButton />
+      <Toaster duration={6000} position="bottom-right" />
     </main>
   );
 }

@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
 import { useNotificationSound } from "./Chime";
 
 type Mode = "focus" | "break";
@@ -55,11 +54,6 @@ export function usePomodoro() {
       ) {
         beepedRef.current = true;
         playNotif();
-        toast(
-          state.mode === "focus"
-            ? "Work interval finished! Time for a break 🍅"
-            : "Break finished! Back to work 💪",
-        );
         // interval finished: keep counting into the negative until the user advances
       }
     }, 100);
@@ -158,6 +152,12 @@ export function PomodoroWidget({
 }) {
   if (!pomo.isRunning) return null;
   const minutes = Math.ceil(Math.abs(pomo.remaining) / 60000);
+  const overtime = pomo.remaining < 0;
+  const label = overtime
+    ? pomo.mode === "focus"
+      ? "Work over"
+      : "Break over"
+    : `${minutes}m`;
   return (
     <button
       onClick={(e) => {
@@ -166,7 +166,7 @@ export function PomodoroWidget({
       }}
       className="button text-lg z-10"
     >
-      🍅 {pomo.remaining < 0 ? `+${minutes}m` : `${minutes}m`}
+      🍅 {label}
     </button>
   );
 }
