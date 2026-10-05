@@ -415,7 +415,7 @@ export default function SeatingPage() {
   const seatedMinutesToday = useAtomValue(seatedMinutesTodayAtom);
 
   return (
-    <div className="flex flex-col flex-wrap w-max mx-auto max-h-[calc(100svh-5rem)]">
+    <div className="flex flex-row flex-wrap w-max mx-auto gap-2 max-h-[calc(100svh-5rem)]">
     <div className="flex flex-col min-w-[200px]">
                     {isRunning && !seated && (
             <div className="mb-2 bg-white/30 px-2 py-1 rounded text-center">
@@ -462,6 +462,7 @@ export default function SeatingPage() {
           )}
         </div>
 
+        {isRunning && (
         <div className="flex flex-col min-w-[200px] p-2">
           <label className="text-sm self-start">Seating reminder</label>
           <select
@@ -476,26 +477,21 @@ export default function SeatingPage() {
             ))}
           </select>
 
-          {isRunning && (
-            <>
-              <label className="text-sm self-start">Seating position</label>
-              <progress
-                className="mb-2"
-                max={1}
-                value={Math.max(0, Math.floor((1 - distance) * 5) / 5)}
-              ></progress>
-            </>
-          )}
+          <label className="text-sm self-start">Seating position</label>
+          <progress
+            className="mb-2"
+            max={1}
+            value={Math.max(0, Math.floor((1 - distance) * 5) / 5)}
+          ></progress>
 
-          {isRunning && (
-            <button
-              onClick={capture}
-              className="button mt-2 w-full text-sm"
-            >
-              Set camera position
-            </button>
-          )}
+          <button
+            onClick={capture}
+            className="button mt-2 w-full text-sm"
+          >
+            Set camera position
+          </button>
         </div>
+        )}
     </div>
   );
 }
