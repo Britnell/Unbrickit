@@ -237,9 +237,9 @@ function EpisodePlayer() {
       audio.src = url;
       setCurrentTime(0);
       setAudioDuration(0);
-      audio.play().catch(() => {});
     }
-  }, [episode?.audioUrl]);
+    audio.play().catch(() => {});
+  }, [episode]);
 
   if (!episode) return null;
 
@@ -258,37 +258,60 @@ function EpisodePlayer() {
   };
 
   return (
-    <div className="flex flex-col items-center gap-4 py-4">
-      {episode.img && (
-        <img src={episode.img} alt="" className="w-32 h-32 rounded-lg" />
-      )}
+    <div className="flex flex-col items-center gap-3 py-4">
+      <div className="flex items-center gap-4">
+        {episode.img && (
+          <img
+            src={episode.img}
+            alt=""
+            className="w-24 h-24 rounded-lg shadow shrink-0"
+          />
+        )}
+        <div className="flex flex-col items-center gap-1">
+          <div className="flex items-center gap-2">
+            <button
+              className="button !p-2"
+              onClick={toggle}
+              title="Play / pause"
+            >
+              {paused ? <PlayIcon /> : <PauseIcon />}
+            </button>
+            <div className="tabular-nums text-lg ">
+              <span className="font-semibold">
+                {formatSeconds(currentTime)}
+              </span>
+              <span className=" text-sm">
+                {audioDuration ? ` / ${formatSeconds(audioDuration)}` : ""}
+              </span>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              className="button"
+              onClick={() => skip(-30)}
+              title="Back 30s"
+            >
+              ↺ 30
+            </button>
+            <button
+              className="button"
+              onClick={() => skip(30)}
+              title="Forward 30s"
+            >
+              ↻ 30
+            </button>
+          </div>
+        </div>
+      </div>
       <div className="text-center px-2">
         <div className="font-bold">{episode.title}</div>
         <div className="text-sm opacity-60">{episode.podcastName}</div>
-        {/*{episode.duration && (
-          <div className="text-xs opacity-60">{formatDuration(episode.duration)}</div>
-        )}*/}
       </div>
-      <div className="flex gap-4">
-        <button className="button" onClick={toggle} title="Play / pause">
-          {paused ? <PlayIcon /> : <PauseIcon />}
-        </button>
-        <button className="button" onClick={setEpisodeStopped} title="Stop">
-          <StopIcon />
-        </button>
-      </div>
-      <div className="flex items-center gap-3">
-        <button className="button" onClick={() => skip(-30)} title="Back 30s">
-          ↺30
-        </button>
-        <span className="tabular-nums">
-          {formatSeconds(currentTime)}
-          {audioDuration ? ` / ${formatSeconds(audioDuration)}` : ""}
+      <button className="button" onClick={setEpisodeStopped} title="Stop">
+        <span className="flex items-center gap-1">
+          <StopIcon /> stop
         </span>
-        <button className="button" onClick={() => skip(30)} title="Forward 30s">
-          ↻30
-        </button>
-      </div>
+      </button>
     </div>
   );
 }

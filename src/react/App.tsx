@@ -9,7 +9,7 @@ import Chime, { useChime } from "./Chime";
 import PosturePage, { PostureWidget, usePostureEngine } from "./Posture";
 import PodcastPage, { PodcastWidget } from "./Podcast";
 import ChatApp, { ChatWidget } from "./Chat";
-import { paletteAtom, chimeTypeAtom } from "./atoms";
+import { paletteAtom, chimeTypeAtom, playingPodcastAtom, playingPodcastPausedAtom } from "./atoms";
 import { useLocalStorage } from "./useLocalStorage";
 
 /* ---------------------------------- state --------------------------------- */
@@ -167,6 +167,8 @@ function ClockPage({
   setMenu: (m: boolean | MenuViewName) => void;
 }) {
   const system = useSystem();
+  const playingPodcast = useAtomValue(playingPodcastAtom);
+  const podcastPaused = useAtomValue(playingPodcastPausedAtom);
 
   const menuItems = {
     pomodoro: "🍅 Pomodoro",
@@ -193,7 +195,9 @@ function ClockPage({
           <PomodoroWidget pomo={pomo} onOpen={() => setMenu("pomodoro")} />
           <SeatingWidget onOpen={() => setMenu("seating")} />
           <PostureWidget onOpen={() => setMenu("posture")} />
-          <PodcastWidget onOpen={() => setMenu("podcast")} />
+          {!podcastPaused && playingPodcast && (
+            <PodcastWidget onOpen={() => setMenu("podcast")} />
+          )}
         </div>
       )}
 
