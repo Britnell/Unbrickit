@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { playTimerBeep } from '../lib/tone';
 import { useNotificationSound } from './Chime';
 
 type Mode = 'focus' | 'break';
@@ -44,8 +43,7 @@ export function usePomodoro() {
       tick((t) => t + 1);
       if (startTime !== null && Date.now() - startTime >= state.duration && !beepedRef.current) {
         beepedRef.current = true;
-        if (state.mode === 'focus') playNotif();
-        else playTimerBeep();
+        playNotif();
         // interval finished: keep counting into the negative until the user advances
       }
     }, 1000);

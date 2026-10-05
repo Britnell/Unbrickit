@@ -4,7 +4,7 @@ import type { FaceLandmarker } from "@mediapipe/tasks-vision";
 import { createFaceLandmarker, headPose } from "./face";
 import { SlouchDetector } from "./postureDetect";
 import { acquireCamera, releaseCamera } from "./camera";
-import { notify } from "../lib/tone";
+import { useNotificationSound } from "./Chime";
 
 const HYST_FACTOR = 0.5; // clears slouch only below thresh * this
 const RUNNING_KEY = "posture-running";
@@ -61,6 +61,7 @@ export const stopPostureAtom = atom(null, (_get, set) => {
 export function usePostureEngine() {
   const isRunning = useAtomValue(postureUiAtom).isRunning;
   const setUi = useSetAtom(postureUiAtom);
+  const playNotif = useNotificationSound();
 
   // restart after reload if the user had it running and camera permission persists
   useEffect(() => {
@@ -202,7 +203,7 @@ export function usePostureEngine() {
             const driftHit = !!driftVal && driftVal.integ > DRIFT_SLOUCH_THRESH;
             if (!isSlouching && (peak > detector.slouchThresh || driftHit)) {
               isSlouching = true;
-              notify();
+              playNotif();
             } else if (
               isSlouching &&
               peak < detector.slouchThresh * HYST_FACTOR &&
@@ -243,7 +244,7 @@ export function usePostureEngine() {
       if (ownsCamera) releaseCamera();
       landmarker?.close();
     };
-  }, [isRunning, setUi]);
+  }, [isRunning, setUi, playNotif]);
 }
 
 /* --------------------------------- views ---------------------------------- */
