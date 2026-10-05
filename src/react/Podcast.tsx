@@ -25,15 +25,31 @@ export type Episode = {
   img: string | null;
 };
 
-/** itunes:duration is either seconds ("229") or h:mm:ss / mm:ss */
+/** itunes:duration is either seconds ("229") or h:mm:ss / mm:ss.
+ *  Returns minutes or hours, e.g. "40 min" or "1.5 h" */
 function formatDuration(d: string | null): string | null {
   if (!d) return null;
-  if (!/^\d+$/.test(d)) return d; // already mm:ss / h:mm:ss
-  const s = parseInt(d);
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const sec = s % 60;
-  return `${h ? h + ":" : ""}${m}:${sec}`;
+  let s: number;
+  if (/^\d+$/.test(d)) s = parseInt(d);
+  else {
+    const parts = d.split(":").map(Number);
+    s = parts.reduce((acc, p) => acc * 60 + p, 0);
+  }
+  const h = s / 3600;
+  if (h >= 1) return `${h.toFixed(1)} h`;
+  return `${Math.round(s / 60)} min`;
+}
+
+/** European date format: day month year, e.g. "5 Mar 2025" */
+function formatDate(d: string | null): string | null {
+  if (!d) return null;
+  const date = new Date(d);
+  if (isNaN(date.getTime())) return d;
+  return date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 const CACHE_KEY = "podcast-episode-cache";
@@ -280,9 +296,11 @@ function EpisodePlayer() {
               <span className="font-semibold">
                 {formatSeconds(currentTime)}
               </span>
-              <span className=" text-sm">
-                {audioDuration ? ` / ${formatSeconds(audioDuration)}` : ""}
-              </span>
+              {audioDuration && (
+                <span className=" text-sm">
+                  &nbsp; / {formatSeconds(audioDuration)}
+                </span>
+              )}
             </div>
           </div>
           <div className="flex gap-2">
@@ -366,8 +384,8 @@ function AllEpisodes({
               <div className="font-medium truncate">{ep.title}</div>
               <div className="text-xs opacity-60">{ep.podcastName}</div>
               <div className="text-xs opacity-60">
-                {ep.date}
-                {ep.duration ? ` · ${ep.duration}` : ""}
+                {formatDate(ep.date)}
+                {ep.duration ? ` · ${formatDuration(ep.duration)}` : ""}
               </div>
             </div>
           </li>
