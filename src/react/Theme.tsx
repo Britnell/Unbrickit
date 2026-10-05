@@ -42,11 +42,10 @@ function Slider({
 export default function Theme() {
   const [theme, setTheme] = useAtom(themeAtom);
   const [timeOfDay, setTimeOfDay] = useAtom(timeOfDayAtom);
-  const { font, fontSize, fontWeight, hue, colorMode, darkMode } = theme;
+  const { font, fontSize, hue, colorMode, darkMode } = theme;
   const set = {
     font: (v: string) => setTheme((t) => ({ ...t, font: v })),
     fontSize: (v: number) => setTheme((t) => ({ ...t, fontSize: v })),
-    fontWeight: (v: number) => setTheme((t) => ({ ...t, fontWeight: v })),
     hue: (v: number) => setTheme((t) => ({ ...t, hue: v })),
     colorMode: (v: string) => setTheme((t) => ({ ...t, colorMode: v })),
     setDarkMode: (v: boolean) => setTheme((t) => ({ ...t, darkMode: v })),
@@ -70,19 +69,6 @@ export default function Theme() {
       </select>
 
       <Slider label="Size" value={fontSize} min={25} max={35} step={1} suffix="vw" onChange={set.fontSize} />
-      <Slider label="Weight" value={fontWeight} min={100} max={900} step={100} onChange={set.fontWeight} />
-      <Slider label="Hue" value={hue} min={0} max={360} step={1} suffix="°" onChange={set.hue} />
-
-      <div className="col-span-full flex items-center">
-        <input
-          type="checkbox"
-          id="darkmode-checkbox"
-          checked={darkMode}
-          onChange={(e) => set.setDarkMode(e.target.checked)}
-          className="mr-2"
-        />
-        <label htmlFor="darkmode-checkbox">Swap colours</label>
-      </div>
 
       <label htmlFor="colormode-select" className="flex justify-between items-center">
         Color Mode
@@ -99,6 +85,22 @@ export default function Theme() {
           </option>
         ))}
       </select>
+
+      {colorMode !== 'daylight' && (
+        <Slider label="Hue" value={hue} min={0} max={360} step={1} suffix="°" onChange={set.hue} />
+      )}
+
+      <div />
+      <div className="col-span-full flex items-center">
+        <input
+          type="checkbox"
+          id="darkmode-checkbox"
+          checked={darkMode}
+          onChange={(e) => set.setDarkMode(e.target.checked)}
+          className="mr-2"
+        />
+        <label htmlFor="darkmode-checkbox">Swap colours</label>
+      </div>
 
       {colorMode === 'daylight' && (
         <div className="col-span-full mt-2">
