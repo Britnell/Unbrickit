@@ -104,7 +104,6 @@ const menuTitles = {
   posture: "🧍 Posture",
   theme: "🎨 Theme",
   chime: "🔔 Chime",
-  chat: "💬 Chat",
 } as const;
 
 type MenuViewName = keyof typeof menuTitles;
@@ -168,7 +167,6 @@ function ClockPage({
 
   const menuItems = {
     pomodoro: "🍅 Pomodoro",
-    chat: "💬 Chat",
     posture: "🧍 Posture",
     seating: "🪑 Seating",
     theme: "🎨 Theme",
@@ -191,7 +189,6 @@ function ClockPage({
           <PomodoroWidget pomo={pomo} onOpen={() => setMenu("pomodoro")} />
           <SeatingWidget onOpen={() => setMenu("seating")} />
           <PostureWidget onOpen={() => setMenu("posture")} />
-          <ChatWidget onOpen={() => setMenu("chat")} />
         </div>
       )}
 
@@ -262,10 +259,7 @@ function ClockPage({
 /* ----------------------------------- app ---------------------------------- */
 
 export default function App() {
-  const [page, setPage] = useState<"clock" | "chat">("clock");
-  const [menu, setMenu] = useState<boolean | MenuViewName>(
-    import.meta.env.DEV ? "chat" : false,
-  );
+  const [menu, setMenu] = useState<boolean | MenuViewName>(false);
 
   const pomo = usePomodoro();
   const chime = useChimeSettings();
@@ -279,12 +273,10 @@ export default function App() {
       <ClockPage
         pomo={pomo}
         chime={chime}
-        overlayOpen={page !== "clock"}
+        overlayOpen={false}
         menu={menu}
         setMenu={setMenu}
       />
-      {page === "chat" && <ChatApp onClose={() => setPage("clock")} />}
-      {menu === "chat" && <ChatApp onClose={() => setMenu(false)} />}
       <Toaster duration={6000} position="bottom-right" />
     </main>
   );

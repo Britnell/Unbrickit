@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Unbrick_it!" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#000000" />
+    <title>Unbrickit</title>
+    <script type="module" src="/src/main.js"></script>
+  </head>
+
+  <body class="font-mono bg-retro-dark text-retro-green min-h-screen">
+    <!-- Sticky Header -->
+    <header
+      class="sticky top-0 z-50 bg-black/90 text-white backdrop-blur-sm border-b-2 border-retro-green"
+    >
+      <nav class="container mx-auto px-6 py-4">
+        <div class="flex items-center">
+          <div class="text-xl font-bold text-retro-green mr-auto">
+            > UNBRICK_IT
+          </div>
+          <div x-data="{show: false }" class="relative">
+            <button
+              @click="show = !show"
+              class="sm:hidden p-2"
+              :aria-expanded="show"
+              aria-controls="mobile-menu"
+              aria-label="Toggle navigation menu"
+            >
+              ...
+            </button>
+            <div
+              id="mobile-menu"
+              class="ml-6 grow max-w-[460px] flex-col sm:flex-row justify-between absolute sm:relative top-full right-0 bg-black px-3 py-2 sm:p-0 gap-1"
+              :class="show ? 'flex' : 'hidden sm:flex '"
+            >
+              <a
+                href="#go"
+                class="text-white hover:text-teal-500 font-bold duration-300"
+              >
+                #🧱
+              </a>
+
+              <a
+                href="#why"
+                class="text-white hover:text-teal-500 font-bold duration-300"
+              >
+                #WHY
+              </a>
+              <!-- <a href="#how" class="text-white hover:text-teal-500 font-bold duration-300 ">
+              #HOW
+            </a> -->
+              <a
+                href="#what"
+                class="text-white hover:text-teal-500 font-bold duration-300"
+              >
+                #WHAT
+              </a>
+              <!-- <a href="#about" class="text-white hover:text-teal-500 font-bold duration-300 ">
+              #ABOUT
+            </a> -->
+              <a
+                href="react"
+                class="text-white hover:text-teal-500 font-bold duration-300"
+              >
+                >APP
+              </a>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <section class="scroll-mt-20 py-20 bg-rose-200 text-retro-dark">
+      <div class="container mx-auto px-6">
+        <div class="">
+          <div class="flex justify-between items-center">
+            <h2 class="text-4xl font-bold mb-6 shrink">
+              Looking for something to do with your old smartphone?
+            </h2>
+            <div class="p-10 text-4xl whitespace-nowrap">: [</div>
+          </div>
+          <div class="flex justify-between items-center">
+            <div class="p-10 text-4xl whitespace-nowrap">: }</div>
+            <h2 class="text-4xl font-bold mb-6 shrink">
+              Turn any old device into a smart-clock
+            </h2>
+            <!-- Placeholder for smartphone image -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section
+      id="go"
+      class="scroll-mt-20 bg-black text-white py-20 bg-retro-dark text-retro-green"
+    >
+      <div class="container mx-auto px-6 text-center">
+        <h2 class="text-5xl md:text-6xl font-bold mb-8">> READY_TO_UNBRICK?</h2>
+        <p class="text-xl mb-12 text-retro-cyan max-w-2xl mx-auto">
+          Get that old phone out of the draw and open this website. No
+          installation needed
+        </p>
+        <a
+          href="react"
+          class="inline-block bg-retro-green text-retro-dark px-12 py-4 text-2xl font-bold border-4 hover:bg-white hover:border-white hover:text-black"
+        >
+          == START APP 🧱 ==
+        </a>
+      </div>
+    </section>
+
+    <section id="why" class="py-20 bg-retro-amber text-retro-dark bg-red-400">
+      <div class="container mx-auto px-6">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+          <div class="">
+            <h2 class="text-4xl md:text-5xl font-bold mb-6">WHY ?</h2>
+            <p class="text-lg mb-4">
+              Smartphones specs go out of date fast (boooo!), and manufacturers
+              quickly stop making newest OS updates available, so eventually the
+              app store goes out of date and you can no longer install new apps,
+              essentially turning your computer into a brick : [
+            </p>
+          </div>
+
+          <div class="flex justify-center">
+            <span class="text-8xl">🧱</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="how" class="py-20 bg-retro-gray text-retro-green text-center">
+      <div class="container mx-auto px-6">
+        <h2 class="text-4xl md:text-5xl font-bold mb-6">HOW? - BROWSERS MAN</h2>
+
+        <p class="text-lg mb-4">
+          But the <strong>browser</strong> can do the same as any app, and you
+          can always open the newest version of a website! - every old device
+          still has a browser. so I made a little <strong> web app </strong>
+        </p>
+      </div>
+    </section>
+
+    <section id="what" class="py-20 bg-green-600">
+      <div class="container mx-auto px-6">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+          <div class="flex justify-center order-2 md:order-1">
+            <span class="text-6xl w-[190px]">⏰🔔📊⏳🍉📻🍅🎙️❓</span>
+          </div>
+          <div class="order-1 md:order-2">
+            <h2 class="text-4xl md:text-5xl font-bold mb-6">WHAT</h2>
+            <p class="text-lg">
+              This started as just a little clock, you can change the styles,
+              the colours, let it chime, on time, then added some timers, alarms
+              and other little things that are handy.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="what" class="py-20 bg-green-300">
+      <div class="container mx-auto px-6">
+        <div class="flex flex-col items-center my-10">
+          <h3 class="text-2xl md:text-4xl font-bold mb-6">What you'll need:</h3>
+          <ul class="max-w-[500px] text-xl list-disc">
+            <li>Any old phone or tablet, Android or iOS</li>
+            <li>
+              BUT depending on the age & type of your browser, some features may
+              not work...
+            </li>
+            <li>
+              We're not a fan of Google either, but Chrome might work best
+            </li>
+            <li>best try out different browsers if you have them installed</li>
+            <li>
+              Can run in fullscreen and keep device unlocked, just like an app
+            </li>
+            <li>But you'll want to keep it charged of course 🔋</li>
+            <li>have fun, and let me know if you have a dream feature</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+    <section class="py-20 bg-retro-amber text-retro-dark">
+      <div class="container mx-auto px-6">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+          <div class="">
+            <h2 class="text-4xl md:text-5xl font-bold mb-6">Lazy fingers?</h2>
+            <p class="text-lg mb-4">
+              Here's a QR code to open the app straight on your phone:
+            </p>
+          </div>
+
+          <span class="text-4xl">[ QR CODE to come ... ]</span>
+        </div>
+      </div>
+    </section>
+
+    <footer class="py-8 bg-gray-300 text-center">
+      <div class="flex gap-6 mx-auto px-6">
+        <p class="text-lg mr-auto">UNBRICK_IT!</p>
+        <span>[_]</span>
+        <span>[_]</span>
+      </div>
+    </footer>
+  </body>
+</html>
