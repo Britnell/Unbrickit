@@ -208,7 +208,7 @@ function formatSeconds(s: number): string {
   const h = Math.floor(s / 3600);
   const m = Math.floor((s % 3600) / 60);
   const sec = Math.floor(s % 60);
-  return `${h ? h + ":" : ""}${m}:${sec}`;
+  return `${h ? h + ":" : ""}${m}:${String(sec).padStart(2, "0")}`;
 }
 
 /** single global audio element so playback survives menu close.
@@ -233,11 +233,11 @@ function EpisodePlayer() {
   const [episode, setEpisode] = useAtom(playingPodcastAtom);
   const paused = useAtomValue(playingPodcastPausedAtom);
   const [currentTime, setCurrentTime] = useState(0);
-  const [audioDuration, setAudioDuration] = useState(0);
+  const [audioDuration, setAudioDuration] = useState<number | null>(null);
 
   useEffect(() => {
     const onTime = () => setCurrentTime(audio.currentTime);
-    const onMeta = () => setAudioDuration(audio.duration || 0);
+    const onMeta = () => setAudioDuration(isFinite(audio.duration) ? audio.duration : null);
     audio.addEventListener("timeupdate", onTime);
     audio.addEventListener("loadedmetadata", onMeta);
     return () => {
@@ -252,7 +252,7 @@ function EpisodePlayer() {
     if (audio.src !== url) {
       audio.src = url;
       setCurrentTime(0);
-      setAudioDuration(0);
+      setAudioDuration(null);
     }
     audio.play().catch(() => {});
   }, [episode]);
@@ -275,6 +275,12 @@ function EpisodePlayer() {
 
   return (
     <div className="flex flex-col items-center gap-3 py-4">
+      <p className="text-center px-2">
+        <span className="font-bold">{episode.title}</span>
+        <span className="text-sm opacity-60">
+          &nbsp;- {episode.podcastName}
+        </span>
+      </p>
       <div className="flex items-center gap-4">
         {episode.img && (
           <img
@@ -297,7 +303,7 @@ function EpisodePlayer() {
                 {formatSeconds(currentTime)}
               </span>
               {audioDuration && (
-                <span className=" text-sm">
+                <span className=" text-sm text-gray-500">
                   &nbsp; / {formatSeconds(audioDuration)}
                 </span>
               )}
@@ -321,10 +327,7 @@ function EpisodePlayer() {
           </div>
         </div>
       </div>
-      <div className="text-center px-2">
-        <div className="font-bold">{episode.title}</div>
-        <div className="text-sm opacity-60">{episode.podcastName}</div>
-      </div>
+
       <button className="button" onClick={setEpisodeStopped} title="Stop">
         <span className="flex items-center gap-1">
           <StopIcon /> stop
