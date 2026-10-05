@@ -8,8 +8,14 @@ import SeatingPage, { SeatingWidget, useSeatingEngine } from "./Seating";
 import Chime, { useChime } from "./Chime";
 import PosturePage, { PostureWidget, usePostureEngine } from "./Posture";
 import PodcastPage, { PodcastWidget } from "./Podcast";
+import WeatherPage from "./Weather";
 import ChatApp, { ChatWidget } from "./Chat";
-import { paletteAtom, chimeTypeAtom, playingPodcastAtom, playingPodcastPausedAtom } from "./atoms";
+import {
+  paletteAtom,
+  chimeTypeAtom,
+  playingPodcastAtom,
+  playingPodcastPausedAtom,
+} from "./atoms";
 import { useLocalStorage } from "./useLocalStorage";
 
 /* ---------------------------------- state --------------------------------- */
@@ -106,6 +112,7 @@ const menuTitles = {
   theme: "🎨 Theme",
   chime: "🔔 Chime",
   podcast: "🎙️ Podcasts",
+  weather: "🌤️ Weather",
 } as const;
 
 type MenuViewName = keyof typeof menuTitles;
@@ -149,6 +156,7 @@ function MenuView({
       )}
       {view === "posture" && <PosturePage />}
       {view === "podcast" && <PodcastPage />}
+      {view === "weather" && <WeatherPage />}
     </>
   );
 }
@@ -171,8 +179,9 @@ function ClockPage({
   const podcastPaused = useAtomValue(playingPodcastPausedAtom);
 
   const menuItems = {
-    pomodoro: "🍅 Pomodoro",
     podcast: "🎙️ Podcasts",
+    weather: "🌤️ Weather",
+    pomodoro: "🍅 Pomodoro",
     posture: "🧍 Posture",
     seating: "🪑 Seating",
     theme: "🎨 Theme",
