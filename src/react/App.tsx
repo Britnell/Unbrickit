@@ -8,13 +8,14 @@ import SeatingPage, { SeatingWidget, useSeatingEngine } from "./Seating";
 import Chime, { useChime } from "./Chime";
 import PosturePage, { PostureWidget, usePostureEngine } from "./Posture";
 import PodcastPage, { PodcastWidget } from "./Podcast";
-import WeatherPage from "./Weather";
+import WeatherPage, { WeatherWidget, useWeatherEngine } from "./Weather";
 import ChatApp, { ChatWidget } from "./Chat";
 import {
   paletteAtom,
   chimeTypeAtom,
   playingPodcastAtom,
   playingPodcastPausedAtom,
+  weatherWidgetAtom,
 } from "./atoms";
 import { useLocalStorage } from "./useLocalStorage";
 
@@ -177,11 +178,12 @@ function ClockPage({
   const system = useSystem();
   const playingPodcast = useAtomValue(playingPodcastAtom);
   const podcastPaused = useAtomValue(playingPodcastPausedAtom);
+  const showWeatherWidget = useAtomValue(weatherWidgetAtom);
 
   const menuItems = {
+    pomodoro: "🍅 Pomodoro",
     podcast: "🎙️ Podcasts",
     weather: "🌤️ Weather",
-    pomodoro: "🍅 Pomodoro",
     posture: "🧍 Posture",
     seating: "🪑 Seating",
     theme: "🎨 Theme",
@@ -204,6 +206,9 @@ function ClockPage({
           <PomodoroWidget pomo={pomo} onOpen={() => setMenu("pomodoro")} />
           <SeatingWidget onOpen={() => setMenu("seating")} />
           <PostureWidget onOpen={() => setMenu("posture")} />
+          {showWeatherWidget && (
+            <WeatherWidget onOpen={() => setMenu("weather")} />
+          )}
           {!podcastPaused && playingPodcast && (
             <PodcastWidget onOpen={() => setMenu("podcast")} />
           )}
@@ -253,6 +258,7 @@ function ClockPage({
               />
             ) : (
               <ul className="grid grid-cols-2 gap-2">
+                <div></div>
                 {(Object.entries(menuItems) as [MenuViewName, string][]).map(
                   ([go, label]) => (
                     <li key={label}>
@@ -283,6 +289,7 @@ export default function App() {
   const chime = useChimeSettings();
   useSeatingEngine();
   usePostureEngine();
+  useWeatherEngine();
   useChime(chime);
   const c = useAtomValue(paletteAtom);
 

@@ -1,36 +1,42 @@
 import { useEffect, useState } from "react";
-import { searchCities, getWeather, type GeoResult, type CurrentWeather } from "./weather";
-import { useLocalStorage } from "./useLocalStorage";
+import { useAtom, useAtomValue } from "jotai";
+import { searchCities, getWeather, type GeoResult } from "./weather";
+import { weatherLocationAtom, weatherAtom, weatherWidgetAtom } from "./atoms";
 
-export interface StoredLocation {
-  name: string;
-  country?: string;
-  latitude: number;
-  longitude: number;
+const WEATHER_UPDATE_MINUTES = 16;
+
+/** global weather fetcher: fetch on location change + refresh every N minutes */
+export function useWeatherEngine() {
+  const location = useAtomValue(weatherLocationAtom);
+  const setWeather = useAtom(weatherAtom)[1];
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!location) return;
+    let cancelled = false;
+    const fetchIt = () =>
+      getWeather(location)
+        .then((w) => !cancelled && setWeather(w))
+        .catch((e) => !cancelled && setError(e.message));
+    fetchIt();
+    const timer = setInterval(fetchIt, WEATHER_UPDATE_MINUTES * 60 * 1000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [location, setWeather]);
+
+  return error;
 }
 
 export default function WeatherPage() {
-  const [location, setLocation] = useLocalStorage<StoredLocation | null>(
-    "weatherLocation",
-    null,
-  );
+  const [location, setLocation] = useAtom(weatherLocationAtom);
+  const [showWidget, setShowWidget] = useAtom(weatherWidgetAtom);
+  const weather = useAtomValue(weatherAtom);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<GeoResult[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [weather, setWeather] = useState<CurrentWeather | null>(null);
-
-  // fetch weather for the stored location
-  useEffect(() => {
-    if (!location) return;
-    let cancelled = false;
-    getWeather(location)
-      .then((w) => !cancelled && setWeather(w))
-      .catch((e) => !cancelled && setError(e.message));
-    return () => {
-      cancelled = true;
-    };
-  }, [location]);
 
   const search = async () => {
     if (!query.trim()) return;
@@ -61,8 +67,18 @@ export default function WeatherPage() {
 
   const clear = () => {
     setLocation(null);
-    setWeather(null);
   };
+
+  const widgetCheckbox = (
+    <label className="flex items-center gap-2 select-none">
+      <input
+        type="checkbox"
+        checked={showWidget}
+        onChange={(e) => setShowWidget(e.target.checked)}
+      />
+      show weather widget
+    </label>
+  );
 
   // stored location -> show raw weather
   if (location) {
@@ -77,7 +93,6 @@ export default function WeatherPage() {
             -
           </button>
         </div>
-        {error && <div className="text-red-600">{error}</div>}
         {weather && (
           <div className="flex items-center justify-center gap-4">
             <span className="text-7xl">
@@ -89,6 +104,7 @@ export default function WeatherPage() {
             </span>
           </div>
         )}
+        {widgetCheckbox}
       </div>
     );
   }
@@ -122,5 +138,19 @@ export default function WeatherPage() {
         </button>
       ))}
     </div>
+  );
+}
+
+/** small corner widget: emoji + temperature */
+export function WeatherWidget({ onOpen }: { onOpen: () => void }) {
+  const weather = useAtomValue(weatherAtom);
+  if (!weather) return null;
+  return (
+    <button className="button" onClick={onOpen}>
+      <span className="flex items-center gap-1">
+        <span className="text-lg">{weather.weatherEmoji}</span>
+        <span className="font-bold">{Math.round(weather.temperature)}°</span>
+      </span>
+    </button>
   );
 }

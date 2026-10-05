@@ -1,6 +1,14 @@
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { colors, fonts } from "./state";
+import type { CurrentWeather } from "./weather";
+
+export interface StoredLocation {
+  name: string;
+  country?: string;
+  latitude: number;
+  longitude: number;
+}
 
 export interface Theme {
   font: string;
@@ -50,3 +58,15 @@ export interface PlayingEpisode {
 export const playingPodcastAtom = atom<PlayingEpisode | null>(null);
 /** true while the global podcast audio is paused */
 export const playingPodcastPausedAtom = atom(false);
+
+/** stored weather location, shared by weather page + widget */
+export const weatherLocationAtom = atomWithStorage<StoredLocation | null>(
+  "weatherLocation",
+  null,
+);
+
+/** latest weather data, fetched globally */
+export const weatherAtom = atom<CurrentWeather | null>(null);
+
+/** show the weather widget in the corner */
+export const weatherWidgetAtom = atomWithStorage<boolean>("weatherWidget", false);
