@@ -415,7 +415,7 @@ export default function SeatingPage() {
   const seatedMinutesToday = useAtomValue(seatedMinutesTodayAtom);
 
   return (
-    <>
+    <div className="flex flex-col flex-wrap max-h-[calc(100svh-5rem)]">
     <div className="flex flex-col min-w-[200px]">
                     {isRunning && !seated && (
             <div className="mb-2 bg-white/30 px-2 py-1 rounded text-center">
@@ -496,6 +496,6 @@ export default function SeatingPage() {
             </button>
           )}
         </div>
-    </>
+    </div>
   );
 }
