@@ -9,7 +9,6 @@ import Chime, { useChime } from "./Chime";
 import PosturePage, { PostureWidget, usePostureEngine } from "./Posture";
 import PodcastPage, { PodcastWidget } from "./Podcast";
 import WeatherPage, { WeatherWidget, useWeatherEngine } from "./Weather";
-import ChatApp, { ChatWidget } from "./Chat";
 import {
   paletteAtom,
   chimeTypeAtom,

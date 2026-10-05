@@ -38,6 +38,8 @@ const MAX_ANGLE_DIFF = 55;
 const MAX_CENTER_OFFSET = 0.5;
 /** current shoulder width must be at least this fraction of calibrated width */
 const MIN_SIZE_RATIO = 0.5;
+/** user must be undetected this long before we mark them as not detected */
+const NOT_DETECTED_DEBOUNCE_MS = 10_000;
 
 export interface Points {
   head: { x: number; y: number; z: number };
@@ -270,6 +272,7 @@ export function useSeatingEngine() {
     let video: HTMLVideoElement;
     const smoother = new LandmarkOneEuro();
     let lastVideoTime = -1;
+    let lastSeenMs = performance.now();
     let frame = 0;
 
     (async () => {
@@ -294,9 +297,13 @@ export function useSeatingEngine() {
             const result = landmarker.detectForVideo(video, performance.now());
             const landmarks = result.landmarks ?? [];
             if (landmarks.length === 0) {
-              setSeated(false);
-              setDistance(1);
+              // debounce: only mark not detected after being unseen for a while
+              if (performance.now() - lastSeenMs > NOT_DETECTED_DEBOUNCE_MS) {
+                setSeated(false);
+                setDistance(1);
+              }
             }
+            if (landmarks.length > 0) lastSeenMs = performance.now();
             for (const raw of landmarks) {
               const points = extractPoints(smoother.smooth(raw));
               pointsRef.current = points;

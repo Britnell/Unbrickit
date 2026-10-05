@@ -217,11 +217,9 @@ export function usePostureEngine() {
               const now = performance.now();
               if (now - lastNotifAt >= MIN_NOTIFY_INTERVAL_S * 1000) {
                 lastNotifAt = now;
-                console.log("[posture] slouch triggered (notifying)", { peak, drift: driftVal?.integ, thresh: detector.slouchThresh, driftThresh: DRIFT_SLOUCH_THRESH });
                 playNotif();
                 toast("Bad posture detected — sit up straight! 🧍");
               } else {
-                console.log("[posture] slouch triggered (notify suppressed, within cooldown)", { peak, sinceLastNotifS: (now - lastNotifAt) / 1000 });
               }
             } else if (
               isSlouching &&
@@ -229,7 +227,6 @@ export function usePostureEngine() {
               (!driftVal || driftVal.integ < DRIFT_CLEAR)
             ) {
               isSlouching = false;
-              console.log("[posture] slouch cleared", { peak, drift: driftVal?.integ });
             }
           } else {
             detector.reset();

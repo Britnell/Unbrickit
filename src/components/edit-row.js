@@ -5,12 +5,10 @@ class EditRow extends HTMLElement {
     super();
   }
   connectedCallback() {
-    this.style.display = 'contents';
+    this.style.display = "contents";
 
-    console.log(this);
-
-    const name = this.getAttribute('name') ?? '';
-    const color = this.getAttribute('color') ?? '#0077ff';
+    const name = this.getAttribute("name") ?? "";
+    const color = this.getAttribute("color") ?? "#0077ff";
     this.innerHTML = `
 <div class="flex items-center gap-2 ">
     <input name="habitcolor" type="color" class="p-0 size-8 border-none" value="${color}" />
@@ -21,6 +19,6 @@ class EditRow extends HTMLElement {
   }
 }
 
-customElements.define('edit-row', EditRow);
+customElements.define("edit-row", EditRow);
 
 export default EditRow;
