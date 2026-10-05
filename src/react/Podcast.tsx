@@ -1,58 +1,233 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocalStorage } from "./useLocalStorage";
 
-type Podcast = {
+export type Podcast = {
   id: number;
   name: string;
   image: string;
+  feedUrl: string;
 };
 
 type SearchResult = {
   trackId: number;
   trackName: string;
   artworkUrl100: string;
+  feedUrl: string;
 };
+
+export type Episode = {
+  title: string | null;
+  date: string | null;
+  duration: string | null;
+  audioUrl: string | null;
+  img: string | null;
+};
+
+const CACHE_KEY = "podcast-episode-cache";
+
+type CacheEntry = Episode[]; // top 20 per feed
+
+function readCache(): Record<string, CacheEntry> {
+  try {
+    return JSON.parse(localStorage.getItem(CACHE_KEY) ?? "{}");
+  } catch {
+    return {};
+  }
+}
+
+function writeCache(feedUrl: string, eps: Episode[]) {
+  const cache = readCache();
+  cache[feedUrl] = eps;
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+  } catch {}
+}
+
+async function fetchEpisodes(feedUrl: string): Promise<Episode[]> {
+  const res = await fetch(feedUrl);
+  const xml = await res.text();
+  const doc = new DOMParser().parseFromString(xml, "application/xml");
+  return Array.from(doc.querySelectorAll("item"))
+    .slice(0, 20)
+    .map((item) => ({
+      title: item.querySelector("title")?.textContent ?? null,
+      date: item.querySelector("pubDate")?.textContent ?? null,
+      duration:
+        item.getElementsByTagName("itunes:duration")[0]?.textContent ?? null,
+      audioUrl: item.querySelector("enclosure")?.getAttribute("url") ?? null,
+      img:
+        item.getElementsByTagName("itunes:image")[0]?.getAttribute("href") ??
+        null,
+    }));
+}
+
+function sortEpisodes(
+  eps: (Episode & { podcastName: string; img: string | null })[],
+) {
+  return [...eps].sort(
+    (a, b) => new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime(),
+  );
+}
+
+function useAllEpisodes(podcasts: Podcast[]) {
+  const [episodes, setEpisodes] = useState<
+    (Episode & { podcastName: string; img: string | null })[]
+  >([]);
+  const [loading, setLoading] = useState(podcasts.length > 0);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    // show cached episodes immediately
+    const cache = readCache();
+    const cached = podcasts.flatMap((p) =>
+      (cache[p.feedUrl] ?? []).map((ep) => ({
+        ...ep,
+        podcastName: p.name,
+        img: ep.img ?? p.image,
+      })),
+    );
+    setEpisodes(sortEpisodes(cached));
+    setLoading(!cached.length && podcasts.length > 0);
+
+    // refresh in background
+    Promise.all(
+      podcasts.map((p) =>
+        fetchEpisodes(p.feedUrl)
+          .catch(() => [] as Episode[])
+          .then((eps) => {
+            writeCache(p.feedUrl, eps);
+            return eps.map((ep) => ({
+              ...ep,
+              podcastName: p.name,
+              img: ep.img ?? p.image,
+            }));
+          }),
+      ),
+    ).then((all) => {
+      if (cancelled) return;
+      setEpisodes(sortEpisodes(all.flat()));
+      setLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [podcasts]);
+
+  return { episodes, loading };
+}
 
 export default function PodcastPage() {
   const [podcasts, setPodcasts] = useLocalStorage<Podcast[]>("podcasts", []);
-  const [adding, setAdding] = useState(false);
+  const [view, setView] = useState<"episodes" | "manage" | "add">("episodes");
 
-  if (!adding)
+  if (view === "add")
     return (
-      <div>
-        <div className="max-h-[50vh] overflow-y-auto">
-          {podcasts.length === 0 && <p>No podcasts yet.</p>}
-          <ul className="flex flex-col gap-2">
-            {podcasts.map((p) => (
-              <li key={p.id} className="flex items-center gap-2">
-                <img src={p.image} alt="" className="w-10 h-10 rounded" />
-                <span className="flex-1 truncate">{p.name}</span>
-                <button
-                  className="button"
-                  onClick={() =>
-                    setPodcasts(podcasts.filter((x) => x.id !== p.id))
-                  }
-                >
-                  ✕
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <button className="button mt-2" onClick={() => setAdding(true)}>
-          +
-        </button>
-      </div>
+      <AddPodcast
+        onAdd={(p) => {
+          if (!podcasts.some((x) => x.id === p.id))
+            setPodcasts([...podcasts, p]);
+          setView("manage");
+        }}
+        onCancel={() => setView("manage")}
+      />
     );
 
+  if (view === "manage")
+    return (
+      <ManagePodcasts
+        podcasts={podcasts}
+        onRemove={(id) => setPodcasts(podcasts.filter((p) => p.id !== id))}
+        onAdd={() => setView("add")}
+        onBack={() => setView("episodes")}
+      />
+    );
+
+  return <AllEpisodes podcasts={podcasts} onManage={() => setView("manage")} />;
+}
+
+function AllEpisodes({
+  podcasts,
+  onManage,
+}: {
+  podcasts: Podcast[];
+  onManage: () => void;
+}) {
+  const { episodes, loading } = useAllEpisodes(podcasts);
+
   return (
-    <AddPodcast
-      onAdd={(p) => {
-        setPodcasts([...podcasts, p]);
-        setAdding(false);
-      }}
-      onCancel={() => setAdding(false)}
-    />
+    <div>
+      <div className="flex items-center mb-2">
+        <span className="font-bold">Episodes</span>
+        <button className="button ml-auto" onClick={onManage} title="Podcasts">
+          ⚙
+        </button>
+      </div>
+
+      {loading && <p>Loading episodes…</p>}
+      {!loading && episodes.length === 0 && <p>No episodes yet.</p>}
+
+      <ul className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto">
+        {episodes.map((ep, i) => (
+          <li key={i} className="rounded bg-black/5 p-2 text-sm flex gap-2">
+            {ep.img && (
+              <img src={ep.img} alt="" className="w-10 h-10 rounded shrink-0" />
+            )}
+            <div className="min-w-0">
+              <div className="font-medium truncate">{ep.title}</div>
+              <div className="text-xs opacity-60">{ep.podcastName}</div>
+              <div className="text-xs opacity-60">
+                {ep.date}
+                {ep.duration ? ` · ${ep.duration}` : ""}
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function ManagePodcasts({
+  podcasts,
+  onRemove,
+  onAdd,
+  onBack,
+}: {
+  podcasts: Podcast[];
+  onRemove: (id: number) => void;
+  onAdd: () => void;
+  onBack: () => void;
+}) {
+  return (
+    <div>
+      <div className="flex items-center mb-2">
+        <span className="font-bold">Podcasts</span>
+        <button className="button ml-auto" onClick={onAdd}>
+          + add
+        </button>
+      </div>
+
+      {podcasts.length === 0 && <p>No podcasts yet.</p>}
+      <ul className="flex flex-col gap-2 max-h-[50vh] overflow-y-auto">
+        {podcasts.map((p) => (
+          <li
+            key={p.id}
+            className="flex items-center gap-2 rounded bg-black/5 p-1"
+          >
+            <img src={p.image} alt="" className="w-10 h-10 rounded" />
+            <span className="flex-1 truncate">{p.name}</span>
+            <button className="button" onClick={() => onRemove(p.id)}>
+              ✕
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <button className="button mt-2" onClick={onBack}>
+        ← Back
+      </button>
+    </div>
   );
 }
 
@@ -120,12 +295,17 @@ function AddPodcast({
                     id: r.trackId,
                     name: r.trackName,
                     image: r.artworkUrl100,
+                    feedUrl: r.feedUrl,
                   })
                 }
               >
-                <img src={r.artworkUrl100} alt="" className="w-10 h-10 rounded" />
+                <img
+                  src={r.artworkUrl100}
+                  alt=""
+                  className="w-10 h-10 rounded"
+                />
                 <span className="flex-1 truncate">{r.trackName}</span>
-                <span>+</span>
+                <span className="button !px-2 !py-1">+</span>
               </button>
             </li>
           ))}
