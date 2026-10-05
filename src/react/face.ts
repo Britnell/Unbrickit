@@ -60,10 +60,10 @@ export class FaceDriftMeter {
 // head pose straight from the task's facialTransformationMatrixes
 // (4x4 rotation matrix, row-major), standard euler extraction:
 //   roll  = head tilt sideways, pitch = nod up/down, yaw = turn left/right
-export function headPose(face) {
+export function headPose(face: any) {
     const m = face.facialTransformationMatrixes?.[0]?.data;
     if (!m) return null;
-    const [m00, m01, m02, , m10, m11, m12, , m20, m21, m22] = m;
+    const [m00, m01, , , m10, , , , m20, m21, m22] = m;
     const sy = Math.sqrt(m00 * m00 + m01 * m01);
     return {
         pitch: (Math.atan2(m21, m22) * 180) / Math.PI,

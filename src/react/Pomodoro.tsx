@@ -1,9 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { playTimerBeep } from '../lib/tone';
-import { playChimeType } from './Chime';
-
-const gongWorkEnd = 'file:gong-6.mp3';
-const gongCycleDone = 'file:gong-heavy.mp3';
+import { useNotificationSound } from './Chime';
 
 type Mode = 'focus' | 'break';
 
@@ -30,6 +27,7 @@ function loadState(): SavedState {
 export function usePomodoro() {
   const [state, setState] = useState<SavedState>(loadState);
   const beepedRef = useRef(false);
+  const playNotif = useNotificationSound();
 
   useEffect(() => {
     localStorage.setItem('pomodoro-state', JSON.stringify(state));
@@ -46,7 +44,7 @@ export function usePomodoro() {
       tick((t) => t + 1);
       if (startTime !== null && Date.now() - startTime >= state.duration && !beepedRef.current) {
         beepedRef.current = true;
-        if (state.mode === 'focus') playChimeType(gongWorkEnd);
+        if (state.mode === 'focus') playNotif();
         else playTimerBeep();
         // interval finished: keep counting into the negative until the user advances
       }
@@ -70,7 +68,7 @@ export function usePomodoro() {
     if (s.mode === 'focus') {
       return { ...s, mode: 'break' as Mode, duration: s.breakMin * 60000, startTime: Date.now() };
     }
-    playChimeType(gongCycleDone);
+    playNotif();
     return { ...s, mode: 'focus' as Mode, duration: s.focusMin * 60000, startTime: null };
   });
 

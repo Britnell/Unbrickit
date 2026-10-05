@@ -266,7 +266,7 @@ export function PostureWidget({ onOpen }: { onOpen: () => void }) {
 }
 
 export default function PosturePage() {
-  const { isRunning, level, hasFace, drift } = useAtomValue(postureUiAtom);
+  const { isRunning, level, hasFace } = useAtomValue(postureUiAtom);
   const start = useSetAtom(startPostureAtom);
   const stop = useSetAtom(stopPostureAtom);
 

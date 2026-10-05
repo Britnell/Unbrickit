@@ -14,7 +14,7 @@ export interface Theme {
 export const themeAtom = atomWithStorage<Theme>("theme", {
   font: fonts[0],
   fontSize: 30,
-  fontWeight: 500,
+  fontWeight: 400,
   hue: 0,
   colorMode: "pastel",
   darkMode: false,
@@ -34,3 +34,6 @@ export const paletteAtom = atom((get) =>
 
 /** chime sound type, global setting used by the chime timer (not the tracker) */
 export const chimeTypeAtom = atomWithStorage<string>("chimeType", "chime");
+
+/** global notification sound, shared by pomodoro, seating reminder, posture */
+export const notificationSoundAtom = atomWithStorage<string>("notificationSound", "chime");

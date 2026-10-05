@@ -4,7 +4,7 @@ import { atomWithStorage } from "jotai/utils";
 import { createLandmarker } from "./poseLandmarker";
 import { acquireCamera, releaseCamera } from "./camera";
 import { LandmarkOneEuro } from "./filter";
-import { playChimeType } from "./Chime";
+import { useNotificationSound } from "./Chime";
 import type { PoseLandmarker } from "@mediapipe/tasks-vision";
 
 const POS_KEY = "seating-position";
@@ -202,6 +202,7 @@ export function useSeatingEngine() {
   const setUi = useSetAtom(seatingUiAtom);
   const hoursDate = useAtomValue(hoursAtom).date;
   const reminderMinutes = useAtomValue(reminderAtom);
+  const playNotif = useNotificationSound();
 
   // reset stored hours when the day changes (checked on mount + every minute)
   useEffect(() => {
@@ -360,9 +361,9 @@ export function useSeatingEngine() {
     }
     if (chimedForRef.current !== seatedSince) {
       chimedForRef.current = seatedSince;
-      playChimeType("file:gong-3.mp3");
+      playNotif();
     }
-  }, [overdue, seatedSince]);
+  }, [overdue, seatedSince, playNotif]);
 
   // publish display snapshot for the page/widget
   useEffect(() => {

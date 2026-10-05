@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { notify, playChime, randomChord } from '../lib/tone';
+import { useAtom, useAtomValue } from 'jotai';
+import { playChime, randomChord } from '../lib/tone';
+import { notificationSoundAtom } from './atoms';
 import { titleCase } from './state';
 
 // custom sound files: drop .mp3/.ogg/.wav/.m4a files into public/sounds/
@@ -38,6 +40,12 @@ export function playChimeType(type: string) {
   }
 }
 
+/** play the global notification sound (pomodoro, seating reminder, posture) */
+export function useNotificationSound() {
+  const type = useAtomValue(notificationSoundAtom);
+  return () => playChimeType(type);
+}
+
 export function useChime({ type, interval }: { type: string; interval: number }) {
   const lastMinute = useRef<number | null>(null);
 
@@ -70,6 +78,7 @@ export default function Chime({
   interval: number;
   setInterval_: (v: number) => void;
 }) {
+  const [notifSound, setNotifSound] = useAtom(notificationSoundAtom);
   return (
     <div className="grid grid-cols-2 gap-y-1 gap-x-2">
       <label htmlFor="chime-interval" className="flex justify-between items-center">
@@ -107,10 +116,26 @@ export default function Chime({
         ))}
       </select>
 
-      {/* debug */}
-      <button onClick={() => notify()} className="col-span-2 mt-1">
-        Test notify
-      </button>
+      <div className="col-span-2 my-2 border-t border-current opacity-20" />
+
+      <label htmlFor="notif-sound" className="flex justify-between items-center">
+        Notification
+      </label>
+      <select
+        id="notif-sound"
+        value={notifSound}
+        onChange={(e) => {
+          setNotifSound(e.target.value);
+          playChimeType(e.target.value);
+        }}
+        className="w-full"
+      >
+        {chimeTypes.map((t) => (
+          <option key={t.value} value={t.value}>
+            {t.label}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }
