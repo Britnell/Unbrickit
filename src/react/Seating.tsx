@@ -7,7 +7,7 @@ import { createLandmarker } from "./poseLandmarker";
 import { acquireCamera, releaseCamera } from "./camera";
 import { LandmarkOneEuro } from "./filter";
 import { useNotificationSound } from "./Chime";
-import type { PoseLandmarker } from "@mediapipe/tasks-vision";
+import type { PoseLandmarker, NormalizedLandmark } from "@mediapipe/tasks-vision";
 
 const POS_KEY = "seating-position";
 const HOURS_KEY = "seating-hours";
@@ -107,6 +107,76 @@ export function seatDistance(
 }
 
 /** true if a frame's features roughly match the calibrated seating position */
+type SeatState = { seated: boolean; distance: number };
+
+/**
+ * Debounced presence/seated state machine.
+ *
+ * A "good" frame = user detected AND matching the calibrated seat.
+ * Good frames refresh the grace clock and keep the user seated. Anything
+ * else — no landmarks, or junk that doesn't match — is tolerated for
+ * NOT_DETECTED_DEBOUNCE_MS; only after that do we report the user as gone.
+ *
+ * update() returns the state to publish, or null to change nothing.
+ */
+function createSeatTracker() {
+  let lastGoodFrameMs = performance.now();
+  let seated = false;
+
+  return function update(
+    frame: { present: boolean; matched: boolean; distance: number },
+    now: number,
+  ): SeatState | null {
+    const good = frame.present && frame.matched;
+    if (good) lastGoodFrameMs = now;
+
+    const next = good || !expired(lastGoodFrameMs, now); // grace period holds old state
+    const changed = next !== seated;
+    seated = next;
+
+    if (good || changed) return { seated, distance: seated ? frame.distance : 1 };
+    return null;
+  };
+}
+
+/** true once now is more than the debounce past t */
+function expired(t: number, now: number) {
+  return now - t > NOT_DETECTED_DEBOUNCE_MS;
+}
+
+/**
+ * Process one raw detection result through smoothing + seat comparison.
+ * Returns the smoothed points (if any) and the seat state to publish (if any).
+ */
+function evaluateFrame(
+  rawLandmarks: NormalizedLandmark[][],
+  smoother: LandmarkOneEuro,
+  calib: TorsoFeatures | null,
+  tracker: ReturnType<typeof createSeatTracker>,
+  now: number,
+): { points: Points | null; seat: SeatState | null } {
+  // no pose found at all
+  if (rawLandmarks.length === 0 || !calib) {
+    return {
+      points: null,
+      seat: tracker({ present: false, matched: false, distance: 1 }, now),
+    };
+  }
+
+  // pose found: smooth it and check against the calibrated seat
+  const points = extractPoints(smoother.smooth(rawLandmarks[0]));
+  const features = torsoFeatures(points);
+  const seat = tracker(
+    {
+      present: true,
+      matched: matchesSeat(features, calib),
+      distance: seatDistance(features, calib),
+    },
+    now,
+  );
+  return { points, seat };
+}
+
 export function matchesSeat(
   current: TorsoFeatures,
   seated: TorsoFeatures,
@@ -267,8 +337,8 @@ export function useSeatingEngine() {
     let raf = 0;
     let video: HTMLVideoElement;
     const smoother = new LandmarkOneEuro();
+    const tracker = createSeatTracker();
     let lastVideoTime = -1;
-    let lastSeenMs = performance.now();
     let frame = 0;
 
     (async () => {
@@ -290,26 +360,13 @@ export function useSeatingEngine() {
         if (frame++ % 10 === 0) {
           if (video.currentTime !== lastVideoTime && landmarker) {
             lastVideoTime = video.currentTime;
-            const result = landmarker.detectForVideo(video, performance.now());
-            const landmarks = result.landmarks ?? [];
-            if (landmarks.length === 0) {
-              // debounce: only mark not detected after being unseen for a while
-              if (performance.now() - lastSeenMs > NOT_DETECTED_DEBOUNCE_MS) {
-                setSeated(false);
-                setDistance(1);
-              }
-            }
-            if (landmarks.length > 0) lastSeenMs = performance.now();
-            for (const raw of landmarks) {
-              const points = extractPoints(smoother.smooth(raw));
-              pointsRef.current = points;
-              const f = torsoFeatures(points);
-              const s = calibRef.current;
-              if (s) {
-                const d = seatDistance(f, s);
-                setSeated(matchesSeat(f, s));
-                setDistance(d);
-              }
+            const now = performance.now();
+            const landmarks = landmarker.detectForVideo(video, now).landmarks ?? [];
+            const result = evaluateFrame(landmarks, smoother, calibRef.current, tracker, now);
+            if (result.points) pointsRef.current = result.points;
+            if (result.seat) {
+              setSeated(result.seat.seated);
+              setDistance(result.seat.distance);
             }
           }
         }
