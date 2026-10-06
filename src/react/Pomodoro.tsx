@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { useAtomValue } from "jotai";
+import { clockTimeAtom } from "./atoms";
 import { useNotificationSound } from "./Chime";
 
 type Mode = "focus" | "break";
@@ -31,8 +33,8 @@ function loadState(): SavedState {
 
 export function usePomodoro() {
   const [state, setState] = useState<SavedState>(loadState);
-  const beepedRef = useRef(false);
   const playNotif = useNotificationSound();
+  const now = useAtomValue(clockTimeAtom);
 
   useEffect(() => {
     localStorage.setItem("pomodoro-state", JSON.stringify(state));
@@ -41,24 +43,12 @@ export function usePomodoro() {
   const startTime = state.startTime;
   const isRunning = startTime !== null;
 
-  const [, tick] = useState(0);
+  // interval finished: keep counting into the negative until the user advances
   useEffect(() => {
-    if (!isRunning) return;
-    beepedRef.current = false;
-    const id = setInterval(() => {
-      tick((t) => t + 1);
-      if (
-        startTime !== null &&
-        Date.now() - startTime >= state.duration &&
-        !beepedRef.current
-      ) {
-        beepedRef.current = true;
-        playNotif();
-        // interval finished: keep counting into the negative until the user advances
-      }
-    }, 100);
-    return () => clearInterval(id);
-  }, [isRunning, startTime, state.duration]);
+    if (isRunning && startTime !== null && now - startTime >= state.duration) {
+      playNotif();
+    }
+  }, [isRunning]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const remaining =
     isRunning && startTime !== null

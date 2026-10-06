@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
+import { clockTimeAtom } from "./atoms";
 import { atomWithStorage } from "jotai/utils";
 import { createLandmarker } from "./poseLandmarker";
 import { acquireCamera, releaseCamera } from "./camera";
@@ -203,25 +204,20 @@ export function useSeatingEngine() {
   const setHoursData = useSetAtom(hoursAtom);
   const isRunning = useAtomValue(seatingUiAtom).isRunning; // toggled by page buttons
   const setUi = useSetAtom(seatingUiAtom);
+  const now = useAtomValue(clockTimeAtom);
   const hoursDate = useAtomValue(hoursAtom).date;
   const reminderMinutes = useAtomValue(reminderAtom);
   const playNotif = useNotificationSound();
 
-  // reset stored hours when the day changes (checked on mount + every minute)
+  // reset stored hours when the day changes (re-checked every clock tick)
   useEffect(() => {
-    const check = () => {
-      if (!sameDay(hoursDate, todayStr())) setHoursData(freshHours());
-    };
-    check();
-    const id = setInterval(check, 60_000);
-    return () => clearInterval(id);
-  }, [hoursDate, setHoursData]);
+    if (!sameDay(hoursDate, todayStr())) setHoursData(freshHours());
+  }, [now, hoursDate, setHoursData]);
 
   // local state: only consumed here + mirrored into the UI snapshot
   const [seated, setSeated] = useState(false);
   const [distance, setDistance] = useState(0);
   const [seatedSince, setSeatedSince] = useState<number | null>(null);
-  const [now, setNow] = useState(Date.now());
 
   const pointsRef = livePointsRef;
   const calibRef = calibRefGlobal;
@@ -333,28 +329,22 @@ export function useSeatingEngine() {
 
   // counter starts when the user sits down, resets when they get up
   useEffect(() => {
-    setNow(Date.now());
     setSeatedSince(seated ? Date.now() : null);
   }, [seated]);
 
-  // keep the displayed counter ticking while seated, +1 minute per hour bucket
+  // count whole seated minutes into the current hour bucket (clock atom ticks re-renders)
   const countedMinutesRef = useRef(0);
   useEffect(() => {
     if (seatedSince === null) {
       countedMinutesRef.current = 0;
       return;
     }
-    const id = setInterval(() => {
-      const nowMs = Date.now();
-      setNow(nowMs);
-      const whole = Math.floor((nowMs - seatedSince) / 60000);
-      while (countedMinutesRef.current < whole) {
-        countedMinutesRef.current++;
-        addSeatedMinute();
-      }
-    }, 1000);
-    return () => clearInterval(id);
-  }, [seatedSince, addSeatedMinute]);
+    const whole = Math.floor((now - seatedSince) / 60000);
+    while (countedMinutesRef.current < whole) {
+      countedMinutesRef.current++;
+      addSeatedMinute();
+    }
+  }, [now, seatedSince, addSeatedMinute]);
 
   const seatedMs = seatedSince !== null ? now - seatedSince : 0;
 
