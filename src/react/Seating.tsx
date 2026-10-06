@@ -138,7 +138,7 @@ function extractPoints(lm: { x: number; y: number; z: number }[]): Points {
 }
 
 // in minutes
-export const reminderIntervals = [0, 30, 45, 60];
+export const reminderIntervals = [0, 20, 25, 30, 35, 40, 45, 50, 55, 60];
 
 /* --------------------------------- atoms ---------------------------------- */
 // Only genuinely shared/persisted seating state lives in atoms. Everything

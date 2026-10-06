@@ -11,6 +11,7 @@ import PodcastPage, { PodcastWidget } from "./Podcast";
 import WeatherPage, { WeatherWidget, useWeatherEngine } from "./Weather";
 import {
   paletteAtom,
+  clockTimeAtom,
   chimeTypeAtom,
   playingPodcastAtom,
   playingPodcastPausedAtom,
@@ -291,6 +292,21 @@ export default function App() {
   useWeatherEngine();
   useChime(chime);
   const c = useAtomValue(paletteAtom);
+  const [, setClockTime] = useAtom(clockTimeAtom);
+
+  useEffect(() => {
+    const tick = () => setClockTime(Date.now());
+    let id: ReturnType<typeof setInterval>;
+    const timeout = setTimeout(() => {
+      id = setInterval(tick, 1000);
+      tick();
+    }, 1000 - new Date().getMilliseconds());
+    return () => {
+      clearTimeout(timeout);
+      clearInterval(id);
+    };
+  }, [setClockTime]);
+
 
   return (
     <main className="fixed inset-0" style={{ background: c.bg, color: c.text }}>

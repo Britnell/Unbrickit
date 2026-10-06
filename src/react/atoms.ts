@@ -31,12 +31,21 @@ export const themeAtom = atomWithStorage<Theme>("theme", {
 // debug override for daylight mode: null = follow real clock
 export const timeOfDayAtom = atom<number | null>(null);
 
+/** current time in ms, ticked every second by App (single app-wide clock) */
+export const clockTimeAtom = atom(Date.now());
+
+/** current decimal hour, derived from clockTimeAtom */
+export function hourOf(t: number) {
+  const d = new Date(t);
+  return d.getHours() + d.getMinutes() / 60;
+}
+
 export const paletteAtom = atom((get) =>
   colors(
     get(themeAtom).hue,
     get(themeAtom).colorMode,
     get(themeAtom).darkMode,
-    get(timeOfDayAtom),
+    get(timeOfDayAtom) ?? hourOf(get(clockTimeAtom)),
   ),
 );
 
