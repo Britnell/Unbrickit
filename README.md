@@ -1,12 +1,13 @@
 # Unbrick-it
 
 ## TODO list
--[ ] posture app
--[ ] jotai for pomodoro, tracker + chime
--[ ] one clock tick per app, not 3 / use jotai or so atomic
+
+-[x] posture app
+-[x] jotai for pomodoro, tracker + chime
+-[x] one clock tick per app, not 3 / use jotai or so atomic
 -[x] PWA
 
-## OLD 
+## OLD
 
 - [x] timer on small screen
 - [ ] radio sleep mode
@@ -24,7 +25,6 @@
 - [ ] debug on ios
 - [ ] dont show voices dropdown when no voices to select
 - [ ] tiny desk? https://www.youtube.com/watch?v=kfUcI82SZv4&list=PL1B627337ED6F55F0
-
 
 **auth**
 Hono + better auth
@@ -64,7 +64,6 @@ async function getDesertIslandDiscs() {
 **weather**
 
 - https://open-meteo.com
-
 
 **framework submodule**
 
