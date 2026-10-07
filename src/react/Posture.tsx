@@ -4,7 +4,7 @@ import { atom, useAtomValue, useSetAtom } from "jotai";
 import type { FaceLandmarker } from "@mediapipe/tasks-vision";
 import { createFaceLandmarker, headPose } from "./face";
 import { createLandmarker } from "./poseLandmarker";
-import { poseHeadAngles } from "./headFromPose";
+import { poseAngles } from "./headFromPose";
 import type { PoseLandmarker } from "@mediapipe/tasks-vision";
 import { SlouchDetector } from "./postureDetect";
 import { acquireCamera, releaseCamera } from "./camera";
@@ -107,7 +107,6 @@ export function usePostureEngine() {
     let video: HTMLVideoElement;
     let lastVideoTime = -1;
     let frame = 0;
-    let facePitchBase: number | null = null; // DEBUG: face pitch baseline
     const detector = new SlouchDetector();
     let isSlouching = false;
     let lastNotifAt = 0;
@@ -117,6 +116,11 @@ export function usePostureEngine() {
     let driftVal: PostureUi["drift"] = null;
     // trapezoidal integral of drift magnitude over DRIFT_WINDOW_S
     let magHist: { t: number; m: number }[] = [];
+    let smNeck = 0,
+      smNeckInit = false;
+    let neckHist: { t: number; neck: number }[] = [];
+    let neckMagHist: { t: number; m: number }[] = [];
+    const NECK_ALPHA = 0.25;
     // low-pass (EMA) on the diff vector, smooths both mag and angle
     const ALPHA = 0.25;
     let smDy = 0,
@@ -155,14 +159,42 @@ export function usePostureEngine() {
           const poseLm = poseLandmarker?.detectForVideo(video, performance.now())
             .landmarks?.[0];
           if (poseLm) {
-            let faceDrift: number | undefined;
-            if (p) {
-              if (facePitchBase === null) facePitchBase = p.pitch;
-              faceDrift = p.pitch - facePitchBase;
+            const a = poseAngles(poseLm);
+            // neck diff vs lookback ago, EMA-smoothed, then integrated over window
+            // (same algorithm as the face drift below)
+            const now2 = performance.now();
+            neckHist.push({ t: now2, neck: a.neck });
+            const cutoff2 = now2 - DRIFT_LOOKBACK_S * 1000;
+            let pastNeck: number | null = null;
+            for (let j = neckHist.length - 1; j >= 0; j--) {
+              if (neckHist[j].t <= cutoff2) {
+                pastNeck = neckHist[j].neck;
+                break;
+              }
             }
-            const pose = poseHeadAngles(poseLm);
+            while (neckHist.length > 1 && neckHist[0].t < cutoff2 - 2000)
+              neckHist.shift();
+            let neckInteg: number | null = null;
+            if (pastNeck !== null) {
+              const d = a.neck - pastNeck;
+              if (!smNeckInit) {
+                smNeck = d;
+                smNeckInit = true;
+              } else smNeck += NECK_ALPHA * (d - smNeck);
+              neckMagHist.push({ t: now2, m: smNeck });
+              const winStart2 = now2 - DRIFT_WINDOW_S * 1000;
+              while (neckMagHist.length > 1 && neckMagHist[0].t < winStart2)
+                neckMagHist.shift();
+              let integ2 = 0;
+              for (let i = 1; i < neckMagHist.length; i++) {
+                const pa = neckMagHist[i - 1],
+                  pb = neckMagHist[i];
+                integ2 += ((pa.m + pb.m) / 2) * ((pb.t - pa.t) / 1000);
+              }
+              neckInteg = integ2;
+            }
             console.log(
-              `pitch face: ${faceDrift !== undefined ? faceDrift.toFixed(1) : "(no face)"}° | pitch pose: ${pose.toFixed(1)}°`,
+              `neck: ${a.neck.toFixed(1)}° | d: ${pastNeck !== null ? smNeck.toFixed(2) : "(none)"} | integ: ${neckInteg !== null ? neckInteg.toFixed(2) : "(none)"}`,
             );
           }
 

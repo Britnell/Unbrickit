@@ -1,45 +1,48 @@
-// pitch estimation from PoseLandmarker (33-point) head landmarks, for use when
-// the camera is side-on and the face mesh model can't run.
-//
-// Absolute pitch from pure 3D geometry, no baseline/calibration:
-// the two ears + nose define the plane of the face; the plane normal is the
-// direction the face points. Pitch = the normal's vertical tilt (nod).
-// Computed fresh each frame.
+// 2D posture angles from PoseLandmarker (33-point) landmarks, ported from
+// ../posture-astro/src/scripts/posture.ts (midpoints -> angles).
+// neck/back are absolute tilts vs axes (signed, + = forward/down).
+// neckBody/neckHead are intrinsic joint angles (unsigned).
 
 import type { NormalizedLandmark } from "@mediapipe/tasks-vision";
 
 const DEG = 180 / Math.PI;
-type V3 = { x: number; y: number; z: number };
 
-const sub = (a: V3, b: V3): V3 => ({
-  x: a.x - b.x,
-  y: a.y - b.y,
-  z: a.z - b.z,
-});
-const cross = (a: V3, b: V3): V3 => ({
-  x: a.y * b.z - a.z * b.y,
-  y: a.z * b.x - a.x * b.z,
-  z: a.x * b.y - a.y * b.x,
-});
+export interface PoseAngles {
+  neck: number; // ear->shoulder vs vertical, + = leaning forward
+  back: number; // shoulder->hip vs vertical, + = leaning forward
+  neckBody: number; // angle at shoulder between torso and neck
+  neckHead: number; // angle at ear between neck and head
+}
 
-const p3 = (l: NormalizedLandmark): V3 => ({ x: l.x, y: l.y, z: l.z });
+export function poseAngles(lm: NormalizedLandmark[]): PoseAngles {
+  const mid = (a: number, b: number) => ({
+    x: (lm[a].x + lm[b].x) / 2,
+    y: (lm[a].y + lm[b].y) / 2,
+  });
+  const frontIsL = lm[7].z <= lm[8].z;
+  const shoulder = mid(11, 12);
+  const hip = mid(23, 24);
+  const ear = mid(7, 8);
+  const eye = frontIsL ? lm[2] : lm[5];
 
-/** head orientation in degrees from one frame's pose landmarks */
-export function poseHeadAngles(lm: NormalizedLandmark[]) {
-  const earL = p3(lm[7]);
-  const earR = p3(lm[8]);
-  const nose = p3(lm[0]);
-
-  // face plane spanned by the ear line and earMid -> nose
-  const earMid = {
-    x: (earL.x + earR.x) / 2,
-    y: (earL.y + earR.y) / 2,
-    z: (earL.z + earR.z) / 2,
+  const vsVert = (p1: { x: number; y: number }, p2: { x: number; y: number }) =>
+    (Math.atan2(p2.x - p1.x, Math.abs(p2.y - p1.y)) * 180) / Math.PI;
+  const angleBetween = (
+    p1: { x: number; y: number },
+    p2: { x: number; y: number },
+    p3: { x: number; y: number },
+  ) => {
+    const v1 = { x: p1.x - p2.x, y: p1.y - p2.y };
+    const v2 = { x: p3.x - p2.x, y: p3.y - p2.y };
+    const dot = v1.x * v2.x + v1.y * v2.y;
+    const m = Math.hypot(v1.x, v1.y) * Math.hypot(v2.x, v2.y);
+    return (Math.acos(Math.min(1, Math.max(-1, dot / m))) * DEG);
   };
-  const n = cross(sub(earR, earL), sub(nose, earMid));
-  const len = Math.hypot(n.x, n.y, n.z) || 1e-9;
 
-  // MediaPipe coords: x right, y down, z away from camera.
-  // normal of a forward-facing head points toward the camera (z negative-ish).
-  return Math.asin(n.y / len) * DEG; // nod: down = positive
+  return {
+    neck: vsVert(ear, shoulder),
+    back: vsVert(shoulder, hip),
+    neckBody: angleBetween(hip, shoulder, ear),
+    neckHead: angleBetween(shoulder, ear, eye),
+  };
 }
