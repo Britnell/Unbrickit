@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import { clockTimeAtom } from "./atoms";
 import { atomWithStorage } from "jotai/utils";
-import { createFaceLandmarker, headPose } from "./face";
-import { acquireCamera, releaseCamera } from "./camera";
+import { headPose } from "./face";
+import { subscribeFace } from "./faceStream";
 import { useNotificationSound } from "./Chime";
 import type {
   FaceLandmarker,
@@ -290,67 +290,24 @@ export function useSeatingEngine() {
       });
   }, [setUi]);
 
-  // camera + face landmark detection, checks face presence + size/rotation
+  // shared face stream: presence + size/rotation checks per frame
   useEffect(() => {
     if (!isRunning) return;
-    let cancelled = false;
-    let landmarker: FaceLandmarker | null = null;
-    let ownsCamera = false;
-    let raf = 0;
-    let video: HTMLVideoElement;
     const tracker = createSeatTracker();
-    let lastVideoTime = -1;
-    let frame = 0;
 
-    (async () => {
+    const unsub = subscribeFace(({ result: face, now }) => {
       try {
-        landmarker = await createFaceLandmarker();
-        if (cancelled) return;
-        video = await acquireCamera();
-        ownsCamera = true;
-        if (cancelled) {
-          releaseCamera();
-          return;
+        const result = evaluateFrame(face, calibRef.current, tracker, now);
+        if (result.features) pointsRef.current = result.features;
+        if (result.seat) {
+          setSeated(result.seat.seated);
+          setDistance(result.seat.distance);
         }
       } catch (err) {
-        console.error("seating camera/model failed:", err);
-        return;
+        console.error("[seating] detect failed:", err);
       }
-      const loop = () => {
-        if (cancelled) return;
-        if (frame++ % 10 === 0) {
-          if (video.currentTime !== lastVideoTime && landmarker) {
-            lastVideoTime = video.currentTime;
-            const now = performance.now();
-            try {
-              const face = landmarker.detectForVideo(video, now);
-              const result = evaluateFrame(
-                face,
-                calibRef.current,
-                tracker,
-                now,
-              );
-              if (result.features) pointsRef.current = result.features;
-              if (result.seat) {
-                setSeated(result.seat.seated);
-                setDistance(result.seat.distance);
-              }
-            } catch (err) {
-              console.error("[seating] detect failed:", err);
-            }
-          }
-        }
-        raf = requestAnimationFrame(loop);
-      };
-      raf = requestAnimationFrame(loop);
-    })();
-
-    return () => {
-      cancelled = true;
-      cancelAnimationFrame(raf);
-      if (ownsCamera) releaseCamera();
-      landmarker?.close();
-    };
+    });
+    return unsub;
   }, [isRunning]);
 
   // counter starts when the user sits down, resets when they get up

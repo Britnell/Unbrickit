@@ -5,10 +5,10 @@ import type {
   FaceLandmarker,
   NormalizedLandmark,
 } from "@mediapipe/tasks-vision";
-import { createFaceLandmarker, headPose } from "./face";
+import { headPose } from "./face";
+import { subscribeFace } from "./faceStream";
 import { SlouchDetector } from "./postureDetect";
 import { YDriftMeter, type DriftValue } from "./drift";
-import { acquireCamera, releaseCamera } from "./camera";
 import { useNotificationSound } from "./Chime";
 
 /* ------------------------------- thresholds ------------------------------- */
@@ -161,12 +161,6 @@ export function usePostureEngine() {
       return;
     }
     let cancelled = false;
-    let faceLandmarker: FaceLandmarker | null = null;
-    let ownsCamera = false;
-    let raf = 0;
-    let video: HTMLVideoElement;
-    let lastVideoTime = -1;
-    let frame = 0;
     let isSlouching = false;
     let lastNotifAt = 0;
     const angle = angleDetector();
@@ -175,95 +169,64 @@ export function usePostureEngine() {
     // we treat it as "user not detected" (single dropped frames are ignored)
     let noFaceFrames = 0;
 
-    (async () => {
-      try {
-        faceLandmarker = await createFaceLandmarker();
-        if (cancelled) return;
-        video = await acquireCamera();
-        ownsCamera = true;
-        if (cancelled) {
-          releaseCamera();
-          return;
-        }
-      } catch (err) {
-        console.error("camera/model failed:", err);
-        setUi((ui) => ({ ...ui, isRunning: false }));
-        return;
+    const unsub = subscribeFace(({ result: faceRes, now }) => {
+      if (cancelled) return;
+      const faceLm = faceRes.faceLandmarks?.[0];
+      noFaceFrames = faceLm ? 0 : noFaceFrames + 1;
+      const detected = noFaceFrames < NO_FACE_DEBOUNCE;
+
+      let poseEuler: PostureUi["pose"];
+      let integral: number;
+      let drift: DriftValue | null;
+
+      if (faceLm) {
+        const m = measureFace(angle, driftMeter, faceRes, faceLm, now);
+        poseEuler = m.pose;
+        integral = m.integral;
+        drift = m.drift;
+      } else {
+        angle.reset();
+        driftMeter.reset();
+        poseEuler = null;
+        integral = 0;
+        drift = null;
       }
-      const loop = () => {
-        if (cancelled) return;
-        // sample every 10th frame (~6Hz): plenty for drift detection
-        if (
-          frame++ % 10 === 0 &&
-          video.currentTime !== lastVideoTime &&
-          faceLandmarker
-        ) {
-          lastVideoTime = video.currentTime;
-          const now = performance.now();
 
-          const faceRes = faceLandmarker.detectForVideo(video, now);
-          const faceLm = faceRes.faceLandmarks?.[0];
-          noFaceFrames = faceLm ? 0 : noFaceFrames + 1;
-          const detected = noFaceFrames < NO_FACE_DEBOUNCE;
+      isSlouching = evaluate(integral, drift, isSlouching);
 
-          let poseEuler: PostureUi["pose"];
-          let integral: number;
-          let drift: DriftValue | null;
+      if (
+        isSlouching &&
+        now - lastNotifAt >= MIN_NOTIFY_INTERVAL_S * 1000
+      ) {
+        lastNotifAt = now;
+        playNotif();
+        toast("Bad posture detected — sit up straight! 🧍");
+      }
 
-          if (faceLm) {
-            const m = measureFace(angle, driftMeter, faceRes, faceLm, now);
-            poseEuler = m.pose;
-            integral = m.integral;
-            drift = m.drift;
-          } else {
-            angle.reset();
-            driftMeter.reset();
-            poseEuler = null;
-            integral = 0;
-            drift = null;
-          }
+      if (!detected) isSlouching = false;
 
-          isSlouching = evaluate(integral, drift, isSlouching);
-
-          if (
-            isSlouching &&
-            now - lastNotifAt >= MIN_NOTIFY_INTERVAL_S * 1000
-          ) {
-            lastNotifAt = now;
-            playNotif();
-            toast("Bad posture detected — sit up straight! 🧍");
-          }
-
-          if (!detected) isSlouching = false;
-
-          const level: PostureLevel = detected && isSlouching ? "slouch" : "ok";
-          setUi((ui) =>
-            ui.level === level &&
-            ui.hasFace === detected &&
-            ui.pose === poseEuler &&
-            ui.integral === integral &&
-            ui.drift === drift
-              ? ui
-              : {
-                  ...ui,
-                  level,
-                  hasFace: detected,
-                  pose: poseEuler,
-                  integral,
-                  drift,
-                },
-          );
-        }
-        raf = requestAnimationFrame(loop);
-      };
-      raf = requestAnimationFrame(loop);
-    })();
+      const level: PostureLevel = detected && isSlouching ? "slouch" : "ok";
+      setUi((ui) =>
+        ui.level === level &&
+        ui.hasFace === detected &&
+        ui.pose === poseEuler &&
+        ui.integral === integral &&
+        ui.drift === drift
+          ? ui
+          : {
+              ...ui,
+              level,
+              hasFace: detected,
+              pose: poseEuler,
+              integral,
+              drift,
+            },
+      );
+    });
 
     return () => {
       cancelled = true;
-      cancelAnimationFrame(raf);
-      if (ownsCamera) releaseCamera();
-      faceLandmarker?.close();
+      unsub();
     };
   }, [isRunning, setUi, playNotif]);
 }
