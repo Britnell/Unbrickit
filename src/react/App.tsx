@@ -203,15 +203,15 @@ function ClockPage({
 
       {!menu && !overlayOpen && (
         <div className="absolute bottom-2 left-2 flex gap-2 pointer-events-auto">
-          <PomodoroWidget pomo={pomo} onOpen={() => setMenu("pomodoro")} />
-          <SeatingWidget onOpen={() => setMenu("seating")} />
-          <PostureWidget onOpen={() => setMenu("posture")} />
           {showWeatherWidget && (
             <WeatherWidget onOpen={() => setMenu("weather")} />
           )}
           {!podcastPaused && playingPodcast && (
             <PodcastWidget onOpen={() => setMenu("podcast")} />
           )}
+          <PomodoroWidget pomo={pomo} onOpen={() => setMenu("pomodoro")} />
+          <SeatingWidget onOpen={() => setMenu("seating")} />
+          <PostureWidget onOpen={() => setMenu("posture")} />
         </div>
       )}
 
@@ -306,7 +306,6 @@ export default function App() {
       clearInterval(id);
     };
   }, [setClockTime]);
-
 
   return (
     <main className="fixed inset-0" style={{ background: c.bg, color: c.text }}>

@@ -2,12 +2,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import { clockTimeAtom } from "./atoms";
 import { atomWithStorage } from "jotai/utils";
-import { createLandmarker } from "./poseLandmarker";
+import { createFaceLandmarker, headPose } from "./face";
 import { acquireCamera, releaseCamera } from "./camera";
-import { LandmarkOneEuro } from "./filter";
 import { useNotificationSound } from "./Chime";
 import type {
-  PoseLandmarker,
+  FaceLandmarker,
   NormalizedLandmark,
 } from "@mediapipe/tasks-vision";
 
@@ -34,78 +33,61 @@ function sameDay(a: string, b: string) {
   return a === b;
 }
 
-// --- seat comparison tuning knobs ---
-/** max |angle difference| from calibrated angle before we call it a false positive (degrees) */
-const MAX_ANGLE_DIFF = 55;
-/** max |x|+|y|+|z| center offset from calibrated position (all coords are 0-1) */
-const MAX_CENTER_OFFSET = 0.5;
-/** current shoulder width must be at least this fraction of calibrated width */
+// --- face comparison tuning knobs ---
+/** max |roll| difference from calibrated pose before we call it a false positive (degrees) */
+const MAX_ROLL_DIFF = 60;
+/** current face size must be at least this fraction of the calibrated size (rejects background faces) */
 const MIN_SIZE_RATIO = 0.5;
 /** user must be undetected this long before we mark them as not detected */
 const NOT_DETECTED_DEBOUNCE_MS = 10_000;
 
-export interface Points {
-  head: { x: number; y: number; z: number };
-  shoulderL: { x: number; y: number; z: number };
-  shoulderR: { x: number; y: number; z: number };
-  hipL: { x: number; y: number; z: number };
-  hipR: { x: number; y: number; z: number };
+/** comparison params from the face: size + head rotation */
+export interface FaceFeatures {
+  /** bounding-box diagonal of the face landmarks = rough distance to camera */
+  size: number;
+  roll: number;
+  yaw: number;
+  pitch: number;
 }
 
-/** 3 comparison params from the torso skeleton: angle, position, size */
-export interface TorsoFeatures {
-  /** angle of torso line (shoulder-mid -> hip-mid) in degrees, 0 = upright */
-  angle: number;
-  /** average of shoulder + hip points = body position */
-  center: { x: number; y: number; z: number };
-  /** distance between shoulders = rough distance to camera */
-  shoulderWidth: number;
-}
-
-export function torsoFeatures(p: Points): TorsoFeatures {
-  const shoulderMid = {
-    x: (p.shoulderL.x + p.shoulderR.x) / 2,
-    y: (p.shoulderL.y + p.shoulderR.y) / 2,
-    z: (p.shoulderL.z + p.shoulderR.z) / 2,
+/** face landmarks + transformation matrix -> size + head pose */
+export function faceFeatures(
+  lm: NormalizedLandmark[],
+  face: ReturnType<FaceLandmarker["detectForVideo"]>,
+): FaceFeatures | null {
+  const pose = headPose(face);
+  if (!pose) return null;
+  let minX = 1,
+    maxX = 0,
+    minY = 1,
+    maxY = 0;
+  for (const p of lm) {
+    if (p.x < minX) minX = p.x;
+    if (p.x > maxX) maxX = p.x;
+    if (p.y < minY) minY = p.y;
+    if (p.y > maxY) maxY = p.y;
+  }
+  return {
+    size: Math.hypot(maxX - minX, maxY - minY),
+    roll: pose.roll,
+    yaw: pose.yaw,
+    pitch: pose.pitch,
   };
-  const hipMid = {
-    x: (p.hipL.x + p.hipR.x) / 2,
-    y: (p.hipL.y + p.hipR.y) / 2,
-    z: (p.hipL.z + p.hipR.z) / 2,
-  };
-  const angle =
-    (Math.atan2(hipMid.x - shoulderMid.x, hipMid.y - shoulderMid.y) * 180) /
-    Math.PI;
-  const center = {
-    x: (shoulderMid.x + hipMid.x) / 2,
-    y: (shoulderMid.y + hipMid.y) / 2,
-    z: (shoulderMid.z + hipMid.z) / 2,
-  };
-  const shoulderWidth = Math.hypot(
-    p.shoulderL.x - p.shoulderR.x,
-    p.shoulderL.y - p.shoulderR.y,
-  );
-  return { angle, center, shoulderWidth };
 }
 
 /**
- * Max distance from the calibrated position, 0..1.
+ * Max distance from the calibrated face, 0..1.
  * Each factor is diff/threshold; 1 = that factor hit its threshold.
  */
 export function seatDistance(
-  current: TorsoFeatures,
-  seated: TorsoFeatures,
+  current: FaceFeatures,
+  seated: FaceFeatures,
 ): number {
-  const angleDiff = Math.abs(current.angle - seated.angle) / MAX_ANGLE_DIFF;
-  const centerOffset =
-    (Math.abs(current.center.x - seated.center.x) +
-      Math.abs(current.center.y - seated.center.y)) /
-    MAX_CENTER_OFFSET;
-  // shoulder width: 0 when matching, 1 when width dropped to MIN_SIZE_RATIO
+  const rollDiff = Math.abs(current.roll - seated.roll) / MAX_ROLL_DIFF;
+  // face size: 0 when matching, 1 when size dropped to MIN_SIZE_RATIO
   const sizeDiff =
-    Math.max(0, 1 - current.shoulderWidth / seated.shoulderWidth) /
-    (1 - MIN_SIZE_RATIO);
-  return Math.max(angleDiff, centerOffset, sizeDiff);
+    Math.max(0, 1 - current.size / seated.size) / (1 - MIN_SIZE_RATIO);
+  return Math.max(rollDiff, sizeDiff);
 }
 
 /** true if a frame's features roughly match the calibrated seating position */
@@ -147,28 +129,22 @@ function expired(t: number, now: number) {
   return now - t > NOT_DETECTED_DEBOUNCE_MS;
 }
 
-/**
- * Process one raw detection result through smoothing + seat comparison.
- * Returns the smoothed points (if any) and the seat state to publish (if any).
- */
 function evaluateFrame(
-  rawLandmarks: NormalizedLandmark[][],
-  smoother: LandmarkOneEuro,
-  calib: TorsoFeatures | null,
+  face: ReturnType<FaceLandmarker["detectForVideo"]>,
+  calib: FaceFeatures | null,
   tracker: ReturnType<typeof createSeatTracker>,
   now: number,
-): { points: Points | null; seat: SeatState | null } {
-  // no pose found at all
-  if (rawLandmarks.length === 0 || !calib) {
+): { features: FaceFeatures | null; seat: SeatState | null } {
+  const lm = face.faceLandmarks?.[0];
+  const features = lm ? faceFeatures(lm, face) : null;
+  // no face (or no head pose) at all
+  if (!features || !calib) {
     return {
-      points: null,
+      features,
       seat: tracker({ present: false, matched: false, distance: 1 }, now),
     };
   }
 
-  // pose found: smooth it and check against the calibrated seat
-  const points = extractPoints(smoother.smooth(rawLandmarks[0]));
-  const features = torsoFeatures(points);
   const seat = tracker(
     {
       present: true,
@@ -177,38 +153,14 @@ function evaluateFrame(
     },
     now,
   );
-  return { points, seat };
+  return { features, seat };
 }
 
 export function matchesSeat(
-  current: TorsoFeatures,
-  seated: TorsoFeatures,
+  current: FaceFeatures,
+  seated: FaceFeatures,
 ): boolean {
-  if (Math.abs(current.angle - seated.angle) > MAX_ANGLE_DIFF) return false;
-  const offset =
-    Math.abs(current.center.x - seated.center.x) +
-    Math.abs(current.center.y - seated.center.y) +
-    Math.abs(current.center.z - seated.center.z);
-  if (offset > MAX_CENTER_OFFSET) return false;
-  if (current.shoulderWidth < seated.shoulderWidth * MIN_SIZE_RATIO)
-    return false;
-  return true;
-}
-
-/** reduce 33 raw landmarks to our 5 torso points (head = midpoint between ears) */
-function extractPoints(lm: { x: number; y: number; z: number }[]): Points {
-  const mid = (a: (typeof lm)[0], b: (typeof lm)[0]) => ({
-    x: (a.x + b.x) / 2,
-    y: (a.y + b.y) / 2,
-    z: (a.z + b.z) / 2,
-  });
-  return {
-    head: mid(lm[7], lm[8]), // ears
-    shoulderL: lm[11],
-    shoulderR: lm[12],
-    hipL: lm[23],
-    hipR: lm[24],
-  };
+  return seatDistance(current, seated) < 1;
 }
 
 // in minutes
@@ -234,6 +186,8 @@ export interface SeatingUi {
   distance: number;
   seatedMs: number;
   overdue: boolean;
+  /** a seating position has been calibrated (and stored) */
+  calibrated: boolean;
 }
 export const seatingUiAtom = atom<SeatingUi>({
   isRunning: false,
@@ -241,6 +195,7 @@ export const seatingUiAtom = atom<SeatingUi>({
   distance: 0,
   seatedMs: 0,
   overdue: false,
+  calibrated: localStorage.getItem(POS_KEY) !== null,
 });
 
 // start/stop actions: just flip isRunning in the snapshot, the engine reacts
@@ -255,16 +210,18 @@ export const stopSeatingAtom = atom(null, (_get, set) => {
 
 // shared between engine and capture so the page can calibrate
 // plain module singletons (NOT useRef — that's a hook and can't run at module scope)
-const livePointsRef: { current: Points | null } = { current: null };
-const calibRefGlobal: { current: TorsoFeatures | null } = { current: null };
+const liveFeaturesRef: { current: FaceFeatures | null } = { current: null };
+const calibRefGlobal: { current: FaceFeatures | null } = { current: null };
 
-/** store current 5 points as the calibrated camera position */
+/** store the current face features as the calibrated seating position */
 export function useCaptureSeat() {
+  const setUi = useSetAtom(seatingUiAtom);
   return useCallback(() => {
-    if (!livePointsRef.current) return;
-    localStorage.setItem(POS_KEY, JSON.stringify(livePointsRef.current));
-    calibRefGlobal.current = torsoFeatures(livePointsRef.current);
-  }, []);
+    if (!liveFeaturesRef.current) return;
+    localStorage.setItem(POS_KEY, JSON.stringify(liveFeaturesRef.current));
+    calibRefGlobal.current = liveFeaturesRef.current;
+    setUi((ui) => ({ ...ui, calibrated: true }));
+  }, [setUi]);
 }
 
 /* --------------------------------- engine --------------------------------- */
@@ -292,13 +249,15 @@ export function useSeatingEngine() {
   const [distance, setDistance] = useState(0);
   const [seatedSince, setSeatedSince] = useState<number | null>(null);
 
-  const pointsRef = livePointsRef;
+  const pointsRef = liveFeaturesRef;
   const calibRef = calibRefGlobal;
   // restore saved calibration so detection works right after (re)load
   const saved = localStorage.getItem(POS_KEY);
   if (saved && !calibRef.current) {
     try {
-      calibRef.current = torsoFeatures(JSON.parse(saved) as Points);
+      const parsed = JSON.parse(saved) as Partial<FaceFeatures>;
+      if (typeof parsed.size === "number")
+        calibRef.current = parsed as FaceFeatures;
     } catch {
       /* ignore corrupt data */
     }
@@ -331,22 +290,21 @@ export function useSeatingEngine() {
       });
   }, [setUi]);
 
-  // camera + pose landmark detection, extracts + filters our 5 torso points
+  // camera + face landmark detection, checks face presence + size/rotation
   useEffect(() => {
     if (!isRunning) return;
     let cancelled = false;
-    let landmarker: PoseLandmarker | null = null;
+    let landmarker: FaceLandmarker | null = null;
     let ownsCamera = false;
     let raf = 0;
     let video: HTMLVideoElement;
-    const smoother = new LandmarkOneEuro();
     const tracker = createSeatTracker();
     let lastVideoTime = -1;
     let frame = 0;
 
     (async () => {
       try {
-        landmarker = await createLandmarker("lite");
+        landmarker = await createFaceLandmarker();
         if (cancelled) return;
         video = await acquireCamera();
         ownsCamera = true;
@@ -364,19 +322,21 @@ export function useSeatingEngine() {
           if (video.currentTime !== lastVideoTime && landmarker) {
             lastVideoTime = video.currentTime;
             const now = performance.now();
-            const landmarks =
-              landmarker.detectForVideo(video, now).landmarks ?? [];
-            const result = evaluateFrame(
-              landmarks,
-              smoother,
-              calibRef.current,
-              tracker,
-              now,
-            );
-            if (result.points) pointsRef.current = result.points;
-            if (result.seat) {
-              setSeated(result.seat.seated);
-              setDistance(result.seat.distance);
+            try {
+              const face = landmarker.detectForVideo(video, now);
+              const result = evaluateFrame(
+                face,
+                calibRef.current,
+                tracker,
+                now,
+              );
+              if (result.features) pointsRef.current = result.features;
+              if (result.seat) {
+                setSeated(result.seat.seated);
+                setDistance(result.seat.distance);
+              }
+            } catch (err) {
+              console.error("[seating] detect failed:", err);
             }
           }
         }
@@ -388,7 +348,6 @@ export function useSeatingEngine() {
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
-      smoother.reset();
       if (ownsCamera) releaseCamera();
       landmarker?.close();
     };
@@ -432,13 +391,22 @@ export function useSeatingEngine() {
 
   // publish display snapshot for the page/widget
   useEffect(() => {
+    const calibrated = calibRef.current !== null;
     setUi((ui) =>
       ui.seated === seated &&
       ui.distance === distance &&
       ui.seatedMs === seatedMs &&
-      ui.overdue === overdue
+      ui.overdue === overdue &&
+      ui.calibrated === calibrated
         ? ui
-        : { isRunning: ui.isRunning, seated, distance, seatedMs, overdue },
+        : {
+            isRunning: ui.isRunning,
+            seated,
+            distance,
+            seatedMs,
+            overdue,
+            calibrated,
+          },
     );
   }, [seated, distance, seatedMs, overdue, setUi]);
 }
@@ -469,7 +437,7 @@ export function SeatingWidget({ onOpen }: { onOpen: () => void }) {
 }
 
 export default function SeatingPage() {
-  const { isRunning, seated, seatedMs, distance, overdue } =
+  const { isRunning, seated, seatedMs, distance, overdue, calibrated } =
     useAtomValue(seatingUiAtom);
   const start = useSetAtom(startSeatingAtom);
   const stop = useSetAtom(stopSeatingAtom);
@@ -480,7 +448,18 @@ export default function SeatingPage() {
   return (
     <div className="flex flex-row flex-wrap w-max mx-auto gap-2 max-h-[calc(100svh-5rem)]">
       <div className="flex flex-col min-w-[200px]">
-        {isRunning && !seated && (
+        {!calibrated && (
+          <div className="mb-2 bg-red-500/70 px-3 py-2 rounded text-center">
+            <div className="text-2xl">⚠️</div>
+            <div className="text-lg font-bold">Camera not calibrated</div>
+            <div className="text-sm">
+              Sit at your desk, then press “Set camera position” — otherwise you
+              won't be detected.
+            </div>
+          </div>
+        )}
+
+        {isRunning && !seated && calibrated && (
           <div className="mb-2 bg-white/30 px-2 py-1 rounded text-center">
             <div className="text-4xl">🕳️</div>
             <div className="text-lg">Not at desk</div>
@@ -490,7 +469,7 @@ export default function SeatingPage() {
           </div>
         )}
 
-        {isRunning && seated && (
+        {isRunning && seated && calibrated && (
           <div className="mb-2 bg-white/30 px-2 py-1 rounded text-center">
             <div className="text-4xl">🪑</div>
             <div className="text-lg">At desk</div>
@@ -541,7 +520,7 @@ export default function SeatingPage() {
           <progress
             className="mb-2"
             max={1}
-            value={Math.max(0, Math.floor((1 - distance) * 5) / 5)}
+            value={Math.max(0, Math.ceil((1 - distance) * 5) / 5)}
           ></progress>
 
           <button onClick={capture} className="button mt-2 w-full text-sm">
