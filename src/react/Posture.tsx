@@ -1,28 +1,54 @@
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { atom, useAtomValue, useSetAtom } from "jotai";
-import type { FaceLandmarker } from "@mediapipe/tasks-vision";
+import type {
+  FaceLandmarker,
+  PoseLandmarker,
+  NormalizedLandmark,
+} from "@mediapipe/tasks-vision";
 import { createFaceLandmarker, headPose } from "./face";
 import { createLandmarker } from "./poseLandmarker";
 import { poseAngles } from "./headFromPose";
-import type { PoseLandmarker } from "@mediapipe/tasks-vision";
 import { SlouchDetector } from "./postureDetect";
+import { YDriftMeter, type DriftValue } from "./drift";
 import { acquireCamera, releaseCamera } from "./camera";
 import { useNotificationSound } from "./Chime";
 
-// slouch triggers above detector.slouchThresh (45); it only clears once the
-// integral settles back below these lower values (debounce/hysteresis)
-const SLOUCH_CLEAR = 15;
-const DRIFT_CLEAR = 0.7; // ~1/3 of DRIFT_SLOUCH_THRESH
-const RUNNING_KEY = "posture-running";
-// drift diff: current 6-point sample vs this many seconds ago
-const DRIFT_LOOKBACK_S = 3;
-// drift magnitude integrated over this window
-const DRIFT_WINDOW_S = 4;
-// drift-based slouch: integrated downward drift must exceed this
-const DRIFT_SLOUCH_THRESH = 2.1;
+/* ------------------------------- thresholds ------------------------------- */
+
+// angle integrals: trigger above thresh, clear below the lower value (hysteresis)
+const PITCH_SLOUCH_THRESH = 45; // face-landmark pitch integral
+const PITCH_SLOUCH_CLEAR = 15;
+const NECK_SLOUCH_THRESH = 30; // pose-landmark neck tilt integral (tune me)
+const NECK_SLOUCH_CLEAR = 10;
+// drift-based slouch: integrated downward drift must exceed this (same units
+// for both sources for now — y-diffs in normalized coords are comparable)
+const DRIFT_SLOUCH_THRESH = 2.6;
+const DRIFT_CLEAR = 0.7;
 // don't notify (sound/toast) more often than this, even on real slouches
 const MIN_NOTIFY_INTERVAL_S = 60;
+const RUNNING_KEY = "posture-running";
+
+/* -------------------------------- landmarks ------------------------------- */
+
+// face-landmark drift points: forehead / cheeks / jaw, far apart per region
+const FACE_DRIFT_IDS = [
+  107,
+  336,
+  105,
+  334, // forehead inner + outer
+  50,
+  280,
+  116,
+  345, // cheekbone + lower cheeks
+  172,
+  397,
+  149,
+  378, // jaw + jawline
+];
+// pose-landmark drift points: the ~10 face points pose gives us
+// (eyes, nose, ears, mouth)
+const POSE_DRIFT_IDS = [0, 1, 2, 3, 5, 6, 7, 8, 9, 10];
 
 export type PostureLevel = "ok" | "slouch";
 
@@ -36,8 +62,10 @@ export interface PostureUi {
   /** debug readouts for the posture page */
   pose: { roll: number; pitch: number; yaw: number } | null;
   integral: number;
-  /** summed 6-point movement vector since N frames ago */
-  drift: { dy: number; integ: number } | null;
+  /** summed point-set movement vector since N seconds ago */
+  drift: DriftValue | null;
+  /** which landmark source produced the current numbers */
+  source: "face" | "pose" | null;
 }
 export const postureUiAtom = atom<PostureUi>({
   isRunning: false,
@@ -46,6 +74,7 @@ export const postureUiAtom = atom<PostureUi>({
   pose: null,
   integral: 0,
   drift: null,
+  source: null,
 });
 
 /** engine subscribes to this only — postureUiAtom updates at ~6Hz from the
@@ -64,13 +93,97 @@ export const stopPostureAtom = atom(null, (_get, set) => {
     pose: null,
     integral: 0,
     drift: null,
+    source: null,
   }));
   sessionStorage.removeItem(RUNNING_KEY);
 });
 
+/* ----------------------------- per-source state ---------------------------- */
+
+/** one of these per landmark source; separate instances = never-mixed
+ *  filter histories and integrals */
+interface SourceState {
+  /** pitch (face) or neck tilt (pose) integral detector */
+  angle: SlouchDetector;
+  /** y-drift of the source's face points */
+  drift: YDriftMeter;
+  /** this source's trigger/clear thresholds */
+  angleThresh: number;
+  angleClear: number;
+}
+
+function faceSource() {
+  const angle = new SlouchDetector();
+  angle.slouchThresh = PITCH_SLOUCH_THRESH;
+  return {
+    angle,
+    drift: new YDriftMeter(),
+    angleThresh: PITCH_SLOUCH_THRESH,
+    angleClear: PITCH_SLOUCH_CLEAR,
+  } satisfies SourceState;
+}
+
+function poseSource() {
+  const angle = new SlouchDetector();
+  angle.slouchThresh = NECK_SLOUCH_THRESH;
+  return {
+    angle,
+    drift: new YDriftMeter(),
+    angleThresh: NECK_SLOUCH_THRESH,
+    angleClear: NECK_SLOUCH_CLEAR,
+  } satisfies SourceState;
+}
+
+/* ------------------------------ measurements ------------------------------ */
+
+/** face landmarks -> (pitch integral, drift); null angle if pose unavailable */
+function measureFace(
+  src: SourceState,
+  face: ReturnType<FaceLandmarker["detectForVideo"]>,
+  lm: NormalizedLandmark[],
+  now: number,
+) {
+  const p = headPose(face); // {roll, pitch, yaw} from transformation matrix
+  const integral = p ? src.angle.sample(-p.pitch, now).integral : 0; // -pitch grows when slouching
+  return { pose: p, integral, drift: src.drift.value(lm, FACE_DRIFT_IDS, now) };
+}
+
+/** pose landmarks -> (neck-tilt integral, face-point drift) */
+function measurePose(
+  src: SourceState,
+  poseLm: NormalizedLandmark[],
+  now: number,
+) {
+  const a = poseAngles(poseLm); // neck: + = leaning forward
+  return {
+    integral: src.angle.sample(a.neck, now).integral,
+    drift: src.drift.value(poseLm, POSE_DRIFT_IDS, now),
+  };
+}
+
+/** slouch verdict with hysteresis; same drift thresholds for both sources */
+function evaluate(
+  src: SourceState,
+  integral: number,
+  drift: DriftValue | null,
+  isSlouching: boolean,
+) {
+  const driftHit = !!drift && drift.integ > DRIFT_SLOUCH_THRESH;
+  if (!isSlouching && (integral > src.angleThresh || driftHit)) return true;
+  if (
+    isSlouching &&
+    integral < src.angleClear &&
+    (!drift || drift.integ < DRIFT_CLEAR)
+  )
+    return false;
+  return isSlouching;
+}
+
 /* --------------------------------- engine --------------------------------- */
 
-/** Mount once (App). Owns the face camera loop, publishes level into postureUiAtom. */
+/** Mount once (App). Owns the camera loop, publishes level into postureUiAtom.
+ *  Tries face landmarks first (cheaper, more precise); only falls back to the
+ *  pose model when no face is detected. */
 export function usePostureEngine() {
   const isRunning = useAtomValue(isRunningAtom);
   const setUi = useSetAtom(postureUiAtom);
@@ -96,39 +209,26 @@ export function usePostureEngine() {
         pose: null,
         integral: 0,
         drift: null,
+        source: null,
       }));
       return;
     }
     let cancelled = false;
-    let landmarker: FaceLandmarker | null = null;
-    let poseLandmarker: PoseLandmarker | null = null; // DEBUG: compare pitches
+    let faceLandmarker: FaceLandmarker | null = null;
+    let poseLandmarker: PoseLandmarker | null = null;
     let ownsCamera = false;
     let raf = 0;
     let video: HTMLVideoElement;
     let lastVideoTime = -1;
     let frame = 0;
-    const detector = new SlouchDetector();
     let isSlouching = false;
     let lastNotifAt = 0;
-    let integralVal = 0; // local mirror of integral (state is stale in this closure)
-    // history of 6-point samples for drift vector: [x,y,z] * 6 points
-    let history: { t: number; vals: number[] }[] = [];
-    let driftVal: PostureUi["drift"] = null;
-    // trapezoidal integral of drift magnitude over DRIFT_WINDOW_S
-    let magHist: { t: number; m: number }[] = [];
-    let smNeck = 0,
-      smNeckInit = false;
-    let neckHist: { t: number; neck: number }[] = [];
-    let neckMagHist: { t: number; m: number }[] = [];
-    const NECK_ALPHA = 0.25;
-    // low-pass (EMA) on the diff vector, smooths both mag and angle
-    const ALPHA = 0.25;
-    let smDy = 0,
-      smInit = false;
+    const face = faceSource();
+    const pose = poseSource();
 
     (async () => {
       try {
-        landmarker = await createFaceLandmarker();
+        faceLandmarker = await createFaceLandmarker();
         poseLandmarker = await createLandmarker("lite");
         if (cancelled) return;
         video = await acquireCamera();
@@ -138,7 +238,7 @@ export function usePostureEngine() {
           return;
         }
       } catch (err) {
-        console.error("face camera/model failed:", err);
+        console.error("camera/model failed:", err);
         setUi((ui) => ({ ...ui, isRunning: false }));
         return;
       }
@@ -148,159 +248,91 @@ export function usePostureEngine() {
         if (
           frame++ % 10 === 0 &&
           video.currentTime !== lastVideoTime &&
-          landmarker
+          faceLandmarker
         ) {
           lastVideoTime = video.currentTime;
-          const face = landmarker.detectForVideo(video, performance.now());
-          const lm = face.faceLandmarks?.[0];
-          const p = lm ? headPose(face) : null;
+          const now = performance.now();
 
-          // DEBUG: run pose model every frame and compare pitch estimates
-          const poseLm = poseLandmarker?.detectForVideo(video, performance.now())
-            .landmarks?.[0];
-          if (poseLm) {
-            const a = poseAngles(poseLm);
-            // neck diff vs lookback ago, EMA-smoothed, then integrated over window
-            // (same algorithm as the face drift below)
-            const now2 = performance.now();
-            neckHist.push({ t: now2, neck: a.neck });
-            const cutoff2 = now2 - DRIFT_LOOKBACK_S * 1000;
-            let pastNeck: number | null = null;
-            for (let j = neckHist.length - 1; j >= 0; j--) {
-              if (neckHist[j].t <= cutoff2) {
-                pastNeck = neckHist[j].neck;
-                break;
-              }
-            }
-            while (neckHist.length > 1 && neckHist[0].t < cutoff2 - 2000)
-              neckHist.shift();
-            let neckInteg: number | null = null;
-            if (pastNeck !== null) {
-              const d = a.neck - pastNeck;
-              if (!smNeckInit) {
-                smNeck = d;
-                smNeckInit = true;
-              } else smNeck += NECK_ALPHA * (d - smNeck);
-              neckMagHist.push({ t: now2, m: smNeck });
-              const winStart2 = now2 - DRIFT_WINDOW_S * 1000;
-              while (neckMagHist.length > 1 && neckMagHist[0].t < winStart2)
-                neckMagHist.shift();
-              let integ2 = 0;
-              for (let i = 1; i < neckMagHist.length; i++) {
-                const pa = neckMagHist[i - 1],
-                  pb = neckMagHist[i];
-                integ2 += ((pa.m + pb.m) / 2) * ((pb.t - pa.t) / 1000);
-              }
-              neckInteg = integ2;
-            }
-            console.log(
-              `neck: ${a.neck.toFixed(1)}° | d: ${pastNeck !== null ? smNeck.toFixed(2) : "(none)"} | integ: ${neckInteg !== null ? neckInteg.toFixed(2) : "(none)"}`,
-            );
-          }
+          // 1) face landmarks first — if we have them, never run the pose model
+          const faceRes = faceLandmarker.detectForVideo(video, now);
+          const faceLm = faceRes.faceLandmarks?.[0];
 
-          if (lm) {
-            // region sample points: forehead / cheeks / jaw, far apart per region
-            const now = performance.now();
-            const POINT_IDS = [
-              107,
-              336,
-              105,
-              334, // forehead inner + outer
-              50,
-              280,
-              116,
-              345, // cheekbone + lower cheeks
-              172,
-              397,
-              149,
-              378, // jaw + jawline
-            ];
-            // y only: net vertical drop of the 6 points (positive = down)
-            const vals = POINT_IDS.map((i) => lm[i].y);
-            history.push({ t: now, vals });
-            // newest sample at or before cutoff (null if none), like slouch detector
-            const cutoff = now - DRIFT_LOOKBACK_S * 1000;
-            let past: number[] | null = null;
-            for (let j = history.length - 1; j >= 0; j--) {
-              if (history[j].t <= cutoff) {
-                past = history[j].vals;
-                break;
-              }
-            }
-            while (history.length > 1 && history[0].t < cutoff - 2000)
-              history.shift();
-            if (past) {
-              // sum of per-point y diffs to lookback ago: max when all points
-              // move down together, cancels out when they move oppositely (rotation)
-              const dy = vals.reduce((s, v, k) => s + (v - past[k]), 0);
-              if (!smInit) {
-                smDy = dy;
-                smInit = true;
-              } else smDy += ALPHA * (dy - smDy);
-              driftVal = { dy: smDy, integ: smDy };
-              // integrate dy over window
-              magHist.push({ t: now, m: smDy });
-              const winStart = now - DRIFT_WINDOW_S * 1000;
-              while (magHist.length > 1 && magHist[0].t < winStart)
-                magHist.shift();
-              let integ = 0;
-              for (let i = 1; i < magHist.length; i++) {
-                const a = magHist[i - 1],
-                  b = magHist[i];
-                integ += ((a.m + b.m) / 2) * ((b.t - a.t) / 1000);
-              }
-              driftVal = { ...driftVal, integ };
+          let poseEuler: PostureUi["pose"];
+          let integral: number;
+          let drift: DriftValue | null;
+          let source: PostureUi["source"];
+
+          if (faceLm) {
+            const m = measureFace(face, faceRes, faceLm, now);
+            poseEuler = m.pose;
+            integral = m.integral;
+            drift = m.drift;
+            source = "face";
+          } else {
+            // 2) no face -> fall back to pose landmarks
+            face.angle.reset(); // never mix face/pose histories
+            face.drift.reset();
+            const poseLm = poseLandmarker?.detectForVideo(video, now)
+              .landmarks?.[0];
+            if (poseLm) {
+              const m = measurePose(pose, poseLm, now);
+              poseEuler = null; // no head-pose euler without a face
+              integral = m.integral;
+              drift = m.drift;
+              source = "pose";
             } else {
-              driftVal = null;
+              pose.angle.reset();
+              pose.drift.reset();
+              poseEuler = null;
+              integral = 0;
+              drift = null;
+              source = null;
             }
-          } else {
-            history = [];
-            driftVal = null;
-            magHist = [];
-            smInit = false;
           }
-          if (p) {
-            const r = detector.sample(p, performance.now());
-            // max integral across params (pitch, noseY), with hysteresis
-            const peak = Math.max(...r.integral);
-            integralVal = peak;
-            // drift slouch: enough sustained downward drift
-            const driftHit = !!driftVal && driftVal.integ > DRIFT_SLOUCH_THRESH;
-            if (!isSlouching && (peak > detector.slouchThresh || driftHit)) {
-              isSlouching = true;
-              const now = performance.now();
-              if (now - lastNotifAt >= MIN_NOTIFY_INTERVAL_S * 1000) {
-                lastNotifAt = now;
-                playNotif();
-                toast("Bad posture detected — sit up straight! 🧍");
-              } else {
-              }
-            } else if (
-              isSlouching &&
-              peak < SLOUCH_CLEAR &&
-              (!driftVal || driftVal.integ < DRIFT_CLEAR)
-            ) {
-              isSlouching = false;
-            }
-          } else {
-            detector.reset();
-            integralVal = 0;
+
+          isSlouching = evaluate(
+            source === "pose" ? pose : face,
+            integral,
+            drift,
+            isSlouching,
+          );
+
+          const label =
+            source === "face"
+              ? "face (pitch)"
+              : source === "pose"
+                ? "pose (neck)"
+                : "none";
+          console.log(
+            `${label} | angle integ: ${integral.toFixed(2)} | drift: ${drift ? drift.integ.toFixed(2) : "(none)"} | slouch: ${isSlouching}`,
+          );
+
+          if (
+            isSlouching &&
+            now - lastNotifAt >= MIN_NOTIFY_INTERVAL_S * 1000
+          ) {
+            lastNotifAt = now;
+            playNotif();
+            toast("Bad posture detected — sit up straight! 🧍");
           }
+
           const level: PostureLevel = isSlouching ? "slouch" : "ok";
           setUi((ui) =>
             ui.level === level &&
-            ui.hasFace === !!p &&
-            ui.pose === p &&
-            ui.integral === integralVal &&
-            ui.drift === driftVal
+            ui.hasFace === (source !== null) &&
+            ui.pose === poseEuler &&
+            ui.integral === integral &&
+            ui.drift === drift &&
+            ui.source === source
               ? ui
               : {
                   ...ui,
                   level,
-                  hasFace: !!p,
-                  pose: p,
-                  integral: integralVal,
-                  drift: driftVal,
+                  hasFace: source !== null,
+                  pose: poseEuler,
+                  integral,
+                  drift,
+                  source,
                 },
           );
         }
@@ -313,7 +345,7 @@ export function usePostureEngine() {
       cancelled = true;
       cancelAnimationFrame(raf);
       if (ownsCamera) releaseCamera();
-      landmarker?.close();
+      faceLandmarker?.close();
       poseLandmarker?.close();
     };
   }, [isRunning, setUi, playNotif]);
@@ -331,9 +363,9 @@ export function PostureWidget({ onOpen }: { onOpen: () => void }) {
         e.stopPropagation();
         onOpen();
       }}
-      className="button text-lg z-10"
+      className={`button text-lg z-10 ${level === "slouch" ? "!bg-red-600 !opacity-100" : ""}`}",
     >
-      {level === "slouch" ? "🥀" : "🌹"}
+      {level === "slouch" ? "🥀 !" : "🌹"}
     </button>
   );
 }
