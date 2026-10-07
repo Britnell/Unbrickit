@@ -68,6 +68,10 @@ export const playingPodcastAtom = atom<PlayingEpisode | null>(null);
 /** true while the global podcast audio is paused */
 export const playingPodcastPausedAtom = atom(false);
 
+/** true while the radio is playing */
+export const playingRadioAtom = atom(false);
+/** name of the currently playing radio station */
+export const playingRadioStationAtom = atom<string | null>(null);
 /** stored weather location, shared by weather page + widget */
 export const weatherLocationAtom = atomWithStorage<StoredLocation | null>(
   "weatherLocation",

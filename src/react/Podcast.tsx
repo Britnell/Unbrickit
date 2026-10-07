@@ -178,7 +178,7 @@ export default function PodcastPage() {
   return <AllEpisodes podcasts={podcasts} onManage={() => setView("manage")} />;
 }
 
-function PlayIcon({ size = 24 }: { size?: number }) {
+export function PlayIcon({ size = 24 }: { size?: number }) {
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor">
       <path d="M6 3.5v17a1 1 0 0 0 1.53.85l13-8.5a1 1 0 0 0 0-1.7l-13-8.5A1 1 0 0 0 6 3.5Z" />
@@ -186,7 +186,7 @@ function PlayIcon({ size = 24 }: { size?: number }) {
   );
 }
 
-function PauseIcon() {
+export function PauseIcon() {
   return (
     <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
       <path d="M7 4h4v16H7zM13 4h4v16h-4z" />
@@ -194,7 +194,7 @@ function PauseIcon() {
   );
 }
 
-function StopIcon() {
+export function StopIcon() {
   return (
     <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
       <rect x="5" y="5" width="14" height="14" rx="2" />

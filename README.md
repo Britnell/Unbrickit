@@ -6,6 +6,7 @@
 -[x] jotai for pomodoro, tracker + chime
 -[x] one clock tick per app, not 3 / use jotai or so atomic
 -[x] PWA
+-[ ] daylight cols 9:30 both are same red
 
 ## OLD
 

@@ -8,7 +8,7 @@ import SeatingPage, { SeatingWidget, useSeatingEngine } from "./Seating";
 import Chime, { useChime } from "./Chime";
 import PosturePage, { PostureWidget, usePostureEngine } from "./Posture";
 import PodcastPage, { PodcastWidget } from "./Podcast";
-import RadioPage from "./Radio";
+import RadioPage, { RadioWidget } from "./Radio";
 import WeatherPage, { WeatherWidget, useWeatherEngine } from "./Weather";
 import {
   paletteAtom,
@@ -17,6 +17,7 @@ import {
   playingPodcastAtom,
   playingPodcastPausedAtom,
   weatherWidgetAtom,
+  playingRadioAtom,
 } from "./atoms";
 import { useLocalStorage } from "./useLocalStorage";
 
@@ -180,6 +181,7 @@ function ClockPage({
 }) {
   const system = useSystem();
   const playingPodcast = useAtomValue(playingPodcastAtom);
+  const playingRadio = useAtomValue(playingRadioAtom);
   const podcastPaused = useAtomValue(playingPodcastPausedAtom);
   const showWeatherWidget = useAtomValue(weatherWidgetAtom);
 
@@ -213,6 +215,12 @@ function ClockPage({
           {!podcastPaused && playingPodcast && (
             <PodcastWidget onOpen={() => setMenu("podcast")} />
           )}
+          {playingRadio && <RadioWidget onOpen={() => setMenu("radio")} />}
+        </div>
+      )}
+
+      {!menu && !overlayOpen && (
+        <div className="absolute bottom-2 right-2 flex gap-2 pointer-events-auto">
           <PomodoroWidget pomo={pomo} onOpen={() => setMenu("pomodoro")} />
           <SeatingWidget onOpen={() => setMenu("seating")} />
           <PostureWidget onOpen={() => setMenu("posture")} />

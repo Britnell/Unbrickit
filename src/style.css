@@ -20,7 +20,7 @@
   input[type='time'],
   input[type='password'],
   select {
-    @apply px-2 py-[0.5rem] rounded-md bg-white text-black focus:outline-none focus:ring-1 focus:ring-black;
+    @apply px-2 py-[0.5rem] rounded-md bg-white text-black border border-gray-300 shadow-sm focus:outline-none focus:ring-1 focus:ring-black;
   }
 }
 

@@ -179,12 +179,14 @@ export default function PomodoroPage({ pomo }: { pomo: Pomodoro }) {
   return (
     <>
       <h2 className="text-2xl mb-2 text-center">
-        {mode === "focus" ? "Work" : "Break"}
+        {isRunning ? (mode === "focus" ? "Work" : "Break") : "Pomodoro"}
       </h2>
 
-      <span className="text-6xl font-bold tracking-wider mb-4">
-        {formatMs(remaining)}
-      </span>
+      {isRunning && (
+        <span className="text-6xl font-bold tracking-wider mb-4">
+          {formatMs(remaining)}
+        </span>
+      )}
 
       {!isRunning && (
         <div className="flex gap-4 mb-4">
