@@ -11,19 +11,13 @@
 
 - [x] timer on small screen
 - [ ] radio sleep mode
-- [ ] pomodoro timer
 - [ ] dont chime at night
 - [/] add vibration to chime & timer
-- [x] alarm: chime, speak, vibrate
-- [x] podcast? DI Discs
-- [ ] weather
-- [ ] spotify api - control / play music?
+- [ ] spotify api - control music / start playlists? / playback sdk?
 - [ ] canvas animated background
 - [ ] analog & other clock?
 - [ ] usb - HW buttons ? what for?
 - [x] web speech api
-- [ ] debug on ios
-- [ ] dont show voices dropdown when no voices to select
 - [ ] tiny desk? https://www.youtube.com/watch?v=kfUcI82SZv4&list=PL1B627337ED6F55F0
 
 **auth**

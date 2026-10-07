@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import { clockTimeAtom } from "./atoms";
 import { atomWithStorage } from "jotai/utils";
@@ -7,7 +6,10 @@ import { createLandmarker } from "./poseLandmarker";
 import { acquireCamera, releaseCamera } from "./camera";
 import { LandmarkOneEuro } from "./filter";
 import { useNotificationSound } from "./Chime";
-import type { PoseLandmarker, NormalizedLandmark } from "@mediapipe/tasks-vision";
+import type {
+  PoseLandmarker,
+  NormalizedLandmark,
+} from "@mediapipe/tasks-vision";
 
 const POS_KEY = "seating-position";
 const HOURS_KEY = "seating-hours";
@@ -134,7 +136,8 @@ function createSeatTracker() {
     const changed = next !== seated;
     seated = next;
 
-    if (good || changed) return { seated, distance: seated ? frame.distance : 1 };
+    if (good || changed)
+      return { seated, distance: seated ? frame.distance : 1 };
     return null;
   };
 }
@@ -361,8 +364,15 @@ export function useSeatingEngine() {
           if (video.currentTime !== lastVideoTime && landmarker) {
             lastVideoTime = video.currentTime;
             const now = performance.now();
-            const landmarks = landmarker.detectForVideo(video, now).landmarks ?? [];
-            const result = evaluateFrame(landmarks, smoother, calibRef.current, tracker, now);
+            const landmarks =
+              landmarker.detectForVideo(video, now).landmarks ?? [];
+            const result = evaluateFrame(
+              landmarks,
+              smoother,
+              calibRef.current,
+              tracker,
+              now,
+            );
             if (result.points) pointsRef.current = result.points;
             if (result.seat) {
               setSeated(result.seat.seated);
@@ -417,7 +427,6 @@ export function useSeatingEngine() {
     if (chimedForRef.current !== seatedSince) {
       chimedForRef.current = seatedSince;
       playNotif();
-      toast(`You've been seated for ${reminderMinutes} min — time to move! 🪑`);
     }
   }, [overdue, seatedSince, playNotif]);
 
@@ -436,10 +445,15 @@ export function useSeatingEngine() {
 
 /* --------------------------------- views ---------------------------------- */
 
+function widgetLabel(seated: boolean, overdue: boolean, seatedMs: number) {
+  if (!seated) return "🕳️";
+  if (overdue) return "🪑 time's up";
+  return `🪑 ${Math.floor(seatedMs / 60000)}m`;
+}
+
 /** corner widget shown on clock page while seating is active */
 export function SeatingWidget({ onOpen }: { onOpen: () => void }) {
-  const { isRunning, seated, overdue, seatedMs } =
-    useAtomValue(seatingUiAtom);
+  const { isRunning, seated, overdue, seatedMs } = useAtomValue(seatingUiAtom);
   if (!isRunning) return null;
   return (
     <button
@@ -449,12 +463,7 @@ export function SeatingWidget({ onOpen }: { onOpen: () => void }) {
       }}
       className="button text-lg z-10"
     >
-      {seated ? "🪑" : "🕳️"}{" "}
-      {overdue
-        ? "!"
-        : seated
-          ? Math.floor(seatedMs / 60000) + "m"
-          : ""}
+      {widgetLabel(seated, overdue, seatedMs)}
     </button>
   );
 }
@@ -470,53 +479,50 @@ export default function SeatingPage() {
 
   return (
     <div className="flex flex-row flex-wrap w-max mx-auto gap-2 max-h-[calc(100svh-5rem)]">
-    <div className="flex flex-col min-w-[200px]">
-                    {isRunning && !seated && (
-            <div className="mb-2 bg-white/30 px-2 py-1 rounded text-center">
-              <div className="text-4xl">🕳️</div>
-              <div className="text-lg">Not at desk</div>
-              <div className="text-3xl tabular-nums">
-                0<span className="text-lg text-gray-500"> min</span>
-              </div>
+      <div className="flex flex-col min-w-[200px]">
+        {isRunning && !seated && (
+          <div className="mb-2 bg-white/30 px-2 py-1 rounded text-center">
+            <div className="text-4xl">🕳️</div>
+            <div className="text-lg">Not at desk</div>
+            <div className="text-3xl tabular-nums">
+              0<span className="text-lg text-gray-500"> min</span>
             </div>
-          )}
-
-          {isRunning && seated && (
-            <div className="mb-2 bg-white/30 px-2 py-1 rounded text-center">
-              <div className="text-4xl">🪑</div>
-              <div className="text-lg">At desk</div>
-              <div className="text-3xl tabular-nums">
-                {Math.floor(seatedMs / 60000)}:
-                {String(Math.floor((seatedMs % 60000) / 1000)).padStart(
-                  2,
-                  "0",
-                )}
-                <span className="text-lg text-gray-500"> min</span>
-              </div>
-            </div>
-          )}
-
-          <div className="mb-2 text-lg tabular-nums">
-            {seatedMinutesToday >= 60 && (
-              <>Total today: {Math.floor(seatedMinutesToday / 60)}h{" "}
-              {seatedMinutesToday % 60}m</>
-            )}
-            {seatedMinutesToday < 60 && <>Total today: {seatedMinutesToday}m</>}
           </div>
+        )}
 
-          <button
-            onClick={isRunning ? stop : start}
-            className="button mb-2 w-full"
-          >
-            {isRunning ? "Stop" : "Start"}
-          </button>
+        {isRunning && seated && (
+          <div className="mb-2 bg-white/30 px-2 py-1 rounded text-center">
+            <div className="text-4xl">🪑</div>
+            <div className="text-lg">At desk</div>
+            <div className="text-3xl tabular-nums">
+              {Math.floor(seatedMs / 60000)}:
+              {String(Math.floor((seatedMs % 60000) / 1000)).padStart(2, "0")}
+              <span className="text-lg text-gray-500"> min</span>
+            </div>
+          </div>
+        )}
 
-          {overdue && (
-            <div className="mb-2 text-lg">⏰ Time for a break!</div>
+        <div className="mb-2 text-lg tabular-nums">
+          {seatedMinutesToday >= 60 && (
+            <>
+              Total today: {Math.floor(seatedMinutesToday / 60)}h{" "}
+              {seatedMinutesToday % 60}m
+            </>
           )}
+          {seatedMinutesToday < 60 && <>Total today: {seatedMinutesToday}m</>}
         </div>
 
-        {isRunning && (
+        <button
+          onClick={isRunning ? stop : start}
+          className="button mb-2 w-full"
+        >
+          {isRunning ? "Stop" : "Start"}
+        </button>
+
+        {overdue && <div className="mb-2 text-lg">⏰ Time for a break!</div>}
+      </div>
+
+      {isRunning && (
         <div className="flex flex-col min-w-[200px] p-2">
           <label className="text-sm self-start">Seating reminder</label>
           <select
@@ -538,14 +544,11 @@ export default function SeatingPage() {
             value={Math.max(0, Math.floor((1 - distance) * 5) / 5)}
           ></progress>
 
-          <button
-            onClick={capture}
-            className="button mt-2 w-full text-sm"
-          >
+          <button onClick={capture} className="button mt-2 w-full text-sm">
             Set camera position
           </button>
         </div>
-        )}
+      )}
     </div>
   );
 }
