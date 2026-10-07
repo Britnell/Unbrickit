@@ -3,6 +3,9 @@ import { toast } from "sonner";
 import { atom, useAtomValue, useSetAtom } from "jotai";
 import type { FaceLandmarker } from "@mediapipe/tasks-vision";
 import { createFaceLandmarker, headPose } from "./face";
+import { createLandmarker } from "./poseLandmarker";
+import { poseHeadAngles } from "./headFromPose";
+import type { PoseLandmarker } from "@mediapipe/tasks-vision";
 import { SlouchDetector } from "./postureDetect";
 import { acquireCamera, releaseCamera } from "./camera";
 import { useNotificationSound } from "./Chime";
@@ -98,11 +101,13 @@ export function usePostureEngine() {
     }
     let cancelled = false;
     let landmarker: FaceLandmarker | null = null;
+    let poseLandmarker: PoseLandmarker | null = null; // DEBUG: compare pitches
     let ownsCamera = false;
     let raf = 0;
     let video: HTMLVideoElement;
     let lastVideoTime = -1;
     let frame = 0;
+    let facePitchBase: number | null = null; // DEBUG: face pitch baseline
     const detector = new SlouchDetector();
     let isSlouching = false;
     let lastNotifAt = 0;
@@ -120,6 +125,7 @@ export function usePostureEngine() {
     (async () => {
       try {
         landmarker = await createFaceLandmarker();
+        poseLandmarker = await createLandmarker("lite");
         if (cancelled) return;
         video = await acquireCamera();
         ownsCamera = true;
@@ -144,6 +150,22 @@ export function usePostureEngine() {
           const face = landmarker.detectForVideo(video, performance.now());
           const lm = face.faceLandmarks?.[0];
           const p = lm ? headPose(face) : null;
+
+          // DEBUG: run pose model every frame and compare pitch estimates
+          const poseLm = poseLandmarker?.detectForVideo(video, performance.now())
+            .landmarks?.[0];
+          if (poseLm) {
+            let faceDrift: number | undefined;
+            if (p) {
+              if (facePitchBase === null) facePitchBase = p.pitch;
+              faceDrift = p.pitch - facePitchBase;
+            }
+            const pose = poseHeadAngles(poseLm);
+            console.log(
+              `pitch face: ${faceDrift !== undefined ? faceDrift.toFixed(1) : "(no face)"}° | pitch pose: ${pose.toFixed(1)}°`,
+            );
+          }
+
           if (lm) {
             // region sample points: forehead / cheeks / jaw, far apart per region
             const now = performance.now();
@@ -260,6 +282,7 @@ export function usePostureEngine() {
       cancelAnimationFrame(raf);
       if (ownsCamera) releaseCamera();
       landmarker?.close();
+      poseLandmarker?.close();
     };
   }, [isRunning, setUi, playNotif]);
 }
