@@ -214,7 +214,7 @@ export function PostureWidget({ onOpen }: { onOpen: () => void }) {
         e.stopPropagation();
         onOpen();
       }}
-      className={`button text-lg z-10 ${level === "slouch" ? "!bg-red-300/70 !opacity-100" : ""}`}
+      className={`button button-glass text-lg z-10 ${level === "slouch" ? "!bg-red-300/70 !opacity-100" : ""}`}
     >
       {!hasFace ? "🕳️" : level === "slouch" ? "🥀 !" : "🌹"}
     </button>

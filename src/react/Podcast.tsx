@@ -536,7 +536,7 @@ export function PodcastWidget({ onOpen }: { onOpen: () => void }) {
   if (!episode) return null;
   return (
     <button
-      className="button flex items-center gap-1"
+      className="button button-glass flex items-center gap-1"
       onClick={onOpen}
       title={episode.title ?? "Podcast"}
     >

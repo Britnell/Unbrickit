@@ -9,8 +9,9 @@
 
   /* Translucent variant for buttons overlaid on the home-screen clock */
   .button-glass {
-    @apply bg-white/60 border-transparent shadow-none hover:bg-white/85;
+    @apply bg-white/40 border-transparent shadow-none hover:bg-white/60;
   }
+
 }
 
 @layer base {

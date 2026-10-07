@@ -157,7 +157,7 @@ export function WeatherWidget({ onOpen }: { onOpen: () => void }) {
   const weather = useAtomValue(weatherAtom);
   if (!weather) return null;
   return (
-    <button className="button" onClick={onOpen}>
+    <button className="button button-glass" onClick={onOpen}>
       <span className="flex items-center gap-1">
         <span className="text-lg">{weather.weatherEmoji}</span>
         <span className="font-bold">{Math.round(weather.temperature)}°</span>
