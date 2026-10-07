@@ -8,6 +8,7 @@ import SeatingPage, { SeatingWidget, useSeatingEngine } from "./Seating";
 import Chime, { useChime } from "./Chime";
 import PosturePage, { PostureWidget, usePostureEngine } from "./Posture";
 import PodcastPage, { PodcastWidget } from "./Podcast";
+import RadioPage from "./Radio";
 import WeatherPage, { WeatherWidget, useWeatherEngine } from "./Weather";
 import {
   paletteAtom,
@@ -114,6 +115,7 @@ const menuTitles = {
   chime: "🔔 Chime",
   podcast: "🎙️ Podcasts",
   weather: "🌤️ Weather",
+  radio: "📻 Radio",
 } as const;
 
 type MenuViewName = keyof typeof menuTitles;
@@ -158,6 +160,7 @@ function MenuView({
       {view === "posture" && <PosturePage />}
       {view === "podcast" && <PodcastPage />}
       {view === "weather" && <WeatherPage />}
+      {view === "radio" && <RadioPage />}
     </>
   );
 }
@@ -181,8 +184,9 @@ function ClockPage({
   const showWeatherWidget = useAtomValue(weatherWidgetAtom);
 
   const menuItems = {
-    pomodoro: "🍅 Pomodoro",
     podcast: "🎙️ Podcasts",
+    radio: "📻 Radio",
+    pomodoro: "🍅 Pomodoro",
     weather: "🌤️ Weather",
     posture: "🧍 Posture",
     seating: "🪑 Seating",
@@ -258,7 +262,7 @@ function ClockPage({
               />
             ) : (
               <ul className="grid grid-cols-2 gap-2">
-                <div></div>
+                {/*<div></div>*/}
                 {(Object.entries(menuItems) as [MenuViewName, string][]).map(
                   ([go, label]) => (
                     <li key={label}>
