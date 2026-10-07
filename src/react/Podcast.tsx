@@ -237,7 +237,8 @@ function EpisodePlayer() {
 
   useEffect(() => {
     const onTime = () => setCurrentTime(audio.currentTime);
-    const onMeta = () => setAudioDuration(isFinite(audio.duration) ? audio.duration : null);
+    const onMeta = () =>
+      setAudioDuration(isFinite(audio.duration) ? audio.duration : null);
     audio.addEventListener("timeupdate", onTime);
     audio.addEventListener("loadedmetadata", onMeta);
     return () => {
@@ -275,8 +276,8 @@ function EpisodePlayer() {
 
   return (
     <div className="flex flex-col items-center gap-3 py-4">
-      <p className="text-center px-2">
-        <span className="font-bold">{episode.title}</span>
+      <p className="text-center px-2 max-w-[60ch]">
+        <span className="font-bold line-clamp-2 max-w-64">{episode.title}</span>
         <span className="text-sm opacity-60">
           &nbsp;- {episode.podcastName}
         </span>
@@ -384,7 +385,7 @@ function AllEpisodes({
               <img src={ep.img} alt="" className="w-10 h-10 rounded shrink-0" />
             )}
             <div className="min-w-0">
-              <div className="font-medium truncate">{ep.title}</div>
+              <div className="font-medium line-clamp-2 max-w-64">{ep.title}</div>
               <div className="text-xs opacity-60">{ep.podcastName}</div>
               <div className="text-xs opacity-60">
                 {formatDate(ep.date)}
