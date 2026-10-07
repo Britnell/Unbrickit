@@ -22,6 +22,8 @@ const DRIFT_SLOUCH_THRESH = 2.6;
 const DRIFT_CLEAR = 0.7;
 // don't notify (sound/toast) more often than this, even on real slouches
 const MIN_NOTIFY_INTERVAL_S = 60;
+// consecutive sampled frames with no face before we report "not detected"
+const NO_FACE_DEBOUNCE = 10;
 const RUNNING_KEY = "posture-running";
 
 /* -------------------------------- landmarks ------------------------------- */
@@ -169,6 +171,9 @@ export function usePostureEngine() {
     let lastNotifAt = 0;
     const angle = angleDetector();
     const driftMeter = new YDriftMeter();
+    // debounce: face must be missing this many sampled frames in a row before
+    // we treat it as "user not detected" (single dropped frames are ignored)
+    let noFaceFrames = 0;
 
     (async () => {
       try {
@@ -198,6 +203,8 @@ export function usePostureEngine() {
 
           const faceRes = faceLandmarker.detectForVideo(video, now);
           const faceLm = faceRes.faceLandmarks?.[0];
+          noFaceFrames = faceLm ? 0 : noFaceFrames + 1;
+          const detected = noFaceFrames < NO_FACE_DEBOUNCE;
 
           let poseEuler: PostureUi["pose"];
           let integral: number;
@@ -227,10 +234,12 @@ export function usePostureEngine() {
             toast("Bad posture detected — sit up straight! 🧍");
           }
 
-          const level: PostureLevel = isSlouching ? "slouch" : "ok";
+          if (!detected) isSlouching = false;
+
+          const level: PostureLevel = detected && isSlouching ? "slouch" : "ok";
           setUi((ui) =>
             ui.level === level &&
-            ui.hasFace === !!faceLm &&
+            ui.hasFace === detected &&
             ui.pose === poseEuler &&
             ui.integral === integral &&
             ui.drift === drift
@@ -238,7 +247,7 @@ export function usePostureEngine() {
               : {
                   ...ui,
                   level,
-                  hasFace: !!faceLm,
+                  hasFace: detected,
                   pose: poseEuler,
                   integral,
                   drift,
@@ -263,7 +272,7 @@ export function usePostureEngine() {
 
 /** corner widget shown on clock page while posture monitoring is active */
 export function PostureWidget({ onOpen }: { onOpen: () => void }) {
-  const { isRunning, level } = useAtomValue(postureUiAtom);
+  const { isRunning, level, hasFace } = useAtomValue(postureUiAtom);
   if (!isRunning) return null;
   return (
     <button
@@ -273,7 +282,7 @@ export function PostureWidget({ onOpen }: { onOpen: () => void }) {
       }}
       className={`button text-lg z-10 ${level === "slouch" ? "!bg-red-600 !opacity-100" : ""}`}
     >
-      {level === "slouch" ? "🥀 !" : "🌹"}
+      {!hasFace ? "🕳️" : level === "slouch" ? "🥀 !" : "🌹"}
     </button>
   );
 }
@@ -287,10 +296,15 @@ export default function PosturePage() {
     <div className="text-center py-8 flex flex-col gap-4">
       {isRunning && (
         <div className="flex flex-col items-center gap-2 mx-auto w-48 py-4 rounded bg-white/30">
-          <span className="text-6xl">{level === "slouch" ? "🥀" : "🌹"}</span>
+          <span className="text-6xl">
+            {!hasFace ? "🕳️" : level === "slouch" ? "🥀" : "🌹"}
+          </span>
           <span className="text-2xl font-bold tracking-wider">
-            {level === "slouch" ? "SLOUCHING" : "OK"}
-            {hasFace ? "" : " (no face)"}
+            {!hasFace
+              ? "NOT DETECTED"
+              : level === "slouch"
+                ? "SLOUCHING"
+                : "OK"}
           </span>
         </div>
       )}
