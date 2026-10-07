@@ -367,7 +367,7 @@ export function SeatingWidget({ onOpen }: { onOpen: () => void }) {
         e.stopPropagation();
         onOpen();
       }}
-      className="button text-lg z-10"
+      className="button button-glass text-lg z-10"
     >
       {widgetLabel(seated, overdue, seatedMs)}
     </button>

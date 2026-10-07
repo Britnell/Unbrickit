@@ -154,7 +154,7 @@ export function PomodoroWidget({
         e.stopPropagation();
         onOpen();
       }}
-      className="button text-lg z-10"
+      className="button button-glass text-lg z-10"
     >
       🍅 {label}
     </button>

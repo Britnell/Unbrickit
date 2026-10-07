@@ -73,7 +73,7 @@ function HelperButtons({ system }: { system: ReturnType<typeof useSystem> }) {
   return (
     <div className="absolute right-2 top-2 flex items-center gap-2 z-20">
       <button
-        className="button grid place-items-center text-lg"
+        className="button button-glass grid place-items-center text-lg"
         onClick={(e) => {
           e.stopPropagation();
           window.location.reload();
@@ -82,7 +82,7 @@ function HelperButtons({ system }: { system: ReturnType<typeof useSystem> }) {
         ⟳
       </button>
       <button
-        className="button grid place-items-center text-lg"
+        className="button button-glass grid place-items-center text-lg"
         onClick={(e) => {
           e.stopPropagation();
           system.toggleFullscreen();
@@ -91,7 +91,7 @@ function HelperButtons({ system }: { system: ReturnType<typeof useSystem> }) {
         {system.fullscreen ? "⤡" : "⛶"}
       </button>
       <button
-        className="button grid place-items-center text-lg"
+        className="button button-glass grid place-items-center text-lg"
         onClick={(e) => {
           e.stopPropagation();
           system.toggleScreenLock();
@@ -221,7 +221,7 @@ function ClockPage({
             e.stopPropagation();
             setMenu(true);
           }}
-          className="button absolute bottom-2 left-1/2 -translate-x-1/2 !bg-transparent"
+          className="button button-glass absolute bottom-2 left-1/2 -translate-x-1/2 !bg-transparent"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
