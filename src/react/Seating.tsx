@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import { clockTimeAtom } from "./atoms";
+import { useEngine } from "./useEngine";
 import { atomWithStorage } from "jotai/utils";
 import { headPose } from "./face";
 import { subscribeFace } from "./faceStream";
@@ -198,15 +199,8 @@ export const seatingUiAtom = atom<SeatingUi>({
   calibrated: localStorage.getItem(POS_KEY) !== null,
 });
 
-// start/stop actions: just flip isRunning in the snapshot, the engine reacts
-export const startSeatingAtom = atom(null, (_get, set) => {
-  set(seatingUiAtom, (ui) => ({ ...ui, isRunning: true }));
-  sessionStorage.setItem(RUNNING_KEY, "1");
-});
-export const stopSeatingAtom = atom(null, (_get, set) => {
-  set(seatingUiAtom, (ui) => ({ ...ui, isRunning: false }));
-  sessionStorage.removeItem(RUNNING_KEY);
-});
+// start/stop handled by the shared useEngine hook
+
 
 // shared between engine and capture so the page can calibrate
 // plain module singletons (NOT useRef — that's a hook and can't run at module scope)
@@ -232,8 +226,8 @@ export function useCaptureSeat() {
  */
 export function useSeatingEngine() {
   const setHoursData = useSetAtom(hoursAtom);
-  const isRunning = useAtomValue(seatingUiAtom).isRunning; // toggled by page buttons
   const setUi = useSetAtom(seatingUiAtom);
+  const { isRunning } = useEngine(seatingUiAtom, RUNNING_KEY);
   const now = useAtomValue(clockTimeAtom);
   const hoursDate = useAtomValue(hoursAtom).date;
   const reminderMinutes = useAtomValue(reminderAtom);
@@ -276,19 +270,6 @@ export function useSeatingEngine() {
         : freshHours(),
     );
   }, [setHoursData]);
-
-  // restart after reload if the user had it running and camera permission persists
-  useEffect(() => {
-    if (!sessionStorage.getItem(RUNNING_KEY)) return;
-    navigator.permissions
-      .query({ name: "camera" as PermissionName })
-      .then((p) => {
-        if (p.state === "granted") setUi((ui) => ({ ...ui, isRunning: true }));
-      })
-      .catch(() => {
-        /* permissions API unsupported: don't auto-start */
-      });
-  }, [setUi]);
 
   // shared face stream: presence + size/rotation checks per frame
   useEffect(() => {
@@ -396,8 +377,7 @@ export function SeatingWidget({ onOpen }: { onOpen: () => void }) {
 export default function SeatingPage() {
   const { isRunning, seated, seatedMs, distance, overdue, calibrated } =
     useAtomValue(seatingUiAtom);
-  const start = useSetAtom(startSeatingAtom);
-  const stop = useSetAtom(stopSeatingAtom);
+  const { start, stop } = useEngine(seatingUiAtom, RUNNING_KEY);
   const capture = useCaptureSeat();
   const [reminder, setReminder] = useAtom(reminderAtom);
   const seatedMinutesToday = useAtomValue(seatedMinutesTodayAtom);

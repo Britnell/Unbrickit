@@ -10,6 +10,7 @@ import { subscribeFace } from "./faceStream";
 import { SlouchDetector } from "./postureDetect";
 import { YDriftMeter, type DriftValue } from "./drift";
 import { useNotificationSound } from "./Chime";
+import { useEngine } from "./useEngine";
 
 /* ------------------------------- thresholds ------------------------------- */
 
@@ -68,26 +69,6 @@ export const postureUiAtom = atom<PostureUi>({
   drift: null,
 });
 
-/** engine subscribes to this only — postureUiAtom updates at ~6Hz from the
- *  detection loop, and re-rendering on each write would churn the effect below */
-const isRunningAtom = atom((get) => get(postureUiAtom).isRunning);
-
-export const startPostureAtom = atom(null, (_get, set) => {
-  set(postureUiAtom, (ui) => ({ ...ui, isRunning: true }));
-  sessionStorage.setItem(RUNNING_KEY, "1");
-});
-export const stopPostureAtom = atom(null, (_get, set) => {
-  set(postureUiAtom, (ui) => ({
-    ...ui,
-    isRunning: false,
-    hasFace: false,
-    pose: null,
-    integral: 0,
-    drift: null,
-  }));
-  sessionStorage.removeItem(RUNNING_KEY);
-});
-
 /* ------------------------------ detector state ----------------------------- */
 
 const angleDetector = () => {
@@ -132,20 +113,9 @@ function evaluate(
 
 /** Mount once (App). Owns the camera loop, publishes level into postureUiAtom. */
 export function usePostureEngine() {
-  const isRunning = useAtomValue(isRunningAtom);
   const setUi = useSetAtom(postureUiAtom);
+  const { isRunning } = useEngine(postureUiAtom, RUNNING_KEY);
   const playNotif = useNotificationSound();
-
-  // restart after reload if the user had it running and camera permission persists
-  useEffect(() => {
-    if (!sessionStorage.getItem(RUNNING_KEY)) return;
-    navigator.permissions
-      .query({ name: "camera" as PermissionName })
-      .then((p) => {
-        if (p.state === "granted") setUi((ui) => ({ ...ui, isRunning: true }));
-      })
-      .catch(() => {});
-  }, [setUi]);
 
   useEffect(() => {
     if (!isRunning) {
@@ -253,8 +223,7 @@ export function PostureWidget({ onOpen }: { onOpen: () => void }) {
 
 export default function PosturePage() {
   const { isRunning, level, hasFace } = useAtomValue(postureUiAtom);
-  const start = useSetAtom(startPostureAtom);
-  const stop = useSetAtom(stopPostureAtom);
+  const { start, stop } = useEngine(postureUiAtom, RUNNING_KEY);
 
   return (
     <div className="text-center py-8 flex flex-col gap-4">
