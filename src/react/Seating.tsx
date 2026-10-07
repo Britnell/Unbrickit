@@ -306,9 +306,9 @@ export function useSeatingEngine() {
       } catch (err) {
         console.error("[seating] detect failed:", err);
       }
-    });
+    }, () => setUi((ui) => ({ ...ui, isRunning: false })));
     return unsub;
-  }, [isRunning]);
+  }, [isRunning, setUi]);
 
   // counter starts when the user sits down, resets when they get up
   useEffect(() => {

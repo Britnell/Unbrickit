@@ -17,7 +17,7 @@ export type FaceFrame = {
 };
 type Listener = (frame: FaceFrame) => void;
 
-const listeners = new Set<Listener>();
+const listeners = new Map<Listener, (() => void) | undefined>();
 let landmarker: FaceLandmarker | null = null;
 let video: HTMLVideoElement | null = null;
 let raf = 0;
@@ -33,7 +33,19 @@ async function start() {
   starting = true;
   try {
     landmarker = await createFaceLandmarker();
+    // everyone left while we were loading: abort
+    if (listeners.size === 0) {
+      landmarker.close();
+      landmarker = null;
+      return;
+    }
     video = await acquireCamera();
+    if (listeners.size === 0) {
+      landmarker.close();
+      landmarker = null;
+      releaseCamera();
+      return;
+    }
     const loop = () => {
       if (listeners.size === 0 || !landmarker || !video) return;
       if (
@@ -44,7 +56,7 @@ async function start() {
         const now = performance.now();
         try {
           const result = landmarker.detectForVideo(video, now);
-          for (const l of listeners) l({ result, now });
+          for (const l of listeners.keys()) l({ result, now });
         } catch (err) {
           console.error("[faceStream] detect failed:", err);
         }
@@ -54,18 +66,12 @@ async function start() {
     raf = requestAnimationFrame(loop);
   } catch (err) {
     console.error("[faceStream] camera/model failed:", err);
-    // deliver an empty "no face" frame so subscribers degrade gracefully
-    const now = performance.now();
-    for (const l of listeners)
-      l({
-        result: {
-          faceLandmarks: [],
-          faceBlendshapes: [],
-          facialTransformationMatrixes: [],
-        },
-        now,
-      });
-    stop();
+    landmarker?.close();
+    landmarker = null;
+    video = null;
+    // let each subscriber reset its own UI (e.g. isRunning = false)
+    for (const onError of listeners.values()) onError?.();
+    listeners.clear();
   } finally {
     starting = false;
   }
@@ -75,15 +81,22 @@ function stop() {
   cancelAnimationFrame(raf);
   landmarker?.close();
   landmarker = null;
-  releaseCamera();
+  if (video) releaseCamera();
   video = null;
   lastVideoTime = -1;
   frameCount = 0;
 }
 
-/** Subscribe to shared face frames. Returns an unsubscribe function. */
-export function subscribeFace(listener: Listener): () => void {
-  listeners.add(listener);
+/**
+ * Subscribe to shared face frames. Returns an unsubscribe function.
+ * `onError` is called once if acquiring the camera/model failed, so the
+ * subscriber can reset its UI state.
+ */
+export function subscribeFace(
+  listener: Listener,
+  onError?: () => void,
+): () => void {
+  listeners.set(listener, onError);
   if (listeners.size === 1 && !landmarker) void start();
   return () => {
     listeners.delete(listener);

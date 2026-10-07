@@ -169,7 +169,8 @@ export function usePostureEngine() {
     // we treat it as "user not detected" (single dropped frames are ignored)
     let noFaceFrames = 0;
 
-    const unsub = subscribeFace(({ result: faceRes, now }) => {
+    const unsub = subscribeFace(
+      ({ result: faceRes, now }) => {
       if (cancelled) return;
       const faceLm = faceRes.faceLandmarks?.[0];
       noFaceFrames = faceLm ? 0 : noFaceFrames + 1;
@@ -222,7 +223,7 @@ export function usePostureEngine() {
               drift,
             },
       );
-    });
+    }, () => setUi((ui) => ({ ...ui, isRunning: false })));
 
     return () => {
       cancelled = true;
