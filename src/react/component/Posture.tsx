@@ -8,7 +8,7 @@ import type {
 import { headPose } from "../posture/face";
 import { subscribeFace, faceLoadingAtom } from "../posture/faceStream";
 import { SlouchDetector } from "../posture/postureDetect";
-import { YDriftMeter, type DriftValue } from "../drift";
+import { YDriftMeter, type DriftValue } from "../posture/drift";
 import { useNotificationSound } from "./Chime";
 import { useEngine } from "../posture/useEngine";
 
