@@ -18,7 +18,7 @@ import PosturePage, {
 } from "./component/Posture";
 import PodcastPage, { PodcastWidget } from "./component/Podcast";
 import RadioPage, { RadioWidget } from "./component/Radio";
-import ChatPage from "./component/Chat";
+import ChatPage, { ChatWidget } from "./component/Chat";
 import WeatherPage, {
   WeatherWidget,
   useWeatherEngine,
@@ -232,6 +232,7 @@ function ClockPage({
           {showWeatherWidget && (
             <WeatherWidget onOpen={() => setMenu("weather")} />
           )}
+          <ChatWidget onOpen={() => setMenu("chat")} />
           {!podcastPaused && playingPodcast && (
             <PodcastWidget onOpen={() => setMenu("podcast")} />
           )}
