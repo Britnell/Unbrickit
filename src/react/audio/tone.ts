@@ -1,26 +1,26 @@
-import { getRandom } from './helper';
+import { getRandom } from "../helper";
 
 const noteMap: Record<string, number> = {
   C: 0,
-  'C#': 1,
+  "C#": 1,
   Db: 1,
   D: 2,
-  'D#': 3,
+  "D#": 3,
   Eb: 3,
   E: 4,
   F: 5,
-  'F#': 6,
+  "F#": 6,
   Gb: 6,
   G: 7,
-  'G#': 8,
+  "G#": 8,
   Ab: 8,
   A: 9,
-  'A#': 10,
+  "A#": 10,
   Bb: 10,
   B: 11,
 };
 
-const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
 export interface Note {
   note: string;
@@ -31,9 +31,11 @@ let sharedCtx: AudioContext | null = null;
 
 export function getAudioContext(): AudioContext {
   if (!sharedCtx) {
-    sharedCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    sharedCtx = new (
+      window.AudioContext || (window as any).webkitAudioContext
+    )();
   }
-  if (sharedCtx.state === 'suspended') void sharedCtx.resume();
+  if (sharedCtx.state === "suspended") void sharedCtx.resume();
   return sharedCtx;
 }
 
@@ -56,7 +58,7 @@ export function playNotes(notes: Note[], staggerDelay = 0.1): void {
     const duration = note.duration || 2.0;
     const startTime = audioContext.currentTime + cumulativeTime;
 
-    if (note.note === '') {
+    if (note.note === "") {
       cumulativeTime += duration + staggerDelay;
       return;
     }
@@ -100,9 +102,9 @@ export function playNotes(notes: Note[], staggerDelay = 0.1): void {
 export function playChime(): void {
   playNotes(
     [
-      { note: 'C4', duration: 0.5 },
-      { note: 'E4', duration: 0.5 },
-      { note: 'G4', duration: 0.5 },
+      { note: "C4", duration: 0.5 },
+      { note: "E4", duration: 0.5 },
+      { note: "G4", duration: 0.5 },
     ],
     0.2,
   );
@@ -115,8 +117,8 @@ export function notify(): void {
     const gain = audioContext.createGain();
     osc.connect(gain);
     gain.connect(audioContext.destination);
-    osc.type = 'sine';
-    osc.frequency.value = noteToFrequency('A4');
+    osc.type = "sine";
+    osc.frequency.value = noteToFrequency("A4");
     const volume = 0.4;
     gain.gain.setValueAtTime(0, startTime);
     gain.gain.linearRampToValueAtTime(volume, startTime + 0.01);
@@ -131,12 +133,12 @@ export function notify(): void {
 export function playTimerBeep() {
   playNotes(
     [
-      { note: 'G4', duration: 0.7 },
-      { note: 'G4', duration: 0.7 },
-      { note: 'G4', duration: 0.7 },
-      { note: '', duration: 1.5 },
-      { note: 'G#4', duration: 0.6 },
-      { note: 'G#4', duration: 0.6 },
+      { note: "G4", duration: 0.7 },
+      { note: "G4", duration: 0.7 },
+      { note: "G4", duration: 0.7 },
+      { note: "", duration: 1.5 },
+      { note: "G#4", duration: 0.6 },
+      { note: "G#4", duration: 0.6 },
     ],
     0.2,
   );

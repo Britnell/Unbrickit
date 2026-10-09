@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useAtom, useAtomValue } from "jotai";
-import { playChime, randomChord } from "../../lib/tone";
+import { playChime, randomChord } from "../audio/tone";
 import { notificationSoundAtom } from "../atoms";
 import { titleCase } from "../state";
 
