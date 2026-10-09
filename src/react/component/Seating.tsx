@@ -4,7 +4,7 @@ import { clockTimeAtom } from "../lib/atoms";
 import { useEngine } from "../posture/useEngine";
 import { atomWithStorage } from "jotai/utils";
 import { headPose } from "../posture/face";
-import { subscribeFace, faceLoadingAtom } from "../posture/faceStream";
+import { subscribeFace, faceLoadingAtom, faceErrorAtom } from "../posture/faceStream";
 import { useNotificationSound } from "./Chime";
 import type {
   FaceLandmarker,
@@ -381,15 +381,23 @@ export default function SeatingPage() {
     useAtomValue(seatingUiAtom);
   const { start, stop } = useEngine(seatingUiAtom, RUNNING_KEY);
   const loading = useAtomValue(faceLoadingAtom);
+  const faceError = useAtomValue(faceErrorAtom);
   const capture = useCaptureSeat();
   const [reminder, setReminder] = useAtom(reminderAtom);
   const seatedMinutesToday = useAtomValue(seatedMinutesTodayAtom);
 
   return (
-    <div className="flex flex-row flex-wrap w-max mx-auto gap-2 max-h-[calc(100svh-5rem)]">
+    <div className="flex flex-row flex-wrap justify-center mx-auto gap-2 max-w-full max-h-[calc(100svh-5rem)]">
       <div className="flex flex-col min-w-[200px]">
+        {faceError && (
+          <div className="mb-2 bg-red-500/70 px-3 py-2 rounded text-center max-w-[280px]">
+            <div className="text-lg font-bold">Couldn't start camera</div>
+            <div className="text-sm">{faceError}</div>
+          </div>
+        )}
+
         {!calibrated && (
-          <div className="mb-2 bg-red-500/70 px-3 py-2 rounded text-center">
+          <div className="mb-2 bg-red-500/70 px-3 py-2 rounded text-center max-w-[280px]">
             <div className="text-2xl">⚠️</div>
             <div className="text-lg font-bold">Camera not calibrated</div>
             <div className="text-sm">
@@ -442,13 +450,14 @@ export default function SeatingPage() {
         {overdue && <div className="mb-2 text-lg">⏰ Time for a break!</div>}
       </div>
 
-      {isRunning && (
+      {(isRunning || !calibrated) && (
         <div className="flex flex-col min-w-[200px] p-2">
           <label className="text-sm self-start">Seating reminder</label>
           <select
             value={reminder}
             onChange={(e) => setReminder(Number(e.target.value))}
             className="mb-2 w-full text-sm"
+            disabled={!isRunning}
           >
             {reminderIntervals.map((i) => (
               <option key={i} value={i}>
@@ -464,7 +473,11 @@ export default function SeatingPage() {
             value={Math.max(0, Math.ceil((1 - distance) * 5) / 5)}
           ></progress>
 
-          <button onClick={capture} className="button mt-2 w-full text-sm">
+          <button
+            onClick={capture}
+            disabled={!isRunning}
+            className="button mt-2 w-full text-sm disabled:opacity-50"
+          >
             Set camera position
           </button>
         </div>
