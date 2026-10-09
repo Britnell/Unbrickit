@@ -32,12 +32,13 @@ export function playEpisode(ep: PlayingEpisode) {
   }
 }
 
-/** resume the current episode, or start the latest cached episode */
-export function startPodcast() {
+/** resume the current episode, or start the latest cached episode.
+ *  returns false when there is no current episode and no cached episodes */
+export function startPodcast(): boolean {
   const current = store.get(playingPodcastAtom);
   if (current) {
     audio.play().catch(() => {});
-    return;
+    return true;
   }
   // latest episode across all subscribed feeds from the episode cache
   const cache: Record<string, Episode[]> = (() => {
@@ -70,7 +71,11 @@ export function startPodcast() {
       (a, b) =>
         new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime(),
     );
-  if (eps.length) playEpisode(eps[0]);
+  if (eps.length) {
+    playEpisode(eps[0]);
+    return true;
+  }
+  return false;
 }
 
 export function stopPodcast() {

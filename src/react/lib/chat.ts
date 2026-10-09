@@ -3,6 +3,7 @@ import {
   playingPodcastAtom,
   playingPodcastPausedAtom,
   weatherAtom,
+  weatherLocationAtom,
 } from "../lib/atoms";
 import { playingRadioAtom, startRadio, stopRadio } from "./useRadio";
 import {
@@ -38,7 +39,9 @@ function podcastSentence(text: string): string {
     stopPodcast();
     return playing ? "Podcast stopped" : "No podcast is playing";
   }
-  if (!playing || paused) startPodcast();
+  if (!playing || paused) {
+    if (!startPodcast()) return "There are no podcasts";
+  }
   return playing && !paused ? "The podcast is already playing" : "Podcast on";
 }
 
@@ -56,7 +59,11 @@ function radioSentence(text: string): string {
 
 function weatherSentence(): string {
   const w = getDefaultStore().get(weatherAtom);
-  if (!w) throw new Error("weather not loaded");
+  if (!w) {
+    return getDefaultStore().get(weatherLocationAtom)
+      ? "Weather hasn't loaded yet"
+      : "No city selected";
+  }
   let text = `It's ${Math.round(w.temperature)} degrees, ${w.weatherText.toLowerCase()}`;
   text += `, with a high of ${Math.round(w.daily.tempMax)} and a low of ${Math.round(w.daily.tempMin)}`;
   if (w.daily.rainProbMax >= 30)
