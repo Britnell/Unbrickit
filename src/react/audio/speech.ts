@@ -1,28 +1,31 @@
-export function speakTime(hour: number, minutes: number, voice?: string): void {
-  if (!('speechSynthesis' in window)) return;
-
+export function timeText(hour: number, minutes: number): string {
   const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
   const nextHour = hour12 === 12 ? 1 : hour12 + 1;
-  let timeText = 'It is ';
+  let text = 'It is ';
 
   if (minutes === 0) {
-    timeText += `${hour12} o'clock`;
+    text += `${hour12} o'clock`;
   } else if (minutes === 15) {
-    timeText += `quarter past ${hour12}`;
+    text += `quarter past ${hour12}`;
   } else if (minutes === 30) {
-    timeText += `half past ${hour12}`;
+    text += `half past ${hour12}`;
   } else if (minutes === 45) {
-    timeText += `quarter to ${nextHour}`;
+    text += `quarter to ${nextHour}`;
   } else if (minutes < 40) {
     const mins = minutes === 1 ? 'minute' : 'minutes';
-    timeText += `${minutes} ${mins} past ${hour12}`;
+    text += `${minutes} ${mins} past ${hour12}`;
   } else {
     const minutesToNext = 60 - minutes;
     const mins = minutesToNext === 1 ? 'minute' : 'minutes';
-    timeText += `${minutesToNext} ${mins} to ${nextHour}`;
+    text += `${minutesToNext} ${mins} to ${nextHour}`;
   }
+  return text;
+}
 
-  const utterance = new SpeechSynthesisUtterance(timeText);
+export function speakTime(hour: number, minutes: number, voice?: string): void {
+  if (!('speechSynthesis' in window)) return;
+  const timeSpoken = timeText(hour, minutes);
+  const utterance = new SpeechSynthesisUtterance(timeSpoken);
   utterance.rate = 0.8;
   utterance.pitch = 1;
   utterance.volume = 1;

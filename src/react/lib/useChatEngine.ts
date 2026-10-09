@@ -20,7 +20,22 @@ import { startPodcast, stopPodcast } from "./usePodcast";
 import { duckMedia } from "./audioFeedback";
 import { notify } from "../audio/tone";
 
+import { timeText } from "../audio/speech";
+
 let engineMounted = false;
+
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+function ordinalDay(n: number): string {
+  const suffix =
+    n % 10 === 1 && n !== 11 ? "st"
+    : n % 10 === 2 && n !== 12 ? "nd"
+    : n % 10 === 3 && n !== 13 ? "rd"
+    : "th";
+  return `${n}${suffix}`;
+}
 
 /**
  * Global voice-chat engine: wakeword -> dictation -> reply (TTS).
@@ -45,7 +60,7 @@ export function useChatEngine() {
 
   /** execute a parsed { tool, action } and return the spoken reply */
   function runCommand(
-    tool: "podcast" | "radio" | "pomodoro" | "weather",
+    tool: "podcast" | "radio" | "pomodoro" | "weather" | "time" | "date",
     action: "start" | "stop",
   ): string {
     switch (tool) {
@@ -85,6 +100,16 @@ export function useChatEngine() {
         if (!weather)
           return hasCity ? "Weather hasn't loaded yet" : "No city selected";
         return weatherReply(weather);
+
+      case "time": {
+        const now = new Date();
+        return timeText(now.getHours(), now.getMinutes());
+      }
+
+      case "date": {
+        const now = new Date();
+        return `It is the ${ordinalDay(now.getDate())} of ${MONTHS[now.getMonth()]}`;
+      }
     }
   }
 
