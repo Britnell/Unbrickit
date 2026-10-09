@@ -1,16 +1,45 @@
 import { getDefaultStore } from "jotai";
-import { weatherAtom } from "../lib/atoms";
+import {
+  playingPodcastAtom,
+  playingPodcastPausedAtom,
+  weatherAtom,
+} from "../lib/atoms";
 import { playingRadioAtom, startRadio, stopRadio } from "./useRadio";
+import {
+  startPodcast,
+  stopPodcast,
+  pausePodcast,
+} from "./usePodcast";
 
 /** returns the spoken reply text */
 export function respond(transcript: string): string {
   const text = transcript.toLowerCase();
-  const reply = /\bradio\b/.test(text)
-    ? radioSentence(text)
+  const reply = /\bpodcast\b/.test(text)
+    ? podcastSentence(text)
+    : /\bradio\b/.test(text)
+      ? radioSentence(text)
     : /\bweather\b/.test(text)
       ? weatherSentence()
       : "I'm sorry dave, I'm afraid I can't do that.";
   return reply;
+}
+
+function podcastSentence(text: string): string {
+  const playing = getDefaultStore().get(playingPodcastAtom);
+  const paused = getDefaultStore().get(playingPodcastPausedAtom);
+  const wantsStop = /\b(stop|pause)\b/.test(text);
+
+  if (wantsStop) {
+    // "pause" keeps the episode + position, "stop" clears it
+    if (/\bpause\b/.test(text) && playing) {
+      pausePodcast();
+      return "Podcast paused";
+    }
+    stopPodcast();
+    return playing ? "Podcast stopped" : "No podcast is playing";
+  }
+  if (!playing || paused) startPodcast();
+  return playing && !paused ? "The podcast is already playing" : "Podcast on";
 }
 
 function radioSentence(text: string): string {

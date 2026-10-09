@@ -1,7 +1,8 @@
-import { getDefaultStore, useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
-import { playingPodcastAtom, playingPodcastPausedAtom } from "../lib/atoms";
+import { playingPodcastAtom } from "../lib/atoms";
 import { useLocalStorage } from "../useLocalStorage";
+import { usePodcast, playEpisode } from "../lib/usePodcast";
 
 export type Podcast = {
   id: number;
@@ -202,7 +203,6 @@ export function StopIcon() {
   );
 }
 
-/** single global audio element so playback survives menu close */
 function formatSeconds(s: number): string {
   if (!isFinite(s)) return "0:0";
   const h = Math.floor(s / 3600);
@@ -211,27 +211,8 @@ function formatSeconds(s: number): string {
   return `${h ? h + ":" : ""}${m}:${String(sec).padStart(2, "0")}`;
 }
 
-/** single global audio element so playback survives menu close.
- *  kept on window so Vite HMR reuses the same element instead of
- *  creating a second one and replaying from the start. */
-const globalAudio = window as typeof window & {
-  __podcastAudio?: HTMLAudioElement;
-};
-const audio = (globalAudio.__podcastAudio ??= new Audio());
-audio.preload = "none";
-
-const store = getDefaultStore();
-audio.addEventListener("play", () =>
-  store.set(playingPodcastPausedAtom, false),
-);
-audio.addEventListener("pause", () =>
-  store.set(playingPodcastPausedAtom, true),
-);
-audio.addEventListener("ended", () => store.set(playingPodcastAtom, null));
-
 function EpisodePlayer() {
-  const [episode, setEpisode] = useAtom(playingPodcastAtom);
-  const paused = useAtomValue(playingPodcastPausedAtom);
+  const { episode, paused, toggle, stop, audio } = usePodcast();
   const [currentTime, setCurrentTime] = useState(0);
   const [audioDuration, setAudioDuration] = useState<number | null>(null);
 
@@ -247,28 +228,8 @@ function EpisodePlayer() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!episode?.audioUrl) return;
-    const url = new URL(episode.audioUrl, location.href).href;
-    if (audio.src !== url) {
-      audio.src = url;
-      setCurrentTime(0);
-      setAudioDuration(null);
-    }
-    audio.play().catch(() => {});
-  }, [episode]);
-
   if (!episode) return null;
 
-  const toggle = () => {
-    if (audio.paused) audio.play().catch(() => {});
-    else audio.pause();
-  };
-
-  const setEpisodeStopped = () => {
-    audio.pause();
-    setEpisode(null);
-  };
 
   const skip = (s: number) => {
     audio.currentTime = Math.max(0, audio.currentTime + s);
@@ -329,7 +290,7 @@ function EpisodePlayer() {
         </div>
       </div>
 
-      <button className="button" onClick={setEpisodeStopped} title="Stop">
+      <button className="button" onClick={stop} title="Stop">
         <span className="flex items-center gap-1">
           <StopIcon /> stop
         </span>
@@ -346,7 +307,6 @@ function AllEpisodes({
   onManage: () => void;
 }) {
   const { episodes, loading } = useAllEpisodes(podcasts);
-  const [, setEpisode] = useAtom(playingPodcastAtom);
 
   return (
     <div>
@@ -370,7 +330,7 @@ function AllEpisodes({
               className="button shrink-0"
               title="Play"
               onClick={() =>
-                setEpisode({
+                playEpisode({
                   title: ep.title,
                   audioUrl: ep.audioUrl,
                   img: ep.img,
