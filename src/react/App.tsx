@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Toaster } from "sonner";
+import { useChatEngine } from "./lib/useChatEngine";
 import { useAtomValue, useAtom } from "jotai";
 import Clock from "./component/Clock";
 import Theme from "./component/Theme";
@@ -323,6 +324,7 @@ export default function App() {
   useSeatingEngine();
   usePostureEngine();
   useWeatherEngine();
+  useChatEngine();
   useChime(chime);
   const c = useAtomValue(paletteAtom);
   const [, setClockTime] = useAtom(clockTimeAtom);

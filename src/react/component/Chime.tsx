@@ -78,10 +78,10 @@ export function useChime({
   }, [type, interval]);
 }
 
-export function speak(text: string, voiceURI: string) {
+export function speak(text: string, voiceURI: string): SpeechSynthesisUtterance | null {
   if (!("speechSynthesis" in window)) {
     console.error("[tts] speechSynthesis not supported");
-    return;
+    return null;
   }
   const voices = speechSynthesis.getVoices();
   const voice = voices.find((v) => v.voiceURI === voiceURI);
@@ -92,11 +92,7 @@ export function speak(text: string, voiceURI: string) {
   u.onstart = () => console.log("[tts] speaking", voice?.name ?? "default");
   speechSynthesis.cancel();
   speechSynthesis.speak(u);
-  setTimeout(() => {
-    if (speechSynthesis.speaking) console.log("[tts] speaking...");
-    else if (speechSynthesis.pending) console.log("[tts] pending (not speaking)");
-    else console.log("[tts] not speaking, not pending — likely failed silently");
-  }, 500);
+  return u;
 }
 
 export default function Chime({

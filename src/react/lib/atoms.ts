@@ -1,7 +1,7 @@
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { colors, fonts } from "./state";
-import type { CurrentWeather } from "./weather";
+import type { CurrentWeather } from "../weather";
 
 export interface StoredLocation {
   name: string;
@@ -56,6 +56,14 @@ export const chimeTypeAtom = atomWithStorage<string>("chimeType", "chime");
 export const notificationSoundAtom = atomWithStorage<string>("notificationSound", "chime");
 
 export const ttsVoiceAtom = atomWithStorage<string>("ttsVoice", "");
+
+/** global chat status: idle | listening (mic) | speaking (tts) */
+export type ChatState = "idle" | "listening" | "speaking";
+export const chatStateAtom = atom<ChatState>("idle");
+/** latest utterance heard by the chat engine */
+export const chatTranscriptAtom = atom("");
+/** chat engine on/off, synced across App engine, chat page and widget */
+export const chatRunningAtom = atomWithStorage("chatRunning", false);
 
 /** currently playing podcast episode, null = not playing (list shown) */
 export interface PlayingEpisode {

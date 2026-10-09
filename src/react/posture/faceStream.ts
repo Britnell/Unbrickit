@@ -35,12 +35,17 @@ let detectErrors = 0;
 
 /** true while the shared stream is loading model/camera; UIs disable Start */
 export const faceLoadingAtom = atom(false);
+/** why the stream failed to start (empty = no error); shown by UIs */
+export const faceErrorAtom = atom<string | null>(null);
 const setLoading = (v: boolean) => getDefaultStore().set(faceLoadingAtom, v);
+const setError = (msg: string | null) =>
+  getDefaultStore().set(faceErrorAtom, msg);
 
 async function start() {
   if (starting) return;
   starting = true;
   setLoading(true);
+  setError(null);
   try {
     landmarker = await createFaceLandmarker();
     // everyone left while we were loading: abort
@@ -93,6 +98,11 @@ async function start() {
     raf = requestAnimationFrame(loop);
   } catch (err) {
     console.error("[faceStream] camera/model failed:", err);
+    setError(
+      err instanceof DOMException && err.name === "NotAllowedError"
+        ? "Camera permission denied — allow camera access and try again."
+        : `Camera failed: ${String(err instanceof Error ? err.message : err)}`,
+    );
     landmarker?.close();
     landmarker = null;
     video = null;
