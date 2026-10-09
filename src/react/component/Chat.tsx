@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { startWakeword, stopWakeword } from "./wakeword";
-import { dictateOnce } from "./speech";
+import { startWakeword, stopWakeword } from "../wakeword";
+import { dictateOnce } from "../dication";
 
 export default function ChatPage() {
   const [running, setRunning] = useState(false);
@@ -40,7 +40,9 @@ export default function ChatPage() {
       </button>
       {running && (
         <p className="mt-4 text-center">
-          {listening ? "🎙 listening… say \"hey jarvis\" then speak" : "Say \"hey jarvis\""}
+          {listening
+            ? '🎙 listening… say "hey jarvis" then speak'
+            : 'Say "hey jarvis"'}
         </p>
       )}
       {transcript && <p className="mt-2 text-center italic">“{transcript}”</p>}

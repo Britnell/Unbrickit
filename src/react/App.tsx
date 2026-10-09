@@ -1,16 +1,28 @@
 import { useEffect, useState } from "react";
 import { Toaster } from "sonner";
 import { useAtomValue, useAtom } from "jotai";
-import Clock from "./Clock";
-import Theme from "./Theme";
-import PomodoroPage, { PomodoroWidget, usePomodoro } from "./Pomodoro";
-import SeatingPage, { SeatingWidget, useSeatingEngine } from "./Seating";
-import Chime, { useChime } from "./Chime";
-import PosturePage, { PostureWidget, usePostureEngine } from "./Posture";
-import PodcastPage, { PodcastWidget } from "./Podcast";
-import RadioPage, { RadioWidget } from "./Radio";
-import ChatPage from "./Chat";
-import WeatherPage, { WeatherWidget, useWeatherEngine } from "./Weather";
+import Clock from "./component/Clock";
+import Theme from "./component/Theme";
+import PomodoroPage, {
+  PomodoroWidget,
+  usePomodoro,
+} from "./component/Pomodoro";
+import SeatingPage, {
+  SeatingWidget,
+  useSeatingEngine,
+} from "./component/Seating";
+import Chime, { useChime } from "./component/Chime";
+import PosturePage, {
+  PostureWidget,
+  usePostureEngine,
+} from "./component/Posture";
+import PodcastPage, { PodcastWidget } from "./component/Podcast";
+import RadioPage, { RadioWidget } from "./component/Radio";
+import ChatPage from "./component/Chat";
+import WeatherPage, {
+  WeatherWidget,
+  useWeatherEngine,
+} from "./component/Weather";
 import {
   paletteAtom,
   clockTimeAtom,

@@ -1,13 +1,17 @@
-import { useCallback, useEffect, useRef } from 'react';
-import { useAtom, useAtomValue } from 'jotai';
-import { playChime, randomChord } from '../lib/tone';
-import { notificationSoundAtom } from './atoms';
-import { titleCase } from './state';
+import { useCallback, useEffect, useRef } from "react";
+import { useAtom, useAtomValue } from "jotai";
+import { playChime, randomChord } from "../../lib/tone";
+import { notificationSoundAtom } from "../atoms";
+import { titleCase } from "../state";
 
 // custom sound files: drop .mp3/.ogg/.wav/.m4a files into public/sounds/
 export const soundFiles: { name: string; url: string }[] = Object.entries(
-  import.meta.glob('/public/sounds/*.{mp3,ogg,wav,m4a}', { query: '?url', import: 'default', eager: true }),
-).map(([path, url]) => ({ name: path.split('/').pop()!, url: url as string }));
+  import.meta.glob("/public/sounds/*.{mp3,ogg,wav,m4a}", {
+    query: "?url",
+    import: "default",
+    eager: true,
+  }),
+).map(([path, url]) => ({ name: path.split("/").pop()!, url: url as string }));
 
 // in minutes
 export const chimeIntervals = [0, 1, 5, 15, 20, 30, 60]; // 1 min only for dev testing
@@ -18,22 +22,22 @@ const fileTypes = soundFiles.map((f) => ({
   label: titleCase(
     f.name
       // strip freesound prefix '123456__author__'
-      .replace(/^\d+__[^_]+__/, '')
-      .replace(/\.[^.]+$/, '')
-      .replace(/([a-z])(\d)/, '$1 $2')
-      .replace(/[-_]/g, ' ')
+      .replace(/^\d+__[^_]+__/, "")
+      .replace(/\.[^.]+$/, "")
+      .replace(/([a-z])(\d)/, "$1 $2")
+      .replace(/[-_]/g, " "),
   ),
 }));
 const chimeTypes = [
-  { value: 'chime', label: 'Chime' },
-  { value: 'jazzy', label: 'Jazzy' },
+  { value: "chime", label: "Chime" },
+  { value: "jazzy", label: "Jazzy" },
   ...fileTypes,
 ];
 
 export function playChimeType(type: string) {
-  if (type === 'chime') playChime();
-  else if (type === 'jazzy') randomChord();
-  else if (type.startsWith('file:')) {
+  if (type === "chime") playChime();
+  else if (type === "jazzy") randomChord();
+  else if (type.startsWith("file:")) {
     const name = type.slice(5);
     const url = soundFiles.find((f) => f.name === name)?.url;
     if (url) void new Audio(url).play().catch(() => {});
@@ -47,7 +51,13 @@ export function useNotificationSound() {
   return useCallback(() => playChimeType(type), [type]);
 }
 
-export function useChime({ type, interval }: { type: string; interval: number }) {
+export function useChime({
+  type,
+  interval,
+}: {
+  type: string;
+  interval: number;
+}) {
   const lastMinute = useRef<number | null>(null);
 
   useEffect(() => {
@@ -82,7 +92,10 @@ export default function Chime({
   const [notifSound, setNotifSound] = useAtom(notificationSoundAtom);
   return (
     <div className="grid grid-cols-2 gap-y-1 gap-x-2">
-      <label htmlFor="chime-interval" className="flex justify-between items-center">
+      <label
+        htmlFor="chime-interval"
+        className="flex justify-between items-center"
+      >
         Interval
       </label>
       <select
@@ -93,7 +106,7 @@ export default function Chime({
       >
         {chimeIntervals.map((i) => (
           <option key={i} value={i}>
-            {i === 0 ? 'Off' : i === 60 ? 'Hourly' : `${i} min`}
+            {i === 0 ? "Off" : i === 60 ? "Hourly" : `${i} min`}
           </option>
         ))}
       </select>
@@ -119,7 +132,10 @@ export default function Chime({
 
       <div className="col-span-2 my-2 border-t border-current opacity-20" />
 
-      <label htmlFor="notif-sound" className="flex justify-between items-center">
+      <label
+        htmlFor="notif-sound"
+        className="flex justify-between items-center"
+      >
         Notification
       </label>
       <select

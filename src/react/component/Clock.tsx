@@ -1,5 +1,5 @@
-import { useAtomValue } from 'jotai';
-import { themeAtom, clockTimeAtom } from './atoms';
+import { useAtomValue } from "jotai";
+import { themeAtom, clockTimeAtom } from "../atoms";
 
 export default function Clock() {
   const { font, fontSize, fontWeight } = useAtomValue(themeAtom);
@@ -12,7 +12,8 @@ export default function Clock() {
         className={`select-none leading-none font-${font}`}
         style={{ fontSize: `${fontSize}vw`, fontWeight }}
       >
-        {String(d.getHours()).padStart(2, '0')}:{String(d.getMinutes()).padStart(2, '0')}
+        {String(d.getHours()).padStart(2, "0")}:
+        {String(d.getMinutes()).padStart(2, "0")}
       </span>
     </div>
   );

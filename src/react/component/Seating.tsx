@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
-import { clockTimeAtom } from "./atoms";
-import { useEngine } from "./useEngine";
+import { clockTimeAtom } from "../atoms";
+import { useEngine } from "../face/useEngine";
 import { atomWithStorage } from "jotai/utils";
-import { headPose } from "./face";
-import { subscribeFace, faceLoadingAtom } from "./faceStream";
+import { headPose } from "../face/face";
+import { subscribeFace, faceLoadingAtom } from "../face/faceStream";
 import { useNotificationSound } from "./Chime";
 import type {
   FaceLandmarker,
@@ -201,7 +201,6 @@ export const seatingUiAtom = atom<SeatingUi>({
 
 // start/stop handled by the shared useEngine hook
 
-
 // shared between engine and capture so the page can calibrate
 // plain module singletons (NOT useRef — that's a hook and can't run at module scope)
 const liveFeaturesRef: { current: FaceFeatures | null } = { current: null };
@@ -276,18 +275,21 @@ export function useSeatingEngine() {
     if (!isRunning) return;
     const tracker = createSeatTracker();
 
-    const unsub = subscribeFace(({ result: face, now }) => {
-      try {
-        const result = evaluateFrame(face, calibRef.current, tracker, now);
-        if (result.features) pointsRef.current = result.features;
-        if (result.seat) {
-          setSeated(result.seat.seated);
-          setDistance(result.seat.distance);
+    const unsub = subscribeFace(
+      ({ result: face, now }) => {
+        try {
+          const result = evaluateFrame(face, calibRef.current, tracker, now);
+          if (result.features) pointsRef.current = result.features;
+          if (result.seat) {
+            setSeated(result.seat.seated);
+            setDistance(result.seat.distance);
+          }
+        } catch (err) {
+          console.error("[seating] detect failed:", err);
         }
-      } catch (err) {
-        console.error("[seating] detect failed:", err);
-      }
-    }, () => setUi((ui) => ({ ...ui, isRunning: false })));
+      },
+      () => setUi((ui) => ({ ...ui, isRunning: false })),
+    );
     return unsub;
   }, [isRunning, setUi]);
 

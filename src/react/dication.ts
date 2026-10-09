@@ -28,13 +28,13 @@ function getCtor(): (new () => SpeechRecognitionLike) | null {
  * Resolves with the final transcript. Rejects on errors (e.g. not-allowed).
  */
 export function dictateOnce(
-  lang = 'en-US',
+  lang = "en-US",
   timeoutMs = 10000,
 ): Promise<DictationResult> {
   return new Promise((resolve, reject) => {
     const Ctor = getCtor();
     if (!Ctor) {
-      reject(new Error('SpeechRecognition not supported in this browser'));
+      reject(new Error("SpeechRecognition not supported in this browser"));
       return;
     }
     const rec = new Ctor();
@@ -43,7 +43,7 @@ export function dictateOnce(
     rec.interimResults = true;
     rec.maxAlternatives = 1;
 
-    let finalText = '';
+    let finalText = "";
     let settled = false;
 
     const finish = (err?: unknown) => {
@@ -68,7 +68,8 @@ export function dictateOnce(
         if (r.isFinal) finalText += r[0].transcript;
       }
     };
-    rec.onerror = (e: any) => finish(new Error(`SpeechRecognition: ${e.error}`));
+    rec.onerror = (e: any) =>
+      finish(new Error(`SpeechRecognition: ${e.error}`));
     rec.onend = () => finish();
 
     rec.start();

@@ -1,7 +1,7 @@
 import { getDefaultStore, useAtom, useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
-import { playingPodcastAtom, playingPodcastPausedAtom } from "./atoms";
-import { useLocalStorage } from "./useLocalStorage";
+import { playingPodcastAtom, playingPodcastPausedAtom } from "../atoms";
+import { useLocalStorage } from "../useLocalStorage";
 
 export type Podcast = {
   id: number;
@@ -385,7 +385,9 @@ function AllEpisodes({
               <img src={ep.img} alt="" className="w-10 h-10 rounded shrink-0" />
             )}
             <div className="min-w-0">
-              <div className="font-medium line-clamp-2 max-w-64">{ep.title}</div>
+              <div className="font-medium line-clamp-2 max-w-64">
+                {ep.title}
+              </div>
               <div className="text-xs opacity-60">{ep.podcastName}</div>
               <div className="text-xs opacity-60">
                 {formatDate(ep.date)}

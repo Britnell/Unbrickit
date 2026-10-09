@@ -5,12 +5,12 @@ import type {
   FaceLandmarker,
   NormalizedLandmark,
 } from "@mediapipe/tasks-vision";
-import { headPose } from "./face";
-import { subscribeFace, faceLoadingAtom } from "./faceStream";
-import { SlouchDetector } from "./postureDetect";
-import { YDriftMeter, type DriftValue } from "./drift";
+import { headPose } from "../face/face";
+import { subscribeFace, faceLoadingAtom } from "../face/faceStream";
+import { SlouchDetector } from "../face/postureDetect";
+import { YDriftMeter, type DriftValue } from "../drift";
 import { useNotificationSound } from "./Chime";
-import { useEngine } from "./useEngine";
+import { useEngine } from "../face/useEngine";
 
 /* ------------------------------- thresholds ------------------------------- */
 
@@ -141,59 +141,58 @@ export function usePostureEngine() {
 
     const unsub = subscribeFace(
       ({ result: faceRes, now }) => {
-      if (cancelled) return;
-      const faceLm = faceRes.faceLandmarks?.[0];
-      noFaceFrames = faceLm ? 0 : noFaceFrames + 1;
-      const detected = noFaceFrames < NO_FACE_DEBOUNCE;
+        if (cancelled) return;
+        const faceLm = faceRes.faceLandmarks?.[0];
+        noFaceFrames = faceLm ? 0 : noFaceFrames + 1;
+        const detected = noFaceFrames < NO_FACE_DEBOUNCE;
 
-      let poseEuler: PostureUi["pose"];
-      let integral: number;
-      let drift: DriftValue | null;
+        let poseEuler: PostureUi["pose"];
+        let integral: number;
+        let drift: DriftValue | null;
 
-      if (faceLm) {
-        const m = measureFace(angle, driftMeter, faceRes, faceLm, now);
-        poseEuler = m.pose;
-        integral = m.integral;
-        drift = m.drift;
-      } else {
-        angle.reset();
-        driftMeter.reset();
-        poseEuler = null;
-        integral = 0;
-        drift = null;
-      }
+        if (faceLm) {
+          const m = measureFace(angle, driftMeter, faceRes, faceLm, now);
+          poseEuler = m.pose;
+          integral = m.integral;
+          drift = m.drift;
+        } else {
+          angle.reset();
+          driftMeter.reset();
+          poseEuler = null;
+          integral = 0;
+          drift = null;
+        }
 
-      isSlouching = evaluate(integral, drift, isSlouching);
+        isSlouching = evaluate(integral, drift, isSlouching);
 
-      if (
-        isSlouching &&
-        now - lastNotifAt >= MIN_NOTIFY_INTERVAL_S * 1000
-      ) {
-        lastNotifAt = now;
-        playNotif();
-        toast("Bad posture detected — sit up straight! 🧍");
-      }
+        if (isSlouching && now - lastNotifAt >= MIN_NOTIFY_INTERVAL_S * 1000) {
+          lastNotifAt = now;
+          playNotif();
+          toast("Bad posture detected — sit up straight! 🧍");
+        }
 
-      if (!detected) isSlouching = false;
+        if (!detected) isSlouching = false;
 
-      const level: PostureLevel = detected && isSlouching ? "slouch" : "ok";
-      setUi((ui) =>
-        ui.level === level &&
-        ui.hasFace === detected &&
-        ui.pose === poseEuler &&
-        ui.integral === integral &&
-        ui.drift === drift
-          ? ui
-          : {
-              ...ui,
-              level,
-              hasFace: detected,
-              pose: poseEuler,
-              integral,
-              drift,
-            },
-      );
-    }, () => setUi((ui) => ({ ...ui, isRunning: false })));
+        const level: PostureLevel = detected && isSlouching ? "slouch" : "ok";
+        setUi((ui) =>
+          ui.level === level &&
+          ui.hasFace === detected &&
+          ui.pose === poseEuler &&
+          ui.integral === integral &&
+          ui.drift === drift
+            ? ui
+            : {
+                ...ui,
+                level,
+                hasFace: detected,
+                pose: poseEuler,
+                integral,
+                drift,
+              },
+        );
+      },
+      () => setUi((ui) => ({ ...ui, isRunning: false })),
+    );
 
     return () => {
       cancelled = true;

@@ -1,6 +1,6 @@
-import { useAtom } from 'jotai';
-import { themeAtom, timeOfDayAtom } from './atoms';
-import { colorModes, fonts, formatHour, hourToHex, titleCase } from './state';
+import { useAtom } from "jotai";
+import { themeAtom, timeOfDayAtom } from "../atoms";
+import { colorModes, fonts, formatHour, hourToHex, titleCase } from "../state";
 
 function Slider({
   label,
@@ -23,7 +23,10 @@ function Slider({
     <>
       <label htmlFor={label} className="flex justify-between items-center">
         {label}
-        <span className="opacity-60">{value}{suffix}</span>
+        <span className="opacity-60">
+          {value}
+          {suffix}
+        </span>
       </label>
       <input
         id={label}
@@ -52,7 +55,10 @@ export default function Theme() {
   };
   return (
     <div className="grid grid-cols-2 gap-y-1 gap-x-2">
-      <label htmlFor="font-select" className="flex justify-between items-center">
+      <label
+        htmlFor="font-select"
+        className="flex justify-between items-center"
+      >
         Font
       </label>
       <select
@@ -68,9 +74,20 @@ export default function Theme() {
         ))}
       </select>
 
-      <Slider label="Size" value={fontSize} min={25} max={35} step={1} suffix="vw" onChange={set.fontSize} />
+      <Slider
+        label="Size"
+        value={fontSize}
+        min={25}
+        max={35}
+        step={1}
+        suffix="vw"
+        onChange={set.fontSize}
+      />
 
-      <label htmlFor="colormode-select" className="flex justify-between items-center">
+      <label
+        htmlFor="colormode-select"
+        className="flex justify-between items-center"
+      >
         Color Mode
       </label>
       <select
@@ -86,8 +103,16 @@ export default function Theme() {
         ))}
       </select>
 
-      {colorMode !== 'daylight' && (
-        <Slider label="Hue" value={hue} min={0} max={360} step={1} suffix="°" onChange={set.hue} />
+      {colorMode !== "daylight" && (
+        <Slider
+          label="Hue"
+          value={hue}
+          min={0}
+          max={360}
+          step={1}
+          suffix="°"
+          onChange={set.hue}
+        />
       )}
 
       <div />
@@ -102,7 +127,7 @@ export default function Theme() {
         <label htmlFor="darkmode-checkbox">Swap colours</label>
       </div>
 
-      {colorMode === 'daylight' && (
+      {colorMode === "daylight" && (
         <div className="col-span-full mt-2">
           <label className="flex justify-between items-center">
             Time of day (debug)
