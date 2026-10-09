@@ -29,7 +29,7 @@ export const playingRadioStationAtom = atom<string | null>(null);
 const globalRadio = window as typeof window & {
   __radioAudio?: HTMLAudioElement;
 };
-const radioAudio = (globalRadio.__radioAudio ??= new Audio());
+export const radioAudio = (globalRadio.__radioAudio ??= new Audio());
 radioAudio.preload = "none";
 
 const store = getDefaultStore();

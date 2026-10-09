@@ -2,33 +2,33 @@ import { getDefaultStore, useAtom, useAtomValue } from "jotai";
 import { playingPodcastAtom, playingPodcastPausedAtom, PlayingEpisode } from "./atoms";
 import { Episode } from "../component/Podcast";
 
-/** single global audio element so playback survives menu close.
+/** single global podcastAudio element so playback survives menu close.
  *  kept on window so Vite HMR reuses the same element instead of
  *  creating a second one and replaying from the start. */
 const globalAudio = window as typeof window & {
   __podcastAudio?: HTMLAudioElement;
 };
-const audio = (globalAudio.__podcastAudio ??= new Audio());
-audio.preload = "none";
+export const podcastAudio = (globalAudio.__podcastAudio ??= new Audio());
+podcastAudio.preload = "none";
 
 const store = getDefaultStore();
-audio.addEventListener("play", () =>
+podcastAudio.addEventListener("play", () =>
   store.set(playingPodcastPausedAtom, false),
 );
-audio.addEventListener("pause", () =>
+podcastAudio.addEventListener("pause", () =>
   store.set(playingPodcastPausedAtom, true),
 );
-audio.addEventListener("ended", () => store.set(playingPodcastAtom, null));
+podcastAudio.addEventListener("ended", () => store.set(playingPodcastAtom, null));
 
 /** play an episode (or set the current one and start it) */
 export function playEpisode(ep: PlayingEpisode) {
   store.set(playingPodcastAtom, ep);
   if (ep.audioUrl) {
     const url = new URL(ep.audioUrl, location.href).href;
-    if (audio.src !== url) {
-      audio.src = url;
+    if (podcastAudio.src !== url) {
+      podcastAudio.src = url;
     }
-    audio.play().catch(() => {});
+    podcastAudio.play().catch(() => {});
   }
 }
 
@@ -37,7 +37,7 @@ export function playEpisode(ep: PlayingEpisode) {
 export function startPodcast(): boolean {
   const current = store.get(playingPodcastAtom);
   if (current) {
-    audio.play().catch(() => {});
+    podcastAudio.play().catch(() => {});
     return true;
   }
   // latest episode across all subscribed feeds from the episode cache
@@ -79,20 +79,20 @@ export function startPodcast(): boolean {
 }
 
 export function stopPodcast() {
-  audio.pause();
-  audio.removeAttribute("src");
-  audio.load();
+  podcastAudio.pause();
+  podcastAudio.removeAttribute("src");
+  podcastAudio.load();
   store.set(playingPodcastAtom, null);
   store.set(playingPodcastPausedAtom, false);
 }
 
 export function pausePodcast() {
-  audio.pause();
+  podcastAudio.pause();
 }
 
 export function togglePodcast() {
-  if (audio.paused) audio.play().catch(() => {});
-  else audio.pause();
+  if (podcastAudio.paused) podcastAudio.play().catch(() => {});
+  else podcastAudio.pause();
 }
 
 /** podcast state + controls for the UI */
@@ -106,6 +106,6 @@ export function usePodcast() {
     start: startPodcast,
     stop: stopPodcast,
     toggle: togglePodcast,
-    audio,
+    audio: podcastAudio,
   };
 }

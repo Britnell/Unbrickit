@@ -17,6 +17,8 @@ import { useTts } from "./useTts";
 import { parseCommand, weatherReply } from "./chat";
 import { playingRadioAtom, startRadio, stopRadio } from "./useRadio";
 import { startPodcast, stopPodcast } from "./usePodcast";
+import { duckMedia } from "./audioFeedback";
+import { notify } from "../audio/tone";
 
 let engineMounted = false;
 
@@ -121,6 +123,8 @@ export function useChatEngine() {
       onDetect: async () => {
         if (listeningRef.current) return; // ignore re-triggers during dictation
         listeningRef.current = true;
+        notify();
+        duckMedia(true);
         setTranscript(""); // clear last utterance
         setChatState("listening");
         try {
@@ -141,6 +145,7 @@ export function useChatEngine() {
           setChatState("idle");
         } finally {
           listeningRef.current = false;
+          duckMedia(false);
         }
       },
       onError: (err) => console.error("[chat] wakeword error:", err),
