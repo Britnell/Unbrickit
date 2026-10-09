@@ -26,6 +26,18 @@ let starting = false;
 let lastVideoTime = -1;
 let frameCount = 0;
 
+/** if the video clock hasn't advanced for this long while the page is
+ * visible, the OS killed/froze the camera (screen lock) — restart the stream */
+const STALE_MS = 4000;
+let lastAdvanceAt = 0;
+
+/** tear down and bring the stream back up, keeping current subscribers */
+async function restart() {
+  console.warn("[faceStream] restarting stream");
+  stop();
+  await start();
+}
+
 /** sample every 10th frame (~6Hz at 60fps) */
 const SAMPLE_EVERY = 10;
 
@@ -63,11 +75,22 @@ async function start() {
     }
     const loop = () => {
       if (listeners.size === 0 || !landmarker || !video) return;
-      if (
-        frameCount++ % SAMPLE_EVERY === 0 &&
-        video.currentTime !== lastVideoTime
-      ) {
+      // watchdog: mobile browsers freeze the video (pause/ended track) on
+      // screen lock; when we come back the clock never advances. Detect that
+      // and restart the whole camera+model pipeline.
+      const fresh = video.currentTime !== lastVideoTime;
+      if (fresh) {
         lastVideoTime = video.currentTime;
+        lastAdvanceAt = performance.now();
+      } else if (
+        document.visibilityState === "visible" &&
+        lastAdvanceAt &&
+        performance.now() - lastAdvanceAt > STALE_MS
+      ) {
+        void restart();
+        return;
+      }
+      if (fresh && frameCount++ % SAMPLE_EVERY === 0) {
         const now = performance.now();
         try {
           const result = landmarker.detectForVideo(video, now);
@@ -124,6 +147,7 @@ function stop() {
   video = null;
   lastVideoTime = -1;
   frameCount = 0;
+  lastAdvanceAt = 0;
   detectErrors = 0;
 }
 
