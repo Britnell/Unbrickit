@@ -4,7 +4,7 @@ import { clockTimeAtom } from "./atoms";
 import { useEngine } from "./useEngine";
 import { atomWithStorage } from "jotai/utils";
 import { headPose } from "./face";
-import { subscribeFace } from "./faceStream";
+import { subscribeFace, faceLoadingAtom } from "./faceStream";
 import { useNotificationSound } from "./Chime";
 import type {
   FaceLandmarker,
@@ -378,6 +378,7 @@ export default function SeatingPage() {
   const { isRunning, seated, seatedMs, distance, overdue, calibrated } =
     useAtomValue(seatingUiAtom);
   const { start, stop } = useEngine(seatingUiAtom, RUNNING_KEY);
+  const loading = useAtomValue(faceLoadingAtom);
   const capture = useCaptureSeat();
   const [reminder, setReminder] = useAtom(reminderAtom);
   const seatedMinutesToday = useAtomValue(seatedMinutesTodayAtom);
@@ -430,9 +431,10 @@ export default function SeatingPage() {
 
         <button
           onClick={isRunning ? stop : start}
-          className="button mb-2 w-full"
+          disabled={loading}
+          className="button mb-2 w-full disabled:opacity-50"
         >
-          {isRunning ? "Stop" : "Start"}
+          {isRunning ? "Stop" : loading ? "Starting…" : "Start"}
         </button>
 
         {overdue && <div className="mb-2 text-lg">⏰ Time for a break!</div>}

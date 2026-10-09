@@ -2,6 +2,7 @@ import type {
   FaceLandmarker,
   FaceLandmarkerResult,
 } from "@mediapipe/tasks-vision";
+import { atom, getDefaultStore } from "jotai";
 import { createFaceLandmarker } from "./face";
 import { acquireCamera, releaseCamera } from "./camera";
 
@@ -32,9 +33,14 @@ const SAMPLE_EVERY = 10;
 const MAX_CONSECUTIVE_DETECT_ERRORS = 30;
 let detectErrors = 0;
 
+/** true while the shared stream is loading model/camera; UIs disable Start */
+export const faceLoadingAtom = atom(false);
+const setLoading = (v: boolean) => getDefaultStore().set(faceLoadingAtom, v);
+
 async function start() {
   if (starting) return;
   starting = true;
+  setLoading(true);
   try {
     landmarker = await createFaceLandmarker();
     // everyone left while we were loading: abort
@@ -95,11 +101,13 @@ async function start() {
     listeners.clear();
   } finally {
     starting = false;
+    setLoading(false);
   }
 }
 
 function stop() {
   cancelAnimationFrame(raf);
+  setLoading(false);
   landmarker?.close();
   landmarker = null;
   if (video) releaseCamera();

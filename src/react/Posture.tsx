@@ -6,7 +6,7 @@ import type {
   NormalizedLandmark,
 } from "@mediapipe/tasks-vision";
 import { headPose } from "./face";
-import { subscribeFace } from "./faceStream";
+import { subscribeFace, faceLoadingAtom } from "./faceStream";
 import { SlouchDetector } from "./postureDetect";
 import { YDriftMeter, type DriftValue } from "./drift";
 import { useNotificationSound } from "./Chime";
@@ -224,6 +224,7 @@ export function PostureWidget({ onOpen }: { onOpen: () => void }) {
 export default function PosturePage() {
   const { isRunning, level, hasFace } = useAtomValue(postureUiAtom);
   const { start, stop } = useEngine(postureUiAtom, RUNNING_KEY);
+  const loading = useAtomValue(faceLoadingAtom);
 
   return (
     <div className="text-center py-8 flex flex-col gap-4">
@@ -242,10 +243,11 @@ export default function PosturePage() {
         </div>
       )}
       <button
-        className="mx-auto button"
+        className="mx-auto button disabled:opacity-50"
+        disabled={loading}
         onClick={() => (isRunning ? stop() : start())}
       >
-        {isRunning ? "Stop" : "Start Camera"}
+        {isRunning ? "Stop" : loading ? "Starting…" : "Start Camera"}
       </button>{" "}
     </div>
   );

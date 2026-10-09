@@ -7,6 +7,7 @@
 -[x] one clock tick per app, not 3 / use jotai or so atomic
 -[x] PWA
 -[ ] daylight cols 9:30 both are same red
+-[ ] weather still shows sun emoji after sunset > find weather icons
 
 ## OLD
 
