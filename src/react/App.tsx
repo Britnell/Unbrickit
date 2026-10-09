@@ -9,6 +9,7 @@ import Chime, { useChime } from "./Chime";
 import PosturePage, { PostureWidget, usePostureEngine } from "./Posture";
 import PodcastPage, { PodcastWidget } from "./Podcast";
 import RadioPage, { RadioWidget } from "./Radio";
+import ChatPage from "./Chat";
 import WeatherPage, { WeatherWidget, useWeatherEngine } from "./Weather";
 import {
   paletteAtom,
@@ -121,15 +122,6 @@ const menuTitles = {
 } as const;
 
 type MenuViewName = keyof typeof menuTitles;
-
-function ChatPage() {
-  const [running, setRunning] = useState(false);
-  return (
-    <button className="button" onClick={() => setRunning(!running)}>
-      {running ? "⏹ Stop" : "▶ Start"}
-    </button>
-  );
-}
 
 function MenuView({
   view,

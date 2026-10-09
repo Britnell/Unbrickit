@@ -34,8 +34,10 @@ export async function startWakeword(
 ): Promise<void> {
   await stopWakeword();
 
+  const base = import.meta.env.BASE_URL;
   engine = new WakeWordEngine({
-    baseAssetUrl: '/openwakeword/models',
+    baseAssetUrl: `${base}openwakeword/models`,
+    ortWasmPath: 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.23.2/dist/',
     keywords,
     detectionThreshold: threshold,
   });

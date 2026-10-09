@@ -34,4 +34,6 @@
 
 - https://github.com/Ant-Brain/EfficientWord-Net-InBrowser-Hotword-Detection
 - https://github.com/frymanofer/Web_WakeWordDetection
+- davidscripka/openwakeword
+- @edyrkaj/openwakeword-wasm-browser
 - https://github.com/dnavarrom/openwakeword_wasm
