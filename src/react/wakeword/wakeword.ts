@@ -1,14 +1,9 @@
 // Wake word detection using vendored OpenWakeWord WASM engine.
 // Models are served from public/openwakeword/models.
-import { WakeWordEngine } from './vendor/WakeWordEngine';
+import { WakeWordEngine } from "./WakeWordEngine";
 
 export type WakeWordKeyword =
-  | 'hey_jarvis'
-  | 'alexa'
-  | 'hey_mycroft'
-  | 'hey_rhasspy'
-  | 'timer'
-  | 'weather';
+  "hey_jarvis" | "alexa" | "hey_mycroft" | "hey_rhasspy" | "timer" | "weather";
 
 export interface DetectEvent {
   keyword: string;
@@ -28,7 +23,7 @@ const unsubs: Array<() => void> = [];
 
 /** Load models and start listening. Resolves once detection is running. */
 export async function startWakeword(
-  keywords: WakeWordKeyword[] = ['hey_jarvis'],
+  keywords: WakeWordKeyword[] = ["hey_jarvis"],
   handlers: WakewordHandlers = {},
   threshold = 0.5,
 ): Promise<void> {
@@ -37,17 +32,17 @@ export async function startWakeword(
   const base = import.meta.env.BASE_URL;
   engine = new WakeWordEngine({
     baseAssetUrl: `${base}openwakeword/models`,
-    ortWasmPath: 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.23.2/dist/',
+    ortWasmPath: "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.23.2/dist/",
     keywords,
     detectionThreshold: threshold,
   });
 
   unsubs.push(
-    engine.on('detect', (e: DetectEvent) => handlers.onDetect?.(e)),
-    engine.on('ready', () => handlers.onReady?.()),
-    engine.on('speech-start', () => handlers.onSpeech?.(true)),
-    engine.on('speech-end', () => handlers.onSpeech?.(false)),
-    engine.on('error', (err: unknown) => handlers.onError?.(err)),
+    engine.on("detect", (e: DetectEvent) => handlers.onDetect?.(e)),
+    engine.on("ready", () => handlers.onReady?.()),
+    engine.on("speech-start", () => handlers.onSpeech?.(true)),
+    engine.on("speech-end", () => handlers.onSpeech?.(false)),
+    engine.on("error", (err: unknown) => handlers.onError?.(err)),
   );
 
   await engine.load();

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { startWakeword, stopWakeword } from "../wakeword";
+import { startWakeword, stopWakeword } from "../wakeword/wakeword";
 import { dictateOnce } from "../dication";
 
 export default function ChatPage() {
