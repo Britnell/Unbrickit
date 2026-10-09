@@ -7,7 +7,7 @@ let visionPromise: Promise<
 > | null = null;
 export function getVisionRuntime() {
   visionPromise ??= FilesetResolver.forVisionTasks(
-    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm",
+    "/mediapipe-wasm",
   );
   return visionPromise;
 }
