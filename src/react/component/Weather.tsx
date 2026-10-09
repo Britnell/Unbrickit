@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { useAtom, useAtomValue } from "jotai";
 import { searchCities, getWeather, type GeoResult } from "../weather";
-import { weatherLocationAtom, weatherAtom, weatherWidgetAtom } from "../atoms";
+import {
+  weatherLocationAtom,
+  weatherAtom,
+  weatherWidgetAtom,
+} from "../lib/atoms";
 
 const WEATHER_UPDATE_MINUTES = 16;
 

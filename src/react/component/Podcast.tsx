@@ -1,6 +1,6 @@
 import { getDefaultStore, useAtom, useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
-import { playingPodcastAtom, playingPodcastPausedAtom } from "../atoms";
+import { playingPodcastAtom, playingPodcastPausedAtom } from "../lib/atoms";
 import { useLocalStorage } from "../useLocalStorage";
 
 export type Podcast = {

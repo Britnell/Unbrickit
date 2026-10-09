@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAtomValue } from "jotai";
-import { clockTimeAtom } from "../atoms";
+import { clockTimeAtom } from "../lib/atoms";
 import { useNotificationSound } from "./Chime";
 
 type Mode = "focus" | "break";

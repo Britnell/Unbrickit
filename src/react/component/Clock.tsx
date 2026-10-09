@@ -1,5 +1,5 @@
 import { useAtomValue } from "jotai";
-import { themeAtom, clockTimeAtom } from "../atoms";
+import { themeAtom, clockTimeAtom } from "../lib/atoms";
 
 export default function Clock() {
   const { font, fontSize, fontWeight } = useAtomValue(themeAtom);

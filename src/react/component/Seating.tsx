@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
-import { clockTimeAtom } from "../atoms";
+import { clockTimeAtom } from "../lib/atoms";
 import { useEngine } from "../posture/useEngine";
 import { atomWithStorage } from "jotai/utils";
 import { headPose } from "../posture/face";

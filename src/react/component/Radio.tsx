@@ -1,7 +1,7 @@
 import { useAtom, useAtomValue, getDefaultStore } from "jotai";
 import { useLocalStorage } from "../useLocalStorage";
 import { PlayIcon, StopIcon } from "./Podcast";
-import { playingRadioAtom, playingRadioStationAtom } from "../atoms";
+import { playingRadioAtom, playingRadioStationAtom } from "../lib/atoms";
 
 export const stations = {
   NTS: "http://stream-relay-geo.ntslive.net/stream",

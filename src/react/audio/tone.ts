@@ -1,4 +1,4 @@
-import { getRandom } from "../helper";
+import { getRandom } from "../lib/helper";
 
 const noteMap: Record<string, number> = {
   C: 0,

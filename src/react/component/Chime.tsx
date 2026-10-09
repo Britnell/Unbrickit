@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useAtom, useAtomValue } from "jotai";
 import { playChime, randomChord } from "../audio/tone";
-import { notificationSoundAtom } from "../atoms";
-import { titleCase } from "../state";
+import { notificationSoundAtom } from "../lib/atoms";
+import { titleCase } from "../lib/state";
 
 // custom sound files: drop .mp3/.ogg/.wav/.m4a files into public/sounds/
 export const soundFiles: { name: string; url: string }[] = Object.entries(

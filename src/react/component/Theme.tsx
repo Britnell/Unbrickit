@@ -1,6 +1,12 @@
 import { useAtom } from "jotai";
-import { themeAtom, timeOfDayAtom } from "../atoms";
-import { colorModes, fonts, formatHour, hourToHex, titleCase } from "../state";
+import { themeAtom, timeOfDayAtom } from "../lib/atoms";
+import {
+  colorModes,
+  fonts,
+  formatHour,
+  hourToHex,
+  titleCase,
+} from "../lib/state";
 
 function Slider({
   label,
