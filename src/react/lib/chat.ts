@@ -11,6 +11,8 @@ import {
   stopPodcast,
   pausePodcast,
 } from "./usePodcast";
+import { pomodoroStateAtom } from "../lib/atoms";
+import { startPomodoro, stopPomodoro } from "../component/Pomodoro";
 
 /** returns the spoken reply text */
 export function respond(transcript: string): string {
@@ -21,6 +23,8 @@ export function respond(transcript: string): string {
       ? radioSentence(text)
     : /\bweather\b/.test(text)
       ? weatherSentence()
+    : /\bpomodoro\b|\btimer\b/.test(text)
+      ? pomodoroSentence(text)
       : "I'm sorry dave, I'm afraid I can't do that.";
   return reply;
 }
@@ -55,6 +59,21 @@ function radioSentence(text: string): string {
   }
   if (!playing) startRadio();
   return playing ? "The radio is already playing" : "Radio on";
+}
+
+function pomodoroSentence(text: string): string {
+  const running =
+    getDefaultStore().get(pomodoroStateAtom).startTime !== null;
+  const wantsStop = /\b(stop|pause)\b/.test(text);
+
+  if (wantsStop) {
+    if (!running) return "The timer isn't running";
+    stopPomodoro();
+    return "Timer stopped";
+  }
+  if (running) return "The timer is already running";
+  startPomodoro();
+  return "Timer started";
 }
 
 function weatherSentence(): string {

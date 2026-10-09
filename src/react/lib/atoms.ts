@@ -52,6 +52,34 @@ export const paletteAtom = atom((get) =>
 /** chime sound type, global setting used by the chime timer (not the tracker) */
 export const chimeTypeAtom = atomWithStorage<string>("chimeType", "chime");
 
+/** pomodoro timer state, shared by the UI and voice chat */
+export type PomodoroMode = "focus" | "break";
+export interface PomodoroState {
+  duration: number;
+  focusMin: number;
+  breakMin: number;
+  mode: PomodoroMode;
+  startTime: number | null;
+}
+export const DEFAULT_POMODORO: PomodoroState = {
+  duration: 40 * 60 * 1000,
+  focusMin: 40,
+  breakMin: 5,
+  mode: "focus",
+  startTime: null,
+};
+export function loadPomodoro(): PomodoroState {
+  try {
+    const saved = localStorage.getItem("pomodoro-state");
+    if (saved)
+      return { ...DEFAULT_POMODORO, ...JSON.parse(saved) } as PomodoroState;
+  } catch {
+    /* fall through */
+  }
+  return DEFAULT_POMODORO;
+}
+export const pomodoroStateAtom = atom<PomodoroState>(loadPomodoro());
+
 /** global notification sound, shared by pomodoro, seating reminder, posture */
 export const notificationSoundAtom = atomWithStorage<string>("notificationSound", "chime");
 

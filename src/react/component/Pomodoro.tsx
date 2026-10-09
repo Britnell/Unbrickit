@@ -1,38 +1,48 @@
-import { useEffect, useState } from "react";
-import { useAtomValue } from "jotai";
-import { clockTimeAtom } from "../lib/atoms";
+import { useEffect } from "react";
+import { useAtom, useAtomValue } from "jotai";
+import { getDefaultStore } from "jotai";
+import {
+  clockTimeAtom,
+  pomodoroStateAtom,
+  type PomodoroMode,
+} from "../lib/atoms";
 import { useNotificationSound } from "./Chime";
 
-type Mode = "focus" | "break";
+const store = getDefaultStore();
 
-interface SavedState {
-  duration: number;
-  focusMin: number;
-  breakMin: number;
-  mode: Mode;
-  startTime: number | null;
+/** voice/UI start: always begin a fresh work interval */
+export function startPomodoro() {
+  const s = store.get(pomodoroStateAtom);
+  store.set(pomodoroStateAtom, {
+    ...s,
+    mode: "focus",
+    duration: s.focusMin * 60000,
+    startTime: Date.now(),
+  });
+  persist();
 }
 
-const DEFAULT_STATE: SavedState = {
-  duration: 40 * 60 * 1000,
-  focusMin: 40,
-  breakMin: 5,
-  mode: "focus",
-  startTime: null,
-};
+/** voice/UI stop: reset to idle work interval */
+export function stopPomodoro() {
+  const s = store.get(pomodoroStateAtom);
+  store.set(pomodoroStateAtom, {
+    ...s,
+    mode: "focus",
+    duration: s.focusMin * 60000,
+    startTime: null,
+  });
+  persist();
+}
 
-function loadState(): SavedState {
-  try {
-    const saved = localStorage.getItem("pomodoro-state");
-    if (saved) return { ...DEFAULT_STATE, ...JSON.parse(saved) };
-  } catch (e) {
-    console.error("Failed to load pomodoro state:", e);
-  }
-  return DEFAULT_STATE;
+function persist() {
+  localStorage.setItem(
+    "pomodoro-state",
+    JSON.stringify(store.get(pomodoroStateAtom)),
+  );
 }
 
 export function usePomodoro() {
-  const [state, setState] = useState<SavedState>(loadState);
+  const [state, setState] = useAtom(pomodoroStateAtom);
   const playNotif = useNotificationSound();
   const now = useAtomValue(clockTimeAtom);
 
@@ -59,14 +69,14 @@ export function usePomodoro() {
   const start = () =>
     setState((s) => ({
       ...s,
-      mode: "focus" as Mode, // always start with a work interval
+      mode: "focus" as PomodoroMode, // always start with a work interval
       duration: s.focusMin * 60000,
       startTime: Date.now(),
     }));
   const stop = () =>
     setState((s) => ({
       ...s,
-      mode: "focus" as Mode,
+      mode: "focus" as PomodoroMode,
       duration: s.focusMin * 60000,
       startTime: null,
     }));
@@ -77,7 +87,7 @@ export function usePomodoro() {
       if (s.mode === "focus") {
         return {
           ...s,
-          mode: "break" as Mode,
+          mode: "break" as PomodoroMode,
           duration: s.breakMin * 60000,
           startTime: Date.now(),
         };
@@ -85,7 +95,7 @@ export function usePomodoro() {
       playNotif();
       return {
         ...s,
-        mode: "focus" as Mode,
+        mode: "focus" as PomodoroMode,
         duration: s.focusMin * 60000,
         startTime: null,
       };
