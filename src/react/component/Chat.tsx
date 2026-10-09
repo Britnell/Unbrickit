@@ -1,4 +1,5 @@
 import { useAtomValue, useAtom } from "jotai";
+import { useState } from "react";
 import { chatRunningAtom, chatStateAtom, chatTranscriptAtom } from "../lib/atoms";
 
 export function ChatWidget({ onOpen }: { onOpen: () => void }) {
@@ -25,10 +26,21 @@ export function ChatWidget({ onOpen }: { onOpen: () => void }) {
   );
 }
 
+const COMMANDS = [
+  "Play / stop radio",
+  "Play / stop podcast",
+  "Start / stop timer",
+  "What's the weather",
+  "What's the time",
+  "What's the date / day",
+  "Stop",
+];
+
 export default function ChatPage() {
   const [running, setRunning] = useAtom(chatRunningAtom);
   const state = useAtomValue(chatStateAtom);
   const transcript = useAtomValue(chatTranscriptAtom);
+  const [showHelp, setShowHelp] = useState(false);
 
   if (!running)
     return (
@@ -39,8 +51,39 @@ export default function ChatPage() {
       </div>
     );
 
+  if (showHelp)
+    return (
+      <div className="p-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg">Voice commands</h2>
+          <button className="button" onClick={() => setShowHelp(false)}>
+            ✕
+          </button>
+        </div>
+        <p className="mt-2 text-sm opacity-70">
+          Say "hey jarvis" then any of these:
+        </p>
+        <ul className="mt-3 flex flex-col gap-2">
+          {COMMANDS.map((c) => (
+            <li key={c} className="rounded-lg bg-white/5 px-3 py-2 text-sm">
+              {c}
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+
   return (
-    <div className="grid place-items-center p-8">
+    <div className="relative grid place-items-center p-8">
+      {/* help button pinned top right */}
+      <button
+        className="button button-glass absolute top-4 right-4"
+        onClick={() => setShowHelp(true)}
+        title="Voice commands"
+      >
+        ❓
+      </button>
+
       {/* start/stop stays at top */}
       <div className="w-full grid place-items-center">
         <button className="button" onClick={() => setRunning(false)}>

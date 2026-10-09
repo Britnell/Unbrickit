@@ -33,7 +33,7 @@ export function parseCommand(transcript: string): ParsedCommand | "stopAudio" | 
           ? "weather"
           : /\bwhat\b/.test(text) && /\btime\b/.test(text)
             ? "time"
-            : /\bwhat\b/.test(text) && /\bdate\b/.test(text)
+            : /\bwhat\b/.test(text) && (/\bdate\b|\bday\b/.test(text))
               ? "date"
               : null;
 

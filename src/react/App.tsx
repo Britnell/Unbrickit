@@ -173,11 +173,7 @@ function MenuView({
           setInterval_={chime.set.interval}
         />
       )}
-      {view === "chat" && (
-        <div className="grid place-items-center p-8">
-          <ChatPage />
-        </div>
-      )}
+      {view === "chat" && <ChatPage />}
       {view === "posture" && <PosturePage />}
       {view === "podcast" && <PodcastPage />}
       {view === "weather" && <WeatherPage />}
