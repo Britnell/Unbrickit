@@ -153,7 +153,15 @@ export function useChatEngine() {
         setTranscript(""); // clear last utterance
         setChatState("listening");
         try {
-          const { transcript: text } = await dictateOnce();
+          // fast path: parse interim chunks and fire as soon as a tool
+          // command matches (e.g. "radio" + "stop"). bare "stop"
+          // (stopAudio) is only trusted on the final transcript.
+          const { transcript: text } = await dictateOnce("en-US", 10000, (interim) => {
+            const cmd = parseCommand(interim);
+            const matched = !!cmd && cmd !== "stopAudio";
+            if (matched) setTranscript(interim);
+            return matched;
+          });
           console.log("[chat] heard:", text);
           setTranscript(text);
           if (text) {
