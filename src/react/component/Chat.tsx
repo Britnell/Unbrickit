@@ -1,31 +1,41 @@
 import { useEffect, useState } from "react";
 import { startWakeword, stopWakeword } from "../wakeword/wakeword";
 import { dictateOnce } from "../audio/dication";
+import { useTts } from "../lib/useTts";
+import { respond } from "../lib/chat";
 
 export default function ChatPage() {
   const [running, setRunning] = useState(false);
   const [transcript, setTranscript] = useState("");
+  const say = useTts();
   const [listening, setListening] = useState(false);
 
   useEffect(() => {
     if (!running) return;
+    console.log("[chat] starting…");
     startWakeword(["hey_jarvis"], {
       onDetect: async ({ keyword, score }) => {
-        console.log(`[wakeword] ${keyword} (${score.toFixed(2)})`);
         setListening(true);
         try {
           const { transcript: text } = await dictateOnce();
+          console.log("[chat] heard:", text);
           setTranscript(text);
-          console.log("[dictation]", text);
+          if (text) {
+            const reply = respond(text);
+            console.log("[chat] reply:", reply);
+            say(reply);
+          } else {
+            console.warn("[chat] dictation returned nothing");
+          }
         } catch (err) {
-          console.error("[dictation]", err);
+          console.error("[chat] dictation failed:", err);
         } finally {
           setListening(false);
         }
       },
-      onError: (err) => console.error("[wakeword]", err),
+      onError: (err) => console.error("[chat] wakeword error:", err),
     }).catch((err) => {
-      console.error("[wakeword] failed to start:", err);
+      console.error("[chat] wakeword failed to start:", err);
       setRunning(false);
     });
     return () => {

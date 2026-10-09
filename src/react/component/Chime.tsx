@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef } from "react";
 import { useAtom, useAtomValue } from "jotai";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { playChime, randomChord } from "../audio/tone";
-import { notificationSoundAtom } from "../lib/atoms";
+import { notificationSoundAtom, ttsVoiceAtom } from "../lib/atoms";
 import { titleCase } from "../lib/state";
 
 // custom sound files: drop .mp3/.ogg/.wav/.m4a files into public/sounds/
@@ -78,6 +78,27 @@ export function useChime({
   }, [type, interval]);
 }
 
+export function speak(text: string, voiceURI: string) {
+  if (!("speechSynthesis" in window)) {
+    console.error("[tts] speechSynthesis not supported");
+    return;
+  }
+  const voices = speechSynthesis.getVoices();
+  const voice = voices.find((v) => v.voiceURI === voiceURI);
+  if (voiceURI && !voice) console.warn("[tts] voice not found:", voiceURI, "available:", voices);
+  const u = new SpeechSynthesisUtterance(text);
+  if (voice) u.voice = voice;
+  u.onerror = (e) => console.error("[tts] speech error:", e.error, { voiceURI, voice });
+  u.onstart = () => console.log("[tts] speaking", voice?.name ?? "default");
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+  setTimeout(() => {
+    if (speechSynthesis.speaking) console.log("[tts] speaking...");
+    else if (speechSynthesis.pending) console.log("[tts] pending (not speaking)");
+    else console.log("[tts] not speaking, not pending — likely failed silently");
+  }, 500);
+}
+
 export default function Chime({
   type,
   setType,
@@ -90,6 +111,27 @@ export default function Chime({
   setInterval_: (v: number) => void;
 }) {
   const [notifSound, setNotifSound] = useAtom(notificationSoundAtom);
+  const [voice, setVoice] = useAtom(ttsVoiceAtom);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+
+  useEffect(() => {
+    if (!("speechSynthesis" in window)) return;
+    const load = () => {
+      const vs = speechSynthesis
+        .getVoices()
+        .filter((v) => v.lang.toLowerCase().startsWith("en"))
+        // espeak-ng floods each language with dozens of '+Variant' voices; keep base ones
+        .filter((v) => !v.name.includes("+"))
+      console.log("[tts] voices loaded:", vs.length, vs.map((v) => `${v.name} (${v.lang})`));
+      setVoices(vs);
+    };
+    load();
+    speechSynthesis.onvoiceschanged = load;
+    return () => {
+      speechSynthesis.onvoiceschanged = null;
+    };
+  }, []);
+
   return (
     <div className="grid grid-cols-2 gap-y-1 gap-x-2">
       <label
@@ -153,6 +195,36 @@ export default function Chime({
           </option>
         ))}
       </select>
+
+      <div className="col-span-2 my-2 border-t border-current opacity-20" />
+
+      <label htmlFor="tts-voice" className="flex justify-between items-center">
+        Voice
+      </label>
+      <select
+        id="tts-voice"
+        value={voice}
+        onChange={(e) => {
+          setVoice(e.target.value);
+          speak("Hello, this is a test.", e.target.value);
+        }}
+        className="w-full"
+      >
+        <option value="">System default</option>
+        {voices.map((v) => (
+          <option key={v.voiceURI} value={v.voiceURI}>
+            {v.name} ({v.lang})
+          </option>
+        ))}
+      </select>
+
+      <label className="flex justify-between items-center">Test</label>
+      <button
+        type="button"
+        onClick={() => speak("Hello, this is a voice test.", voice)}
+      >
+        Speak
+      </button>
     </div>
   );
 }

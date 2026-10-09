@@ -55,6 +55,8 @@ export const chimeTypeAtom = atomWithStorage<string>("chimeType", "chime");
 /** global notification sound, shared by pomodoro, seating reminder, posture */
 export const notificationSoundAtom = atomWithStorage<string>("notificationSound", "chime");
 
+export const ttsVoiceAtom = atomWithStorage<string>("ttsVoice", "");
+
 /** currently playing podcast episode, null = not playing (list shown) */
 export interface PlayingEpisode {
   title: string | null;

@@ -122,6 +122,7 @@ function HelperButtons({ system }: { system: ReturnType<typeof useSystem> }) {
 
 /* All sub-pages of the menu: header title + content. Rendered in ONE place below. */
 const menuTitles = {
+  chat: "💬 Chat",
   pomodoro: "🍅 Pomodoro",
   seating: "🪑 Seating",
   posture: "🧍 Posture",
@@ -130,7 +131,6 @@ const menuTitles = {
   podcast: "🎙️ Podcasts",
   weather: "🌤️ Weather",
   radio: "📻 Radio",
-  chat: "💬 Chat",
 } as const;
 
 type MenuViewName = keyof typeof menuTitles;
@@ -172,15 +172,15 @@ function MenuView({
           setInterval_={chime.set.interval}
         />
       )}
-      {view === "posture" && <PosturePage />}
-      {view === "podcast" && <PodcastPage />}
-      {view === "weather" && <WeatherPage />}
-      {view === "radio" && <RadioPage />}
       {view === "chat" && (
         <div className="grid place-items-center p-8">
           <ChatPage />
         </div>
       )}
+      {view === "posture" && <PosturePage />}
+      {view === "podcast" && <PodcastPage />}
+      {view === "weather" && <WeatherPage />}
+      {view === "radio" && <RadioPage />}
     </>
   );
 }
@@ -205,6 +205,7 @@ function ClockPage({
   const showWeatherWidget = useAtomValue(weatherWidgetAtom);
 
   const menuItems = {
+    chat: "💬 Chat",
     podcast: "🎙️ Podcasts",
     radio: "📻 Radio",
     pomodoro: "🍅 Pomodoro",
@@ -213,7 +214,6 @@ function ClockPage({
     seating: "🪑 Seating",
     theme: "🎨 Theme",
     chime: "🔔 Chime",
-    chat: "💬 Chat",
   } as const;
 
   const selectMenuItem = (go: MenuViewName) => setMenu(go);
@@ -290,7 +290,7 @@ function ClockPage({
               />
             ) : (
               <ul className="grid grid-cols-2 gap-2">
-                {/*<div></div>*/}
+                <div></div>
                 {(Object.entries(menuItems) as [MenuViewName, string][]).map(
                   ([go, label]) => (
                     <li key={label}>
