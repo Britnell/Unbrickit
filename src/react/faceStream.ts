@@ -28,6 +28,10 @@ let frameCount = 0;
 /** sample every 10th frame (~6Hz at 60fps) */
 const SAMPLE_EVERY = 10;
 
+/** consecutive detectForVideo throws before we consider the landmarker dead */
+const MAX_CONSECUTIVE_DETECT_ERRORS = 30;
+let detectErrors = 0;
+
 async function start() {
   if (starting) return;
   starting = true;
@@ -56,9 +60,26 @@ async function start() {
         const now = performance.now();
         try {
           const result = landmarker.detectForVideo(video, now);
+          detectErrors = 0;
           for (const l of listeners.keys()) l({ result, now });
         } catch (err) {
           console.error("[faceStream] detect failed:", err);
+          detectErrors++;
+          if (detectErrors >= MAX_CONSECUTIVE_DETECT_ERRORS) {
+            // landmarker is stuck (e.g. dead WebGL context): tear the stream
+            // down and notify subscribers so their UI resets
+            console.error(
+              "[faceStream] detect failed",
+              MAX_CONSECUTIVE_DETECT_ERRORS,
+              "times in a row — restarting stream",
+            );
+            const onErrors = [...listeners.values()];
+            listeners.clear();
+            stop();
+            detectErrors = 0;
+            for (const onError of onErrors) onError?.();
+            return;
+          }
         }
       }
       raf = requestAnimationFrame(loop);
@@ -85,6 +106,7 @@ function stop() {
   video = null;
   lastVideoTime = -1;
   frameCount = 0;
+  detectErrors = 0;
 }
 
 /**
