@@ -117,9 +117,19 @@ const menuTitles = {
   podcast: "🎙️ Podcasts",
   weather: "🌤️ Weather",
   radio: "📻 Radio",
+  chat: "💬 Chat",
 } as const;
 
 type MenuViewName = keyof typeof menuTitles;
+
+function ChatPage() {
+  const [running, setRunning] = useState(false);
+  return (
+    <button className="button" onClick={() => setRunning(!running)}>
+      {running ? "⏹ Stop" : "▶ Start"}
+    </button>
+  );
+}
 
 function MenuView({
   view,
@@ -162,6 +172,11 @@ function MenuView({
       {view === "podcast" && <PodcastPage />}
       {view === "weather" && <WeatherPage />}
       {view === "radio" && <RadioPage />}
+      {view === "chat" && (
+        <div className="grid place-items-center p-8">
+          <ChatPage />
+        </div>
+      )}
     </>
   );
 }
@@ -194,6 +209,7 @@ function ClockPage({
     seating: "🪑 Seating",
     theme: "🎨 Theme",
     chime: "🔔 Chime",
+    chat: "💬 Chat",
   } as const;
 
   const selectMenuItem = (go: MenuViewName) => setMenu(go);
