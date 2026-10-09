@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { startWakeword, stopWakeword } from "../wakeword/wakeword";
-import { dictateOnce } from "../dication";
+import { dictateOnce } from "../audio/dication";
 
 export default function ChatPage() {
   const [running, setRunning] = useState(false);
