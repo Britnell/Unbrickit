@@ -5,12 +5,12 @@ import type {
   FaceLandmarker,
   NormalizedLandmark,
 } from "@mediapipe/tasks-vision";
-import { headPose } from "../face/face";
-import { subscribeFace, faceLoadingAtom } from "../face/faceStream";
-import { SlouchDetector } from "../face/postureDetect";
+import { headPose } from "../posture/face";
+import { subscribeFace, faceLoadingAtom } from "../posture/faceStream";
+import { SlouchDetector } from "../posture/postureDetect";
 import { YDriftMeter, type DriftValue } from "../drift";
 import { useNotificationSound } from "./Chime";
-import { useEngine } from "../face/useEngine";
+import { useEngine } from "../posture/useEngine";
 
 /* ------------------------------- thresholds ------------------------------- */
 

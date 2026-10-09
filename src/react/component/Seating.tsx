@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import { clockTimeAtom } from "../atoms";
-import { useEngine } from "../face/useEngine";
+import { useEngine } from "../posture/useEngine";
 import { atomWithStorage } from "jotai/utils";
-import { headPose } from "../face/face";
-import { subscribeFace, faceLoadingAtom } from "../face/faceStream";
+import { headPose } from "../posture/face";
+import { subscribeFace, faceLoadingAtom } from "../posture/faceStream";
 import { useNotificationSound } from "./Chime";
 import type {
   FaceLandmarker,

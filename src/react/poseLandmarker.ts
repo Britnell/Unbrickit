@@ -1,5 +1,5 @@
 import { PoseLandmarker } from "@mediapipe/tasks-vision";
-import { getVisionRuntime } from "./face/visionRuntime";
+import { getVisionRuntime } from "./posture/visionRuntime";
 
 export const MODELS = {
   lite: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",
