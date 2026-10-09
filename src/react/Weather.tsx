@@ -95,24 +95,29 @@ export default function WeatherPage() {
         </div>
         {weather && (
           <>
-          <div className="flex items-center justify-center gap-4 py-2">
-            <span className="text-7xl">
-              {weather.weatherEmoji}
-              {weather.windSpeed > 30 && "💨"}
-            </span>
-            <span className="text-7xl font-bold">
-              {Math.round(weather.temperature)}°
-            </span>
-          </div>
-          <div className="flex items-center justify-center gap-4 text-xl">
-            <span>
-              <span className="text-sm text-gray-500">high / low </span>
-              {Math.round(weather.daily.tempMax)} / {Math.round(weather.daily.tempMin)}
-            </span>
-            {weather.daily.rainProbMax >= 30 && (
-              <span>🌧️ {weather.daily.rainProbMax}%{weather.daily.rainHours > 0 && ` (${weather.daily.rainHours}h)`}</span>
-            )}
-          </div>
+            <div className="flex items-center justify-center gap-4 py-2">
+              <span className="text-7xl">
+                {weather.weatherEmoji}
+                {weather.windSpeed > 30 && "💨"}
+              </span>
+              <span className="text-7xl font-bold">
+                {Math.round(weather.temperature)}°
+              </span>
+            </div>
+            <div className="flex items-center justify-center gap-4 text-xl">
+              <span>
+                <span className="text-sm text-gray-500">high / low </span>
+                {Math.round(weather.daily.tempMax)} /{" "}
+                {Math.round(weather.daily.tempMin)}
+              </span>
+              {weather.daily.rainProbMax >= 30 && (
+                <span>
+                  ☔ {weather.daily.rainProbMax}%
+                  {weather.daily.rainHours > 0 &&
+                    ` (${weather.daily.rainHours}h)`}
+                </span>
+              )}
+            </div>
           </>
         )}
         {widgetCheckbox}
