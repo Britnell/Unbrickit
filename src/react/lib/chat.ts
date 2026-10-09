@@ -1,13 +1,28 @@
 import { getDefaultStore } from "jotai";
 import { weatherAtom } from "../lib/atoms";
+import { playingRadioAtom, startRadio, stopRadio } from "./useRadio";
 
 /** returns the spoken reply text */
 export function respond(transcript: string): string {
   const text = transcript.toLowerCase();
-  const reply = /\bweather\b/.test(text)
-    ? weatherSentence()
-    : "I'm sorry dave, I'm afraid I can't do that.";
+  const reply = /\bradio\b/.test(text)
+    ? radioSentence(text)
+    : /\bweather\b/.test(text)
+      ? weatherSentence()
+      : "I'm sorry dave, I'm afraid I can't do that.";
   return reply;
+}
+
+function radioSentence(text: string): string {
+  const playing = getDefaultStore().get(playingRadioAtom);
+  const wantsStop = /\b(stop|pause)\b/.test(text);
+
+  if (wantsStop) {
+    stopRadio();
+    return playing ? "Radio stopped" : "The radio isn't playing";
+  }
+  if (!playing) startRadio();
+  return playing ? "The radio is already playing" : "Radio on";
 }
 
 function weatherSentence(): string {

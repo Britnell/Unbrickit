@@ -30,8 +30,8 @@ import {
   playingPodcastAtom,
   playingPodcastPausedAtom,
   weatherWidgetAtom,
-  playingRadioAtom,
 } from "./lib/atoms";
+import { playingRadioAtom } from "./lib/useRadio";
 import { useLocalStorage } from "./useLocalStorage";
 
 /* ---------------------------------- state --------------------------------- */
