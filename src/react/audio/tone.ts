@@ -39,6 +39,31 @@ export function getAudioContext(): AudioContext {
   return sharedCtx;
 }
 
+// iOS/Android suspend the AudioContext on lock/background and it won't
+// silently resume: wait until it's actually running before scheduling notes.
+async function ensureRunning(ctx: AudioContext): Promise<AudioContext> {
+  if (ctx.state !== "running") {
+    try {
+      await ctx.resume();
+    } catch {
+      /* ignore */
+    }
+  }
+  return ctx;
+}
+
+let unlocked = false;
+/** mobile browsers require a user gesture to start audio; unlock on first tap */
+function unlockOnGesture() {
+  if (unlocked) return;
+  unlocked = true;
+  void ensureRunning(getAudioContext());
+  window.addEventListener("touchend", () => void ensureRunning(getAudioContext()), {
+    passive: true,
+  });
+  window.addEventListener("click", () => void ensureRunning(getAudioContext()));
+}
+
 export function noteToFrequency(note: string): number {
   const match = note.toUpperCase().match(/^([A-G][#B]?)(\d+)$/);
   if (!match) return 0;
@@ -49,8 +74,9 @@ export function noteToFrequency(note: string): number {
   return frequency;
 }
 
-export function playNotes(notes: Note[], staggerDelay = 0.1): void {
-  const audioContext = getAudioContext();
+export async function playNotes(notes: Note[], staggerDelay = 0.1): Promise<void> {
+  unlockOnGesture();
+  const audioContext = await ensureRunning(getAudioContext());
 
   let cumulativeTime = 0;
 
@@ -110,8 +136,9 @@ export function playChime(): void {
   );
 }
 
-export function notify(): void {
-  const audioContext = getAudioContext();
+export async function notify(): Promise<void> {
+  unlockOnGesture();
+  const audioContext = await ensureRunning(getAudioContext());
   const beep = (startTime: number) => {
     const osc = audioContext.createOscillator();
     const gain = audioContext.createGain();
