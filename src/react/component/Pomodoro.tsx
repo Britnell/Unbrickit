@@ -1,45 +1,11 @@
 import { useEffect } from "react";
 import { useAtom, useAtomValue } from "jotai";
-import { getDefaultStore } from "jotai";
 import {
   clockTimeAtom,
   pomodoroStateAtom,
   type PomodoroMode,
 } from "../lib/atoms";
 import { useNotificationSound } from "./Chime";
-
-const store = getDefaultStore();
-
-/** voice/UI start: always begin a fresh work interval */
-export function startPomodoro() {
-  const s = store.get(pomodoroStateAtom);
-  store.set(pomodoroStateAtom, {
-    ...s,
-    mode: "focus",
-    duration: s.focusMin * 60000,
-    startTime: Date.now(),
-  });
-  persist();
-}
-
-/** voice/UI stop: reset to idle work interval */
-export function stopPomodoro() {
-  const s = store.get(pomodoroStateAtom);
-  store.set(pomodoroStateAtom, {
-    ...s,
-    mode: "focus",
-    duration: s.focusMin * 60000,
-    startTime: null,
-  });
-  persist();
-}
-
-function persist() {
-  localStorage.setItem(
-    "pomodoro-state",
-    JSON.stringify(store.get(pomodoroStateAtom)),
-  );
-}
 
 export function usePomodoro() {
   const [state, setState] = useAtom(pomodoroStateAtom);

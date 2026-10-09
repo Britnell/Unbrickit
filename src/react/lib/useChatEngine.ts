@@ -1,11 +1,22 @@
 import { useEffect, useRef } from "react";
-import { useSetAtom } from "jotai";
+import { useAtom, useSetAtom, useAtomValue } from "jotai";
+import { usePomodoro } from "../component/Pomodoro";
 import { startWakeword, stopWakeword } from "../wakeword/wakeword";
 import { dictateOnce } from "../audio/dication";
-import { useAtom } from "jotai";
-import { chatRunningAtom, chatStateAtom, chatTranscriptAtom } from "./atoms";
+import {
+  chatRunningAtom,
+  chatStateAtom,
+  chatTranscriptAtom,
+  playingPodcastAtom,
+  playingPodcastPausedAtom,
+  pomodoroStateAtom,
+  weatherAtom,
+  weatherLocationAtom,
+} from "./atoms";
 import { useTts } from "./useTts";
-import { respond } from "./chat";
+import { parseCommand, weatherReply } from "./chat";
+import { playingRadioAtom, startRadio, stopRadio } from "./useRadio";
+import { startPodcast, stopPodcast } from "./usePodcast";
 
 let engineMounted = false;
 
@@ -20,6 +31,87 @@ export function useChatEngine() {
   const setTranscript = useSetAtom(chatTranscriptAtom);
   const say = useTts();
   const listeningRef = useRef(false);
+
+  // current state for the voice commands
+  const podcastPlaying = useAtomValue(playingPodcastAtom) !== null;
+  const podcastPaused = useAtomValue(playingPodcastPausedAtom);
+  const radioPlaying = useAtomValue(playingRadioAtom);
+  const weather = useAtomValue(weatherAtom);
+  const hasCity = useAtomValue(weatherLocationAtom) !== null;
+  const pomodoroRunning = useAtomValue(pomodoroStateAtom).startTime !== null;
+  const pomodoro = usePomodoro();
+
+  /** execute a parsed { tool, action } and return the spoken reply */
+  function runCommand(
+    tool: "podcast" | "radio" | "pomodoro" | "weather",
+    action: "start" | "stop",
+  ): string {
+    switch (tool) {
+      case "podcast":
+        if (action === "stop") {
+          if (!podcastPlaying) return "";
+          stopPodcast();
+          return "Podcast stopped";
+        }
+        if (podcastPlaying && !podcastPaused)
+          return "The podcast is already playing";
+        return startPodcast() ? "Podcast on" : "There are no podcasts";
+
+      case "radio":
+        if (action === "stop") {
+          if (!radioPlaying) return "";
+          stopRadio();
+          return "Radio stopped";
+        }
+        if (!radioPlaying) {
+          startRadio();
+          return "Radio on";
+        }
+        return "The radio is already playing";
+
+      case "pomodoro":
+        if (action === "stop") {
+          if (!pomodoroRunning) return "";
+          pomodoro.stop();
+          return "Timer stopped";
+        }
+        if (pomodoroRunning) return "The timer is already running";
+        pomodoro.start();
+        return "Timer started";
+
+      case "weather":
+        if (!weather)
+          return hasCity ? "Weather hasn't loaded yet" : "No city selected";
+        return weatherReply(weather);
+    }
+  }
+
+  /** bare "stop": stop whatever audio is running (radio, podcast) */
+  function stopAudio(): string {
+    const stopped: string[] = [];
+    if (radioPlaying) {
+      stopRadio();
+      stopped.push("radio");
+    }
+    if (podcastPlaying) {
+      stopPodcast();
+      stopped.push("podcast");
+    }
+    return stopped.length
+      ? `Stopped the ${stopped.join(" and the ")}`
+      : "";
+  }
+
+  function respond(transcript: string): string {
+    const cmd = parseCommand(transcript);
+    if (cmd === "stopAudio") return stopAudio();
+    if (cmd) return runCommand(cmd.tool, cmd.action);
+    return "I'm sorry dave, I'm afraid I can't do that.";
+  }
+
+  // dictation is async, so keep the latest respond (with fresh state)
+  const respondRef = useRef(respond);
+  respondRef.current = respond;
 
   useEffect(() => {
     if (!running || engineMounted) return;
@@ -36,9 +128,10 @@ export function useChatEngine() {
           console.log("[chat] heard:", text);
           setTranscript(text);
           if (text) {
-            const reply = respond(text);
+            const reply = respondRef.current(text);
             console.log("[chat] reply:", reply);
-            say(reply);
+            if (reply) say(reply);
+            else setChatState("idle");
           } else {
             console.warn("[chat] dictation returned nothing");
             setChatState("idle");
