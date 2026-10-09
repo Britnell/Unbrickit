@@ -1,20 +1,38 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { startWakeword, stopWakeword } from "../wakeword/wakeword";
 import { dictateOnce } from "../audio/dication";
 import { useTts } from "../lib/useTts";
 import { respond } from "../lib/chat";
+import { useLocalStorage } from "../useLocalStorage";
+
+export function ChatWidget({ onOpen }: { onOpen: () => void }) {
+  const [running] = useLocalStorage("chatRunning", false);
+  if (!running) return null;
+  return (
+    <button
+      className="button button-glass flex items-center gap-1"
+      onClick={onOpen}
+      title="Chat"
+    >
+      💬
+    </button>
+  );
+}
 
 export default function ChatPage() {
-  const [running, setRunning] = useState(false);
+  const [running, setRunning] = useLocalStorage("chatRunning", false);
   const [transcript, setTranscript] = useState("");
   const say = useTts();
   const [listening, setListening] = useState(false);
+  const listeningRef = useRef(false);
 
   useEffect(() => {
     if (!running) return;
     console.log("[chat] starting…");
     startWakeword(["hey_jarvis"], {
-      onDetect: async ({ keyword, score }) => {
+      onDetect: async () => {
+        if (listeningRef.current) return; // ignore re-triggers during dictation
+        listeningRef.current = true;
         setListening(true);
         try {
           const { transcript: text } = await dictateOnce();
@@ -30,6 +48,7 @@ export default function ChatPage() {
         } catch (err) {
           console.error("[chat] dictation failed:", err);
         } finally {
+          listeningRef.current = false;
           setListening(false);
         }
       },

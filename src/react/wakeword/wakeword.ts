@@ -30,23 +30,24 @@ export async function startWakeword(
   await stopWakeword();
 
   const base = import.meta.env.BASE_URL;
-  engine = new WakeWordEngine({
+  const eng = new WakeWordEngine({
     baseAssetUrl: `${base}openwakeword/models`,
     ortWasmPath: "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.23.2/dist/",
     keywords,
     detectionThreshold: threshold,
   });
+  engine = eng;
 
   unsubs.push(
-    engine.on("detect", (e: DetectEvent) => handlers.onDetect?.(e)),
-    engine.on("ready", () => handlers.onReady?.()),
-    engine.on("speech-start", () => handlers.onSpeech?.(true)),
-    engine.on("speech-end", () => handlers.onSpeech?.(false)),
-    engine.on("error", (err: unknown) => handlers.onError?.(err)),
+    eng.on("detect", (e: DetectEvent) => handlers.onDetect?.(e)),
+    eng.on("ready", () => handlers.onReady?.()),
+    eng.on("speech-start", () => handlers.onSpeech?.(true)),
+    eng.on("speech-end", () => handlers.onSpeech?.(false)),
+    eng.on("error", (err: unknown) => handlers.onError?.(err)),
   );
 
-  await engine.load();
-  await engine.start(); // prompts for mic
+  await eng.load();
+  await eng.start(); // prompts for mic
 }
 
 /** Change which loaded keywords can emit detections. */
