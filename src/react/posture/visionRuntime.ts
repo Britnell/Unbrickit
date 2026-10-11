@@ -8,7 +8,8 @@ let visionPromise: Promise<
 export function getVisionRuntime() {
   visionPromise ??= FilesetResolver.forVisionTasks(
     // wasm: https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm
-    "/mediapipe-wasm",
+    // must be relative to vite `base` ("/Unbrickit/") or the script 404s
+    `${import.meta.env.BASE_URL}mediapipe-wasm`,
   );
   return visionPromise;
 }

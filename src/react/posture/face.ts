@@ -7,7 +7,7 @@ export async function createFaceLandmarker() {
     baseOptions: {
       // model: https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task
       modelAssetPath:
-        "/models/face_landmarker.task",
+        `${import.meta.env.BASE_URL}models/face_landmarker.task`,
       delegate: "GPU",
     },
     runningMode: "VIDEO",
