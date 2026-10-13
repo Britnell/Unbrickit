@@ -1,5 +1,5 @@
-import { radioAudio } from "./useRadio";
-import { podcastAudio } from "./usePodcast";
+import { radioAudio } from "../lib/useRadio";
+import { podcastAudio } from "../lib/usePodcast";
 
 /** remember pre-duck volumes so restore is exact */
 const vols = new Map<HTMLAudioElement, number>();

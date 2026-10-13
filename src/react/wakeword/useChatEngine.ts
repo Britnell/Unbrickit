@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
 import { usePomodoro } from "../component/Pomodoro";
-import { startWakeword, stopWakeword } from "../wakeword/wakeword";
+import { startWakeword, stopWakeword } from "./wakeword";
 import { dictateOnce } from "../audio/dication";
 import {
   chatRunningAtom,
@@ -12,12 +12,12 @@ import {
   pomodoroStateAtom,
   weatherAtom,
   weatherLocationAtom,
-} from "./atoms";
-import { useTts } from "./useTts";
+} from "../lib/atoms";
+import { useTts } from "../lib/useTts";
 import { parseCommand, weatherReply } from "./chat";
-import { playingRadioAtom, startRadio, stopRadio } from "./useRadio";
-import { startPodcast, stopPodcast } from "./usePodcast";
-import { duckMedia } from "./audioFeedback";
+import { playingRadioAtom, startRadio, stopRadio } from "../lib/useRadio";
+import { startPodcast, stopPodcast } from "../lib/usePodcast";
+import { duckMedia } from "../audio/audioFeedback";
 import { notify } from "../audio/tone";
 
 import { timeText } from "../audio/speech";
@@ -25,15 +25,28 @@ import { timeText } from "../audio/speech";
 let engineMounted = false;
 
 const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 function ordinalDay(n: number): string {
   const suffix =
-    n % 10 === 1 && n !== 11 ? "st"
-    : n % 10 === 2 && n !== 12 ? "nd"
-    : n % 10 === 3 && n !== 13 ? "rd"
-    : "th";
+    n % 10 === 1 && n !== 11
+      ? "st"
+      : n % 10 === 2 && n !== 12
+        ? "nd"
+        : n % 10 === 3 && n !== 13
+          ? "rd"
+          : "th";
   return `${n}${suffix}`;
 }
 
@@ -124,9 +137,7 @@ export function useChatEngine() {
       stopPodcast();
       stopped.push("podcast");
     }
-    return stopped.length
-      ? `Stopped the ${stopped.join(" and the ")}`
-      : "";
+    return stopped.length ? `Stopped the ${stopped.join(" and the ")}` : "";
   }
 
   function respond(transcript: string): string {
@@ -156,12 +167,16 @@ export function useChatEngine() {
           // fast path: parse interim chunks and fire as soon as a tool
           // command matches (e.g. "radio" + "stop"). bare "stop"
           // (stopAudio) is only trusted on the final transcript.
-          const { transcript: text } = await dictateOnce("en-US", 10000, (interim) => {
-            const cmd = parseCommand(interim);
-            const matched = !!cmd && cmd !== "stopAudio";
-            if (matched) setTranscript(interim);
-            return matched;
-          });
+          const { transcript: text } = await dictateOnce(
+            "en-US",
+            10000,
+            (interim) => {
+              const cmd = parseCommand(interim);
+              const matched = !!cmd && cmd !== "stopAudio";
+              if (matched) setTranscript(interim);
+              return matched;
+            },
+          );
           console.log("[chat] heard:", text);
           setTranscript(text);
           if (text) {

@@ -1,15 +1,10 @@
-import type { CurrentWeather } from "../weather";
+import type { CurrentWeather } from "../lib/weather";
 
 /** voice command parsing: transcript -> { tool, action }.
  *  pure logic only — the actions are executed in useChatEngine. */
 
 export type Tool =
-  | "podcast"
-  | "radio"
-  | "pomodoro"
-  | "weather"
-  | "time"
-  | "date";
+  "podcast" | "radio" | "pomodoro" | "weather" | "time" | "date";
 export type Action = "start" | "stop";
 
 export interface ParsedCommand {
@@ -20,7 +15,9 @@ export interface ParsedCommand {
 /** "play podcast" and "start podcast" both give { tool, action: "start" };
  *  "pause"/"stop" both give action "stop". a bare "stop" (no tool word)
  *  is handled by stopAudio(). */
-export function parseCommand(transcript: string): ParsedCommand | "stopAudio" | null {
+export function parseCommand(
+  transcript: string,
+): ParsedCommand | "stopAudio" | null {
   const text = transcript.toLowerCase();
 
   const tool: Tool | null = /\bpodcast\b/.test(text)
@@ -33,7 +30,7 @@ export function parseCommand(transcript: string): ParsedCommand | "stopAudio" | 
           ? "weather"
           : /\bwhat\b/.test(text) && /\btime\b/.test(text)
             ? "time"
-            : /\bwhat\b/.test(text) && (/\bdate\b|\bday\b/.test(text))
+            : /\bwhat\b/.test(text) && /\bdate\b|\bday\b/.test(text)
               ? "date"
               : null;
 

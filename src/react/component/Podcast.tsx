@@ -1,7 +1,7 @@
 import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
 import { playingPodcastAtom } from "../lib/atoms";
-import { useLocalStorage } from "../useLocalStorage";
+import { useLocalStorage } from "../lib/useLocalStorage";
 import { usePodcast, playEpisode } from "../lib/usePodcast";
 
 export type Podcast = {
@@ -229,7 +229,6 @@ function EpisodePlayer() {
   }, []);
 
   if (!episode) return null;
-
 
   const skip = (s: number) => {
     audio.currentTime = Math.max(0, audio.currentTime + s);

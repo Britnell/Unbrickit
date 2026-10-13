@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Toaster } from "sonner";
-import { useChatEngine } from "./lib/useChatEngine";
+import { useChatEngine } from "./wakeword/useChatEngine";
 import { useAtomValue, useAtom } from "jotai";
 import Clock from "./component/Clock";
 import Theme from "./component/Theme";
@@ -33,7 +33,7 @@ import {
   weatherWidgetAtom,
 } from "./lib/atoms";
 import { playingRadioAtom } from "./lib/useRadio";
-import { useLocalStorage } from "./useLocalStorage";
+import { useLocalStorage } from "./lib/useLocalStorage";
 
 /* ---------------------------------- state --------------------------------- */
 

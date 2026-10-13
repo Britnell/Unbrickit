@@ -1,7 +1,7 @@
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { colors } from "./state";
-import type { CurrentWeather } from "../weather";
+import type { CurrentWeather } from "./weather";
 
 export interface StoredLocation {
   name: string;
@@ -81,7 +81,10 @@ export function loadPomodoro(): PomodoroState {
 export const pomodoroStateAtom = atom<PomodoroState>(loadPomodoro());
 
 /** global notification sound, shared by pomodoro, seating reminder, posture */
-export const notificationSoundAtom = atomWithStorage<string>("notificationSound", "chime");
+export const notificationSoundAtom = atomWithStorage<string>(
+  "notificationSound",
+  "chime",
+);
 
 export const ttsVoiceAtom = atomWithStorage<string>("ttsVoice", "");
 
@@ -106,7 +109,6 @@ export const playingPodcastAtom = atom<PlayingEpisode | null>(null);
 /** true while the global podcast audio is paused */
 export const playingPodcastPausedAtom = atom(false);
 
-
 /** stored weather location, shared by weather page + widget */
 export const weatherLocationAtom = atomWithStorage<StoredLocation | null>(
   "weatherLocation",
@@ -117,4 +119,7 @@ export const weatherLocationAtom = atomWithStorage<StoredLocation | null>(
 export const weatherAtom = atom<CurrentWeather | null>(null);
 
 /** show the weather widget in the corner */
-export const weatherWidgetAtom = atomWithStorage<boolean>("weatherWidget", false);
+export const weatherWidgetAtom = atomWithStorage<boolean>(
+  "weatherWidget",
+  false,
+);

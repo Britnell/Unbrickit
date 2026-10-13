@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAtom, useAtomValue } from "jotai";
-import { searchCities, getWeather, type GeoResult } from "../weather";
+import { searchCities, getWeather, type GeoResult } from "../lib/weather";
 import {
   weatherLocationAtom,
   weatherAtom,
