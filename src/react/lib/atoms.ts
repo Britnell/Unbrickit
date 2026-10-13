@@ -1,6 +1,6 @@
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
-import { colors, fonts } from "./state";
+import { colors } from "./state";
 import type { CurrentWeather } from "../weather";
 
 export interface StoredLocation {
@@ -20,11 +20,11 @@ export interface Theme {
 }
 
 export const themeAtom = atomWithStorage<Theme>("theme", {
-  font: fonts[0],
-  fontSize: 30,
+  font: "bagel-fat-one",
+  fontSize: 32,
   fontWeight: 400,
   hue: 0,
-  colorMode: "pastel",
+  colorMode: "daylight",
   darkMode: false,
 });
 
