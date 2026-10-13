@@ -441,8 +441,8 @@ export default function SeatingPage() {
 
   // Case 3: running and calibrated -> full UI
   return (
-    <div className="flex flex-row flex-wrap justify-center mx-auto gap-2 max-w-full max-h-[calc(100svh-5rem)]">
-      <div className="flex flex-col min-w-[200px]">
+    <div className="flex flex-row justify-center items-stretch mx-auto gap-2 w-[min(560px,calc(100vw-5rem))]">
+      <div className="flex flex-col flex-1 basis-0 min-w-0">
         {faceError && (
           <div className="mb-2 bg-red-500/70 px-3 py-2 rounded text-center max-w-[280px]">
             <div className="text-lg font-bold">Couldn't start camera</div>
@@ -483,7 +483,7 @@ export default function SeatingPage() {
         {overdue && <div className="mb-2 text-lg">⏰ Time for a break!</div>}
       </div>
 
-      <div className="flex flex-col min-w-[200px] p-2">
+      <div className="flex flex-col flex-1 basis-0 min-w-0 p-2">
         <label className="text-sm self-start">Seating reminder</label>
         <select
           value={reminder}
