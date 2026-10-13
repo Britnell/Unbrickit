@@ -4,7 +4,11 @@ import { clockTimeAtom } from "../lib/atoms";
 import { useEngine } from "../posture/useEngine";
 import { atomWithStorage } from "jotai/utils";
 import { headPose } from "../posture/face";
-import { subscribeFace, faceLoadingAtom, faceErrorAtom } from "../posture/faceStream";
+import {
+  subscribeFace,
+  faceLoadingAtom,
+  faceErrorAtom,
+} from "../posture/faceStream";
 import { useNotificationSound } from "./Chime";
 import type {
   FaceLandmarker,
@@ -441,7 +445,7 @@ export default function SeatingPage() {
 
   // Case 3: running and calibrated -> full UI
   return (
-    <div className="flex flex-col mx-auto [@media(max-height:600px)]:w-[min(560px,calc(100vw-6rem))] [@media(max-height:600px)]:flex-row [@media(max-height:600px)]:gap-2">
+    <div className="flex flex-col mx-auto [@media(max-height:600px)]:w-[min(480px,calc(100vw-6rem))] [@media(max-height:600px)]:flex-row [@media(max-height:600px)]:gap-2">
       <div className="flex flex-col flex-1">
         {faceError && (
           <div className="mb-2 bg-red-500/70 px-3 py-2 rounded text-center max-w-[280px]">
