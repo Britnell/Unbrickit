@@ -388,16 +388,16 @@ export default function SeatingPage() {
 
   return (
     <div className="flex flex-row flex-wrap justify-center mx-auto gap-2 max-w-full max-h-[calc(100svh-5rem)]">
-      <div className="flex flex-col min-w-[200px]">
-        {faceError && (
-          <div className="mb-2 bg-red-500/70 px-3 py-2 rounded text-center max-w-[280px]">
-            <div className="text-lg font-bold">Couldn't start camera</div>
-            <div className="text-sm">{faceError}</div>
-          </div>
-        )}
+      {!calibrated ? (
+        <div className="flex flex-col min-w-[200px] max-w-[280px]">
+          {faceError && (
+            <div className="mb-2 bg-red-500/70 px-3 py-2 rounded text-center">
+              <div className="text-lg font-bold">Couldn't start camera</div>
+              <div className="text-sm">{faceError}</div>
+            </div>
+          )}
 
-        {!calibrated && (
-          <div className="mb-2 bg-red-500/70 px-3 py-2 rounded text-center max-w-[280px]">
+          <div className="mb-2 bg-red-500/70 px-3 py-2 rounded text-center">
             <div className="text-2xl">⚠️</div>
             <div className="text-lg font-bold">Camera not calibrated</div>
             <div className="text-sm">
@@ -405,82 +405,101 @@ export default function SeatingPage() {
               won't be detected.
             </div>
           </div>
-        )}
-
-        {isRunning && !seated && calibrated && (
-          <div className="mb-2 bg-white/30 px-2 py-1 rounded text-center">
-            <div className="text-4xl">🕳️</div>
-            <div className="text-lg">Not at desk</div>
-            <div className="text-3xl tabular-nums">
-              0<span className="text-lg text-gray-500"> min</span>
-            </div>
-          </div>
-        )}
-
-        {isRunning && seated && calibrated && (
-          <div className="mb-2 bg-white/30 px-2 py-1 rounded text-center">
-            <div className="text-4xl">🪑</div>
-            <div className="text-lg">At desk</div>
-            <div className="text-3xl tabular-nums">
-              {Math.floor(seatedMs / 60000)}:
-              {String(Math.floor((seatedMs % 60000) / 1000)).padStart(2, "0")}
-              <span className="text-lg text-gray-500"> min</span>
-            </div>
-          </div>
-        )}
-
-        <div className="mb-2 text-lg tabular-nums">
-          {seatedMinutesToday >= 60 && (
-            <>
-              Total today: {Math.floor(seatedMinutesToday / 60)}h{" "}
-              {seatedMinutesToday % 60}m
-            </>
-          )}
-          {seatedMinutesToday < 60 && <>Total today: {seatedMinutesToday}m</>}
-        </div>
-
-        <button
-          onClick={isRunning ? stop : start}
-          disabled={loading}
-          className="button mb-2 w-full disabled:opacity-50"
-        >
-          {isRunning ? "Stop" : loading ? "Starting…" : "Start"}
-        </button>
-
-        {overdue && <div className="mb-2 text-lg">⏰ Time for a break!</div>}
-      </div>
-
-      {(isRunning || !calibrated) && (
-        <div className="flex flex-col min-w-[200px] p-2">
-          <label className="text-sm self-start">Seating reminder</label>
-          <select
-            value={reminder}
-            onChange={(e) => setReminder(Number(e.target.value))}
-            className="mb-2 w-full text-sm"
-            disabled={!isRunning}
-          >
-            {reminderIntervals.map((i) => (
-              <option key={i} value={i}>
-                {i === 0 ? "Off" : `${i} min`}
-              </option>
-            ))}
-          </select>
-
-          <label className="text-sm self-start">Seating position</label>
-          <progress
-            className="mb-2"
-            max={1}
-            value={Math.max(0, Math.ceil((1 - distance) * 5) / 5)}
-          ></progress>
 
           <button
-            onClick={capture}
-            disabled={!isRunning}
-            className="button mt-2 w-full text-sm disabled:opacity-50"
+            onClick={isRunning ? capture : start}
+            disabled={loading}
+            className="button w-full disabled:opacity-50"
           >
-            Set camera position
+            {loading ? "Starting…" : "Set camera position"}
           </button>
         </div>
+      ) : (
+        <>
+          <div className="flex flex-col min-w-[200px]">
+            {faceError && (
+              <div className="mb-2 bg-red-500/70 px-3 py-2 rounded text-center max-w-[280px]">
+                <div className="text-lg font-bold">Couldn't start camera</div>
+                <div className="text-sm">{faceError}</div>
+              </div>
+            )}
+
+            {isRunning && !seated && (
+              <div className="mb-2 bg-white/30 px-2 py-1 rounded text-center">
+                <div className="text-4xl">🕳️</div>
+                <div className="text-lg">Not at desk</div>
+                <div className="text-3xl tabular-nums">
+                  0<span className="text-lg text-gray-500"> min</span>
+                </div>
+              </div>
+            )}
+
+            {isRunning && seated && (
+              <div className="mb-2 bg-white/30 px-2 py-1 rounded text-center">
+                <div className="text-4xl">🪑</div>
+                <div className="text-lg">At desk</div>
+                <div className="text-3xl tabular-nums">
+                  {Math.floor(seatedMs / 60000)}:
+                  {String(Math.floor((seatedMs % 60000) / 1000)).padStart(2, "0")}
+                  <span className="text-lg text-gray-500"> min</span>
+                </div>
+              </div>
+            )}
+
+            <div className="mb-2 text-lg tabular-nums">
+              {seatedMinutesToday >= 60 && (
+                <>
+                  Total today: {Math.floor(seatedMinutesToday / 60)}h{" "}
+                  {seatedMinutesToday % 60}m
+                </>
+              )}
+              {seatedMinutesToday < 60 && (
+                <>Total today: {seatedMinutesToday}m</>
+              )}
+            </div>
+
+            <button
+              onClick={isRunning ? stop : start}
+              disabled={loading}
+              className="button mb-2 w-full disabled:opacity-50"
+            >
+              {isRunning ? "Stop" : loading ? "Starting…" : "Start"}
+            </button>
+
+            {overdue && <div className="mb-2 text-lg">⏰ Time for a break!</div>}
+          </div>
+
+          {isRunning && (
+            <div className="flex flex-col min-w-[200px] p-2">
+              <label className="text-sm self-start">Seating reminder</label>
+              <select
+                value={reminder}
+                onChange={(e) => setReminder(Number(e.target.value))}
+                className="mb-2 w-full text-sm"
+              >
+                {reminderIntervals.map((i) => (
+                  <option key={i} value={i}>
+                    {i === 0 ? "Off" : `${i} min`}
+                  </option>
+                ))}
+              </select>
+
+              <label className="text-sm self-start">Seating position</label>
+              <progress
+                className="mb-2"
+                max={1}
+                value={Math.max(0, Math.ceil((1 - distance) * 5) / 5)}
+              ></progress>
+
+              <button
+                onClick={capture}
+                className="button mt-2 w-full text-sm"
+              >
+                Set camera position
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
