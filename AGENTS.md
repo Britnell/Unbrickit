@@ -1,15 +1,23 @@
-we are porting old app:
+# Unbrickit
 
-- `app.html`
-- `src/main.js`
+a fun web-app to run on an old smartphone
 
-to a react app:
+- customiseable clock
+- work timers & sedentary reminders
+- play podcast & radio
+- voice commands - hotword + dictation + TTS
+- ai posture detection
+- all ai running locally on phone
 
-- `react.html`
-- `src/react/App.tsx` - see `import` lines here for all the other Menus / Views
-- jotai atoms for shared state `src/react/atoms.ts`
+react app:
 
-this is a fun desktop app to run on an old phone or window:
+## Source structure
 
-- display clock
-- customizeable fonts and colours
+- `react.html`, `src/fonts.css`, `src/style.css`, `assett/`
+- `src/react/App.tsx` , `src/react/main.tsx`
+- `src/react/component/` - React UI components for menu views (one per feature: Clock, Radio, Podcast, Pomodoro, Posture, Chat, etc.)
+- `src/react/lib/atoms.ts` - jotai atoms for shared state
+- `src/react/lib/` - helpers, custom-hooks, anything else
+- `src/react/posture/` - ai posture detection engine: face landmarks, signal processing & detection
+- `src/react/audio/` - audio: tone, speech (TTS), dictation
+- `src/react/chat/` - voice chat, wake word detection, commands
