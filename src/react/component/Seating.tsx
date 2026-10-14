@@ -44,7 +44,7 @@ const MAX_ROLL_DIFF = 60;
 /** current face size must be at least this fraction of the calibrated size (rejects background faces) */
 const MIN_SIZE_RATIO = 0.5;
 /** user must be undetected this long before we mark them as not detected */
-const NOT_DETECTED_DEBOUNCE_MS = 10_000;
+const NOT_DETECTED_DEBOUNCE_MS = 20_000;
 
 /** comparison params from the face: size + head rotation */
 export interface FaceFeatures {
@@ -380,7 +380,11 @@ export function SeatingWidget({ onOpen }: { onOpen: () => void }) {
   );
 }
 
-export default function SeatingPage() {
+export default function SeatingPage({
+  onOpenCamera,
+}: {
+  onOpenCamera: () => void;
+}) {
   const { isRunning, seated, seatedMs, distance, overdue, calibrated } =
     useAtomValue(seatingUiAtom);
   const { start, stop } = useEngine(seatingUiAtom, RUNNING_KEY);
@@ -396,6 +400,16 @@ export default function SeatingPage() {
         ? `Total today: ${Math.floor(seatedMinutesToday / 60)}h ${seatedMinutesToday % 60}m`
         : `Total today: ${seatedMinutesToday}m`}
     </div>
+  );
+
+  const camBtn = (
+    <button
+      onClick={onOpenCamera}
+      className="button-glass button !p-2 text-lg"
+      title="Camera debug"
+    >
+      ⚙️
+    </button>
   );
 
   // Case 1: not running -> only start button + daily total
@@ -416,7 +430,8 @@ export default function SeatingPage() {
   // Case 2: running but no camera position -> warning + calibration button
   if (!calibrated)
     return (
-      <div className="flex flex-col min-w-[200px] max-w-[280px]">
+      <div className="relative flex flex-col min-w-[200px] max-w-[280px]">
+        <div className="absolute -top-1 -right-1">{camBtn}</div>
         {faceError && (
           <div className="mb-2 bg-red-500/70 px-3 py-2 rounded text-center">
             <div className="text-lg font-bold">Couldn't start camera</div>
@@ -501,7 +516,10 @@ export default function SeatingPage() {
           ))}
         </select>
 
-        <label className="text-sm self-start">Seating position</label>
+        <div className="flex items-center gap-1">
+          <label className="text-sm self-start flex-1">Seating position</label>
+          {camBtn}
+        </div>
         <progress
           className="mb-2"
           max={1}

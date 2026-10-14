@@ -53,6 +53,11 @@ const setLoading = (v: boolean) => getDefaultStore().set(faceLoadingAtom, v);
 const setError = (msg: string | null) =>
   getDefaultStore().set(faceErrorAtom, msg);
 
+/** the shared <video> the stream is decoding, if running (for the debug camera page) */
+export function getFaceVideo(): HTMLVideoElement | null {
+  return video;
+}
+
 async function start() {
   if (starting) return;
   starting = true;

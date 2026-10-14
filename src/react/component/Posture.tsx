@@ -30,7 +30,7 @@ const RUNNING_KEY = "posture-running";
 /* -------------------------------- landmarks ------------------------------- */
 
 // face-landmark drift points: forehead / cheeks / jaw, far apart per region
-const FACE_DRIFT_IDS = [
+export const FACE_DRIFT_IDS = [
   107,
   336,
   105,
@@ -220,7 +220,11 @@ export function PostureWidget({ onOpen }: { onOpen: () => void }) {
   );
 }
 
-export default function PosturePage() {
+export default function PosturePage({
+  onOpenCamera,
+}: {
+  onOpenCamera: () => void;
+}) {
   const { isRunning, level, hasFace } = useAtomValue(postureUiAtom);
   const { start, stop } = useEngine(postureUiAtom, RUNNING_KEY);
   const loading = useAtomValue(faceLoadingAtom);
@@ -248,6 +252,15 @@ export default function PosturePage() {
       >
         {isRunning ? "Stop" : loading ? "Starting…" : "Start Camera"}
       </button>{" "}
+      {isRunning && (
+        <button
+          onClick={onOpenCamera}
+          className="mx-auto button-glass button !p-2 text-lg"
+          title="Camera debug"
+        >
+          ⚙️
+        </button>
+      )}
     </div>
   );
 }

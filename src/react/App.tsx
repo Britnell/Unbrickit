@@ -24,6 +24,7 @@ import WeatherPage, {
   WeatherWidget,
   useWeatherEngine,
 } from "./component/Weather";
+import CameraPage from "./component/Camera";
 import {
   paletteAtom,
   clockTimeAtom,
@@ -132,6 +133,7 @@ const menuTitles = {
   podcast: "🎙️ Podcasts",
   weather: "🌤️ Weather",
   radio: "📻 Radio",
+  camera: "📷 Camera",
 } as const;
 
 type MenuViewName = keyof typeof menuTitles;
@@ -139,11 +141,13 @@ type MenuViewName = keyof typeof menuTitles;
 function MenuView({
   view,
   onBack,
+  setMenu,
   pomo,
   chime,
 }: {
   view: MenuViewName;
   onBack: () => void;
+  setMenu: (m: boolean | MenuViewName) => void;
   pomo: ReturnType<typeof usePomodoro>;
   chime: ReturnType<typeof useChimeSettings>;
 }) {
@@ -163,7 +167,7 @@ function MenuView({
       </div>
 
       {view === "pomodoro" && <PomodoroPage pomo={pomo} />}
-      {view === "seating" && <SeatingPage />}
+      {view === "seating" && <SeatingPage onOpenCamera={() => setMenu("camera")} />}
       {view === "theme" && <Theme />}
       {view === "chime" && (
         <Chime
@@ -174,10 +178,11 @@ function MenuView({
         />
       )}
       {view === "chat" && <ChatPage />}
-      {view === "posture" && <PosturePage />}
+      {view === "posture" && <PosturePage onOpenCamera={() => setMenu("camera")} />}
       {view === "podcast" && <PodcastPage />}
       {view === "weather" && <WeatherPage />}
       {view === "radio" && <RadioPage />}
+      {view === "camera" && <CameraPage />}
     </>
   );
 }
@@ -283,6 +288,7 @@ function ClockPage({
               <MenuView
                 view={menu}
                 onBack={() => setMenu(true)}
+                setMenu={setMenu}
                 pomo={pomo}
                 chime={chime}
               />

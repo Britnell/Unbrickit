@@ -8,6 +8,9 @@
 -[x] PWA
 -[ ] daylight cols 9:30 both are same red
 -[ ] weather still shows sun emoji after sunset > find weather icons
+-[ ] weather only show rain LEFT in day
+-[ ] jev endpoint > for all actions ,
+-[ ] quick web search ask questions
 
 ## OLD
 
