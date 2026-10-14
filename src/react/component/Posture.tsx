@@ -11,6 +11,7 @@ import { SlouchDetector } from "../posture/postureDetect";
 import { YDriftMeter, type DriftValue } from "../posture/drift";
 import { useNotificationSound } from "./Chime";
 import { useEngine } from "../posture/useEngine";
+import StepBar from "./StepBar";
 
 /* ------------------------------- thresholds ------------------------------- */
 
@@ -241,8 +242,6 @@ export default function PosturePage({
   // discrete steps between perfect posture (4) and detection threshold (1);
   // keep at least 1 chunk filled so the red "bad" state is visible
   const goodSteps = Math.max(1, Math.ceil((1 - slouchAmount) * 4)); // 1..4
-  const barColor =
-    goodSteps <= 1 ? "bg-red-500" : goodSteps <= 3 ? "bg-orange-400" : "bg-green-500";
 
   return (
     <div className="text-center py-8 flex flex-col gap-4">
@@ -259,13 +258,8 @@ export default function PosturePage({
                 : "OK"}
           </span>
           {hasFace && (
-            <div className="flex gap-1 w-full px-4">
-              {Array.from({ length: 4 }, (_, i) => (
-                <div
-                  key={i}
-                  className={`h-3 flex-1 rounded ${i < goodSteps ? barColor : "bg-black/10"}`}
-                />
-              ))}
+            <div className="w-full px-4">
+              <StepBar filled={goodSteps} total={4} />
             </div>
           )}
         </div>

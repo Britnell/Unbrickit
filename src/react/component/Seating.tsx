@@ -10,6 +10,7 @@ import {
   faceErrorAtom,
 } from "../posture/faceStream";
 import { useNotificationSound } from "./Chime";
+import StepBar from "./StepBar";
 import type {
   FaceLandmarker,
   NormalizedLandmark,
@@ -520,11 +521,7 @@ export default function SeatingPage({
           <label className="text-sm self-start flex-1">Seating position</label>
           {camBtn}
         </div>
-        <progress
-          className="mb-2"
-          max={1}
-          value={Math.max(0, Math.ceil((1 - distance) * 5) / 5)}
-        ></progress>
+        <StepBar filled={Math.ceil((1 - distance) * 5)} total={5} />
 
         <button onClick={capture} className="button mt-2 w-full text-sm">
           Set camera position
