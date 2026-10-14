@@ -225,9 +225,24 @@ export default function PosturePage({
 }: {
   onOpenCamera: () => void;
 }) {
-  const { isRunning, level, hasFace } = useAtomValue(postureUiAtom);
+  const { isRunning, level, hasFace, pose: _pose, integral, drift } =
+    useAtomValue(postureUiAtom);
   const { start, stop } = useEngine(postureUiAtom, RUNNING_KEY);
   const loading = useAtomValue(faceLoadingAtom);
+
+  // 0 = perfect posture, 1 = slouch detection threshold (max of both signals)
+  const slouchAmount = Math.min(
+    1,
+    Math.max(
+      integral / PITCH_SLOUCH_THRESH,
+      drift ? drift.integ / DRIFT_SLOUCH_THRESH : 0,
+    ),
+  );
+  // discrete steps between perfect posture (4) and detection threshold (1);
+  // keep at least 1 chunk filled so the red "bad" state is visible
+  const goodSteps = Math.max(1, Math.ceil((1 - slouchAmount) * 4)); // 1..4
+  const barColor =
+    goodSteps <= 1 ? "bg-red-500" : goodSteps <= 3 ? "bg-orange-400" : "bg-green-500";
 
   return (
     <div className="text-center py-8 flex flex-col gap-4">
@@ -240,9 +255,19 @@ export default function PosturePage({
             {!hasFace
               ? "NOT DETECTED"
               : level === "slouch"
-                ? "SLOUCHING"
+ ? "SLOUCHING"
                 : "OK"}
           </span>
+          {hasFace && (
+            <div className="flex gap-1 w-full px-4">
+              {Array.from({ length: 4 }, (_, i) => (
+                <div
+                  key={i}
+                  className={`h-3 flex-1 rounded ${i < goodSteps ? barColor : "bg-black/10"}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
       <button
